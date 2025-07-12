@@ -1,0 +1,642 @@
+/**
+ * EWM Modal CTA - Admin Styles
+ * Estilos para el Modal Builder y páginas de administración
+ */
+
+/* Variables CSS */
+:root {
+    --ewm-primary: #0073aa;
+    --ewm-primary-hover: #005a87;
+    --ewm-secondary: #f1f1f1;
+    --ewm-success: #46b450;
+    --ewm-warning: #ffb900;
+    --ewm-error: #dc3232;
+    --ewm-border: #ddd;
+    --ewm-border-radius: 4px;
+    --ewm-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    --ewm-transition: all 0.3s ease;
+}
+
+/* Contenedor principal del Modal Builder */
+.ewm-modal-builder {
+    max-width: 1200px;
+    margin: 20px auto;
+    background: #fff;
+    border: 1px solid var(--ewm-border);
+    border-radius: var(--ewm-border-radius);
+    box-shadow: var(--ewm-shadow);
+}
+
+/* Header del builder */
+.ewm-builder-header {
+    background: var(--ewm-primary);
+    color: #fff;
+    padding: 20px;
+    border-radius: var(--ewm-border-radius) var(--ewm-border-radius) 0 0;
+}
+
+.ewm-builder-header h1 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.ewm-builder-header .description {
+    margin: 5px 0 0;
+    opacity: 0.9;
+    font-size: 14px;
+}
+
+/* Navegación por pestañas */
+.ewm-tabs-nav {
+    background: var(--ewm-secondary);
+    border-bottom: 1px solid var(--ewm-border);
+    padding: 0;
+    margin: 0;
+    display: flex;
+    list-style: none;
+}
+
+.ewm-tabs-nav li {
+    margin: 0;
+}
+
+.ewm-tabs-nav a {
+    display: block;
+    padding: 15px 20px;
+    text-decoration: none;
+    color: #555;
+    border-right: 1px solid var(--ewm-border);
+    transition: var(--ewm-transition);
+    position: relative;
+}
+
+.ewm-tabs-nav a:hover {
+    background: #fff;
+    color: var(--ewm-primary);
+}
+
+.ewm-tabs-nav a.active {
+    background: #fff;
+    color: var(--ewm-primary);
+    border-bottom: 2px solid var(--ewm-primary);
+}
+
+/* Contenido de las pestañas */
+.ewm-tab-content {
+    padding: 30px;
+    min-height: 500px;
+}
+
+.ewm-tab-pane {
+    display: none;
+}
+
+.ewm-tab-pane.active {
+    display: block;
+}
+
+/* Formularios */
+.ewm-form-group {
+    margin-bottom: 25px;
+}
+
+.ewm-form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+}
+
+.ewm-form-group .description {
+    font-size: 13px;
+    color: #666;
+    margin-top: 5px;
+    font-style: italic;
+}
+
+.ewm-form-control {
+    width: 100%;
+    max-width: 400px;
+    padding: 10px 12px;
+    border: 1px solid var(--ewm-border);
+    border-radius: var(--ewm-border-radius);
+    font-size: 14px;
+    transition: var(--ewm-transition);
+}
+
+.ewm-form-control:focus {
+    outline: none;
+    border-color: var(--ewm-primary);
+    box-shadow: 0 0 0 2px rgba(0, 115, 170, 0.1);
+}
+
+.ewm-form-control.large {
+    max-width: 600px;
+}
+
+.ewm-form-control.small {
+    max-width: 200px;
+}
+
+/* Textarea */
+textarea.ewm-form-control {
+    min-height: 100px;
+    resize: vertical;
+    font-family: monospace;
+}
+
+/* Select */
+select.ewm-form-control {
+    background-image: url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23666' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 12px;
+    padding-right: 35px;
+}
+
+/* Checkboxes y radios */
+.ewm-checkbox-group,
+.ewm-radio-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.ewm-checkbox,
+.ewm-radio {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.ewm-checkbox input,
+.ewm-radio input {
+    margin: 0;
+    width: auto !important;
+    flex-shrink: 0;
+}
+
+/* Específico para checkboxes en field builders */
+.ewm-field-item input[type="checkbox"] {
+    width: auto !important;
+    max-width: none !important;
+    flex-shrink: 0;
+}
+
+/* Estilos para sección de opciones */
+.ewm-field-options-section {
+    margin-top: 15px;
+}
+
+.ewm-options-details summary {
+    cursor: pointer;
+    font-weight: bold;
+    margin: 10px 0;
+    padding: 8px;
+    background: #f1f1f1;
+    border-radius: 3px;
+    user-select: none;
+}
+
+.ewm-options-details summary:hover {
+    background: #e8e8e8;
+}
+
+.ewm-options-container {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    margin-top: 5px;
+    background: #fafafa;
+}
+
+.ewm-options-list {
+    min-height: 20px;
+}
+
+.ewm-option-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    padding: 8px;
+    border: 1px solid #e1e1e1;
+    border-radius: 3px;
+    background: #ffffff;
+    transition: all 0.2s ease;
+}
+
+.ewm-option-item:hover {
+    border-color: #0073aa;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.ewm-drag-handle {
+    cursor: move;
+    color: #666;
+    font-size: 16px;
+    padding: 4px;
+    border-radius: 2px;
+}
+
+.ewm-drag-handle:hover {
+    background: #f0f0f0;
+    color: #0073aa;
+}
+
+.ewm-option-item.ui-sortable-helper {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    transform: rotate(2deg);
+}
+
+.ewm-option-placeholder {
+    height: 50px;
+    background: #f0f0f0;
+    border: 2px dashed #ccc;
+    border-radius: 3px;
+    margin-bottom: 8px;
+}
+
+.ewm-add-option {
+    margin-top: 10px;
+    padding: 8px 12px;
+    background: #0073aa;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.ewm-add-option:hover {
+    background: #005a87;
+}
+
+.ewm-remove-option {
+    padding: 6px 10px;
+    background: #dc3232;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.ewm-remove-option:hover {
+    background: #a00;
+}
+
+/* Color picker */
+.ewm-color-picker {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ewm-color-preview {
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--ewm-border);
+    border-radius: var(--ewm-border-radius);
+    cursor: pointer;
+}
+
+/* Botones */
+.ewm-btn {
+    display: inline-block;
+    padding: 10px 20px;
+    background: var(--ewm-primary);
+    color: #fff;
+    border: none;
+    border-radius: var(--ewm-border-radius);
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: var(--ewm-transition);
+    line-height: 1.4;
+}
+
+.ewm-btn:hover {
+    background: var(--ewm-primary-hover);
+    color: #fff;
+}
+
+.ewm-btn.secondary {
+    background: var(--ewm-secondary);
+    color: #333;
+    border: 1px solid var(--ewm-border);
+}
+
+.ewm-btn.secondary:hover {
+    background: #e5e5e5;
+    color: #333;
+}
+
+.ewm-btn.success {
+    background: var(--ewm-success);
+}
+
+.ewm-btn.warning {
+    background: var(--ewm-warning);
+}
+
+.ewm-btn.error {
+    background: var(--ewm-error);
+}
+
+.ewm-btn.small {
+    padding: 6px 12px;
+    font-size: 12px;
+}
+
+.ewm-btn.large {
+    padding: 15px 30px;
+    font-size: 16px;
+}
+
+/* Configuración de pasos */
+.ewm-steps-config {
+    border: 1px solid var(--ewm-border);
+    border-radius: var(--ewm-border-radius);
+    overflow: hidden;
+}
+
+.ewm-step-item {
+    border-bottom: 1px solid var(--ewm-border);
+    background: #fafafa;
+}
+
+.ewm-step-item:last-child {
+    border-bottom: none;
+}
+
+.ewm-step-header {
+    padding: 15px 20px;
+    background: #f9f9f9;
+    border-bottom: 1px solid var(--ewm-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+}
+
+.ewm-step-title {
+    font-weight: 600;
+    margin: 0;
+}
+
+.ewm-step-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.ewm-step-content {
+    padding: 20px;
+    display: none;
+}
+
+.ewm-step-item.active .ewm-step-content {
+    display: block;
+}
+
+/* Configuración de diseño */
+.ewm-design-preview {
+    border: 1px solid var(--ewm-border);
+    border-radius: var(--ewm-border-radius);
+    padding: 20px;
+    background: #f9f9f9;
+    margin-top: 20px;
+}
+
+.ewm-size-controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+/* Vista previa */
+.ewm-preview-container {
+    border: 1px solid var(--ewm-border);
+    border-radius: var(--ewm-border-radius);
+    padding: 20px;
+    background: #f9f9f9;
+    text-align: center;
+    min-height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ewm-preview-placeholder {
+    color: #666;
+    font-style: italic;
+}
+
+/* Shortcode generado */
+.ewm-shortcode-output {
+    background: #f1f1f1;
+    border: 1px solid var(--ewm-border);
+    border-radius: var(--ewm-border-radius);
+    padding: 15px;
+    font-family: monospace;
+    font-size: 14px;
+    margin-top: 20px;
+    position: relative;
+}
+
+.ewm-copy-shortcode {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 5px 10px;
+    font-size: 12px;
+}
+
+/* Alertas y mensajes */
+.ewm-alert {
+    padding: 15px;
+    border-radius: var(--ewm-border-radius);
+    margin-bottom: 20px;
+    border-left: 4px solid;
+}
+
+.ewm-alert.success {
+    background: #d4edda;
+    border-color: var(--ewm-success);
+    color: #155724;
+}
+
+.ewm-alert.warning {
+    background: #fff3cd;
+    border-color: var(--ewm-warning);
+    color: #856404;
+}
+
+.ewm-alert.error {
+    background: #f8d7da;
+    border-color: var(--ewm-error);
+    color: #721c24;
+}
+
+.ewm-alert.info {
+    background: #d1ecf1;
+    border-color: var(--ewm-primary);
+    color: #0c5460;
+}
+
+/* Loading spinner */
+.ewm-loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid var(--ewm-primary);
+    border-radius: 50%;
+    animation: ewm-spin 1s linear infinite;
+}
+
+@keyframes ewm-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .ewm-modal-builder {
+        margin: 10px;
+    }
+    
+    .ewm-tab-content {
+        padding: 20px;
+    }
+    
+    .ewm-tabs-nav {
+        flex-direction: column;
+    }
+    
+    .ewm-tabs-nav a {
+        border-right: none;
+        border-bottom: 1px solid var(--ewm-border);
+    }
+    
+    .ewm-size-controls {
+        grid-template-columns: 1fr;
+    }
+    
+    .ewm-form-control {
+        max-width: 100%;
+    }
+}
+
+/* Utilidades */
+.ewm-text-center { text-align: center; }
+.ewm-text-right { text-align: right; }
+.ewm-mb-0 { margin-bottom: 0; }
+.ewm-mb-10 { margin-bottom: 10px; }
+.ewm-mb-20 { margin-bottom: 20px; }
+.ewm-mt-20 { margin-top: 20px; }
+.ewm-hidden { display: none; }
+.ewm-flex { display: flex; }
+.ewm-flex-between { justify-content: space-between; }
+.ewm-flex-center { justify-content: center; }
+.ewm-align-center { align-items: center; }
+.ewm-gap-10 { gap: 10px; }
+.ewm-gap-20 { gap: 20px; }
+
+/* Field Builder Styles */
+.ewm-fields-builder {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 15px;
+    background: #f9f9f9;
+}
+
+.ewm-fields-list {
+    margin-bottom: 15px;
+}
+
+.ewm-field-item {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.ewm-field-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.ewm-field-config {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.ewm-field-config label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #333;
+}
+
+.ewm-field-config input,
+.ewm-field-config select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.ewm-field-config input:focus,
+.ewm-field-config select:focus {
+    outline: none;
+    border-color: #0073aa;
+    box-shadow: 0 0 0 1px #0073aa;
+}
+
+.ewm-add-field {
+    background: #0073aa;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.ewm-add-field:hover {
+    background: #005a87;
+}
+
+.ewm-remove-field {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.ewm-remove-field:hover {
+    background: #c82333;
+}
+
+@media (max-width: 768px) {
+    .ewm-field-config {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1,0 +1,522 @@
+# Documento de Requisitos de Producto (PRD): Especialista en WP Modal
+
+**Versión:** 2.0 (Versión Mejorada)  
+**Fecha:** 10 de julio de 2025  
+
+## 1. Visión General y Objetivo 🎯
+
+**Especialista en WP Modal** es un plugin moderno para WordPress que permite crear modales interactivos de captura de leads con formularios multi-paso. El enfoque principal es un **sistema unificado** donde tanto bloques de Gutenberg como shortcodes clásicos compartan la misma lógica de backend y endpoints.
+
+### Principios Fundamentales:
+- **Arquitectura API-First**: Todo funciona a través de endpoints REST personalizados
+- **Compatibilidad Universal**: Bloques + Shortcodes usando el mismo core
+- **Scaffold Moderno**: Usar `@wordpress/create-block` como base
+- **Formularios Multi-Paso**: Sistema de progreso visual como se muestra en las imágenes
+
+## 2. Arquitectura Técnica Moderna 🛠️
+
+### 2.1. Base del Proyecto
+```bash
+# Inicialización con scaffold oficial
+npx @wordpress/create-block ewm-modal-cta
+```
+
+### 2.2. Estructura de Datos Unificada
+```php
+// Custom Post Type principal
+register_post_type('ew_modal', [
+    'public' => false,
+    'show_ui' => true,
+    'supports' => ['title'],
+    'show_in_rest' => true
+]);
+
+// Meta fields principales - Arquitectura flexible para campos
+$meta_fields = [
+    'ewm_modal_mode',           // 'formulario' | 'anuncio'
+    'ewm_steps_config',         // JSON con configuración de pasos (Opción A)
+    'ewm_steps_serialized',     // String serializado para casos complejos (Opción B)
+    'ewm_use_serialized',       // Boolean: true = usar serialized, false = usar JSON
+    'ewm_design_config',        // JSON con estilos
+    'ewm_trigger_config',       // JSON con triggers
+    'ewm_wc_integration',       // JSON con datos de WooCommerce
+    'ewm_display_rules',        // JSON con reglas de visualización
+    'ewm_field_mapping'         // JSON para mapeo de campos personalizados
+];
+
+// Ejemplo de flexibilidad arquitectónica
+if (get_post_meta($modal_id, 'ewm_use_serialized', true)) {
+    $steps_data = unserialize(get_post_meta($modal_id, 'ewm_steps_serialized', true));
+} else {
+    $steps_data = json_decode(get_post_meta($modal_id, 'ewm_steps_config', true), true);
+}
+```
+
+### 2.3. Endpoints REST Unificados
+```php
+// Todos estos endpoints serán usados tanto por Gutenberg como por el Builder
+register_rest_route('ewm/v1', '/modals', [
+    'methods' => ['GET', 'POST'],
+    'callback' => 'ewm_handle_modals'
+]);
+
+register_rest_route('ewm/v1', '/modals/(?P<id>\d+)', [
+    'methods' => ['GET', 'PUT', 'DELETE'],
+    'callback' => 'ewm_handle_modal_single'
+]);
+
+register_rest_route('ewm/v1', '/submit-form', [
+    'methods' => 'POST',
+    'callback' => 'ewm_handle_form_submission'
+]);
+
+register_rest_route('ewm/v1', '/wc-coupons', [
+    'methods' => 'GET',
+    'callback' => 'ewm_get_wc_coupons'  // Para seleccionar cupones
+]);
+```
+
+## 3. Sistema Dual: Bloques + Shortcodes 🔄
+
+### 3.1. Bloque de Gutenberg (Método Principal)
+```json
+{
+    "name": "ewm/modal-cta",
+    "title": "Modal CTA Multi-Paso",
+    "category": "widgets",
+    "attributes": {
+        "modalId": {
+            "type": "string",
+            "default": ""
+        },
+        "autoGenerateShortcode": {
+            "type": "boolean", 
+            "default": true
+        }
+    },
+    "usesContext": ["postId", "postType"],
+    "providesContext": {
+        "ewm/modalId": "modalId"
+    }
+}
+```
+
+**Flujo del Bloque:**
+1. Usuario agrega bloque `ewm/modal-cta`
+2. Configura modal usando la interfaz de Gutenberg
+3. Al guardar, se crea/actualiza el CPT `ew_modal` vía REST API
+4. **Auto-genera shortcode**: `[ew_modal id="modal-123"]`
+5. El bloque renderiza usando el mismo sistema que los shortcodes
+
+### 3.2. Modal Builder (Para Temas Clásicos)
+- **Ubicación**: `wp-admin/admin.php?page=ewm-modal-builder`
+- **Tecnología Backend**: jQuery + WordPress REST API (solo en admin)
+- **Tecnología Frontend**: Vanilla JS puro (para el render del modal)
+- **Función**: Misma interfaz que Gutenberg pero standalone
+- **Output**: Genera shortcode `[ew_modal id="modal-nombre"]`
+
+**Importante**: El builder usa jQuery solo en la interfaz de administración. El modal renderizado en el frontend siempre usa Vanilla JS, independientemente de si viene de un bloque o shortcode.
+
+### 3.3. Sistema de Shortcodes
+```php
+// Shortcode principal que renderiza modales
+add_shortcode('ew_modal', 'ewm_render_modal_shortcode');
+
+function ewm_render_modal_shortcode($atts) {
+    $atts = shortcode_atts([
+        'id' => '',
+        'trigger' => 'auto' // 'auto', 'manual', 'exit-intent'
+    ], $atts);
+    
+    // Usar el mismo render engine que los bloques
+    return ewm_render_modal_core($atts['id'], $atts);
+}
+```
+
+## 4. Sistema de Formularios Multi-Paso 📋
+
+### 4.1. Arquitectura de Campos Flexibles
+
+El sistema debe soportar dos enfoques para máxima flexibilidad:
+
+#### Opción A: Estructura de Mapa de Campos (Recomendada)
+```json
+{
+    "steps": [
+        {
+            "id": 1,
+            "title": "Increase Your Website Traffic",
+            "subtitle": "Answer a few questions to get your personalized plan",
+            "fields": [
+                {
+                    "id": "website_url",
+                    "type": "text",
+                    "label": "What is the URL of your website?",
+                    "placeholder": "https://yourwebsite.com",
+                    "required": true,
+                    "step": 1,
+                    "validation_rules": {
+                        "type": "url",
+                        "message": "Please enter a valid URL"
+                    },
+                    "order": 1
+                }
+            ],
+            "button_text": "NEXT",
+            "description": "We'll analyze your site for optimization opportunities"
+        },
+        {
+            "id": 2,
+            "title": "What's your experience level?",
+            "fields": [
+                {
+                    "id": "experience_level",
+                    "type": "radio",
+                    "label": "Marketing Experience",
+                    "required": true,
+                    "step": 2,
+                    "options": [
+                        {"value": "beginner", "label": "BEGINNER"},
+                        {"value": "intermediate", "label": "INTERMEDIATE"},
+                        {"value": "advanced", "label": "ADVANCED"}
+                    ],
+                    "validation_rules": {
+                        "type": "required",
+                        "message": "Please select your experience level"
+                    },
+                    "order": 1
+                }
+            ],
+            "description": "This helps us customize your action plan"
+        },
+        {
+            "id": 3,
+            "title": "What's your annual revenue?",
+            "fields": [
+                {
+                    "id": "annual_revenue",
+                    "type": "select",
+                    "label": "Annual Revenue Range",
+                    "required": true,
+                    "step": 3,
+                    "options": [
+                        {"value": "0-500k", "label": "0-500K"},
+                        {"value": "500k-1m", "label": "500K-1MM"},
+                        {"value": "1m-3m", "label": "1MM-3MM"},
+                        {"value": "3m+", "label": "3MM+"}
+                    ],
+                    "validation_rules": {
+                        "type": "required"
+                    },
+                    "order": 1
+                }
+            ],
+            "description": "We want to give you appropriate recommendations"
+        }
+    ],
+    "final_step": {
+        "title": "Get Your Personalized Plan",
+        "subtitle": "Enter your details to receive your custom strategy",
+        "fields": [
+            {
+                "id": "email",
+                "type": "email",
+                "label": "Email Address",
+                "placeholder": "your@email.com",
+                "required": true,
+                "step": "final",
+                "validation_rules": {
+                    "type": "email",
+                    "message": "Please enter a valid email"
+                },
+                "order": 1
+            },
+            {
+                "id": "phone",
+                "type": "tel",
+                "label": "Phone Number",
+                "placeholder": "+52",
+                "required": false,
+                "step": "final",
+                "validation_rules": {
+                    "type": "phone"
+                },
+                "order": 2
+            },
+            {
+                "id": "first_name",
+                "type": "text",
+                "label": "First Name",
+                "required": true,
+                "step": "final",
+                "validation_rules": {
+                    "type": "text",
+                    "min_length": 2
+                },
+                "order": 3
+            }
+        ]
+    },
+    "progressBar": {
+        "enabled": true,
+        "color": "#ff6b35",
+        "style": "line" // or "dots"
+    }
+}
+```
+
+#### Opción B: Campos Serializados (Para Casos Complejos)
+```json
+{
+    "steps_serialized": true,
+    "steps_data": "serialized_string_with_custom_structure",
+    "custom_renderer": "advanced_form_builder"
+}
+```
+
+### 4.2. Tipos de Campo Soportados
+```php
+$supported_field_types = [
+    'text' => 'Campo de texto simple',
+    'email' => 'Campo de email con validación',
+    'tel' => 'Campo de teléfono',
+    'textarea' => 'Área de texto multi-línea',
+    'select' => 'Lista desplegable',
+    'radio' => 'Botones de opción múltiple',
+    'checkbox' => 'Casillas de verificación',
+    'number' => 'Campo numérico',
+    'url' => 'Campo de URL',
+    'date' => 'Selector de fecha',
+    'file' => 'Subida de archivos (opcional)',
+    'hidden' => 'Campo oculto para datos de contexto'
+];
+```
+
+### 4.3. Sistema de Validación Flexible
+```json
+{
+    "validation_rules": {
+        "type": "email|url|phone|text|number|required|custom",
+        "min_length": 2,
+        "max_length": 100,
+        "pattern": "regex_pattern",
+        "custom_validator": "function_name",
+        "message": "Error message to display"
+    }
+}
+```
+
+### 4.2. Componentes de Pasos
+- **Barra de Progreso**: Visual como en las imágenes
+- **Navegación**: Next/Previous automático
+- **Validación**: Por paso antes de avanzar
+- **Datos Temporales**: Almacenar en localStorage durante el flujo
+- **Envío Final**: Solo al completar todos los pasos
+
+## 5. Especificaciones de Desarrollo 💻
+
+### 5.1. Frontend (Público)
+```javascript
+// TODO en Vanilla JS, cero dependencias
+class EWMModal {
+    constructor(config) {
+        this.config = config;
+        this.currentStep = 1;
+        this.formData = {};
+    }
+    
+    show() { /* Mostrar modal */ }
+    nextStep() { /* Avanzar paso */ }
+    submitForm() { /* Envío vía fetch() a REST API */ }
+}
+```
+
+### 5.2. Backend (Admin)
+```javascript
+// Gutenberg Block - React + WordPress components
+import { useSelect, useDispatch } from '@wordpress/data';
+import { PanelBody, TextControl } from '@wordpress/components';
+
+// Modal Builder - jQuery (solo en admin)
+jQuery(document).ready(function($) {
+    // Builder interface usando jQuery para simplicidad en admin
+    $('#ewm-add-field').on('click', function() {
+        // Lógica del builder
+    });
+});
+```
+
+### 5.3. Renderizado Universal (Frontend)
+```javascript
+// Tanto bloques como shortcodes usan este motor de render
+class EWMModalRenderer {
+    constructor(config) {
+        this.config = config;
+        this.currentStep = 1;
+        this.formData = {};
+        this.totalSteps = config.steps.length;
+    }
+    
+    render() {
+        // Render independiente de origen (bloque o shortcode)
+        return this.buildModalHTML();
+    }
+    
+    buildModalHTML() {
+        // Vanilla JS puro para máxima compatibilidad
+        const modal = document.createElement('div');
+        modal.className = 'ewm-modal-overlay';
+        // ... construcción del DOM
+        return modal;
+    }
+    
+    handleStepNavigation() {
+        // Lógica de navegación entre pasos
+    }
+    
+    validateCurrentStep() {
+        // Validación usando las reglas definidas
+    }
+    
+    submitForm() {
+        // Envío vía fetch() a REST API
+        fetch('/wp-json/ewm/v1/submit-form', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-WP-Nonce': ewm_vars.nonce
+            },
+            body: JSON.stringify(this.formData)
+        });
+    }
+}
+```
+
+### 5.3. Estructura de Archivos
+```
+ewm-modal-cta/
+├── src/
+│   ├── block/                 # Bloque de Gutenberg
+│   │   ├── index.js           # React components
+│   │   ├── edit.js
+│   │   ├── save.js
+│   │   └── view.js            # Frontend Vanilla JS
+│   ├── admin/                 # Modal Builder
+│   │   ├── builder.js         # jQuery app para admin
+│   │   ├── builder.css
+│   │   └── field-manager.js   # Gestión de campos flexibles
+│   ├── frontend/              # Render engine universal
+│   │   ├── modal-renderer.js  # Vanilla JS - usado por bloques Y shortcodes
+│   │   ├── form-validator.js  # Validación vanilla JS
+│   │   └── modal.css          # Estilos del modal
+│   └── shared/                # Utilidades compartidas
+│       └── api-client.js      # Cliente REST API (vanilla fetch)
+├── includes/
+│   ├── class-modal-cpt.php    # Custom Post Type
+│   ├── class-rest-api.php     # Endpoints REST
+│   ├── class-shortcodes.php   # Sistema de shortcodes
+│   └── class-wc-integration.php
+└── assets/
+    ├── css/
+    └── js/
+```
+
+## 6. Flujos de Usuario Principales 🚀
+
+### 6.1. Crear Modal con Gutenberg
+1. Agregar bloque `ewm/modal-cta`
+2. Configurar pasos en el panel lateral
+3. Personalizar diseño (colores, tipografía)
+4. Configurar triggers (exit-intent, inactividad)
+5. **Guardar post** → Auto-crea CPT + shortcode
+
+### 6.2. Crear Modal con Builder Clásico
+1. Ir a `WP Admin → Modales → Crear Nuevo`
+2. **Misma interfaz** que Gutenberg pero standalone
+3. Configurar usando **los mismos endpoints REST**
+4. Obtener shortcode `[ew_modal id="mi-modal"]`
+5. Insertar en widgets, páginas, etc.
+
+### 6.3. Modal Multi-Paso en Acción
+1. **Trigger activado** (exit-intent, timer, manual)
+2. Modal aparece con **primer paso**
+3. Usuario completa campo → **Next** (con validación)
+4. **Barra de progreso** se actualiza
+5. **Último paso** → Submit → Datos enviados vía REST API
+6. **Mensaje de éxito** o redirección
+
+## 7. Integraciones y Extensibilidad 🔌
+
+### 7.1. WooCommerce
+```php
+// Selección de cupones en la interfaz
+$coupons = get_posts([
+    'post_type' => 'shop_coupon',
+    'post_status' => 'publish'
+]);
+
+// Aplicar cupón automáticamente
+add_action('ewm_form_success', function($data) {
+    if ($data['modal_mode'] === 'coupon') {
+        WC()->session->set('ewm_applied_coupon', $data['coupon_code']);
+    }
+});
+```
+
+### 7.2. Hooks para Desarrolladores
+```php
+// Después de envío exitoso
+do_action('ewm_form_success', $form_data, $modal_id);
+
+// Antes de mostrar modal
+apply_filters('ewm_should_show_modal', true, $modal_config);
+
+// Personalizar campos
+apply_filters('ewm_form_fields', $fields, $step_id);
+```
+
+## 8. Seguridad y Performance ⚡
+
+### 8.1. Validación y Sanitización
+- **Nonces** en todos los endpoints REST
+- **Capability checks** para operaciones admin
+- **Sanitización** de todos los inputs
+- **Honeypot anti-spam** en formularios
+
+### 8.2. Optimización
+- **Carga condicional**: Scripts solo donde se necesiten
+- **Cache de transients** para reglas de visualización
+- **Lazy loading** de configuraciones de modal
+- **Minificación** automática en producción
+
+## 9. Casos de Uso Específicos 📊
+
+### 9.1. E-commerce (WooCommerce)
+- **Abandono de carrito**: Modal con cupón de descuento
+- **Upsell productos**: Modal con productos relacionados
+- **Newsletter**: Captura de email con incentivo
+
+### 9.2. Generación de Leads
+- **Quiz multi-paso**: Como las imágenes mostradas
+- **Descarga de PDF**: A cambio de email
+- **Consulta gratuita**: Formulario de contacto avanzado
+
+### 9.3. Engagement
+- **Feedback del usuario**: Encuestas rápidas
+- **Notificaciones**: Anuncios importantes
+- **Redirección inteligente**: Basada en comportamiento
+
+---
+
+## Conclusión
+
+Este PRD define un sistema moderno, unificado y extensible que:
+- ✅ Usa `@wordpress/create-block` como base
+- ✅ Comparte lógica entre bloques y shortcodes
+- ✅ Frontend en Vanilla JS puro
+- ✅ API REST como única fuente de verdad
+- ✅ Interfaz multi-paso como en las imágenes
+- ✅ Compatible con temas clásicos y modernos
+- ✅ Integración profunda con WooCommerce
+
+**El resultado**: Un plugin que funciona igual de bien en Gutenberg que en un widget clásico, usando la misma base tecnológica moderna.

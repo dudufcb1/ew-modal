@@ -1,0 +1,96 @@
+# =============================================================================
+# EWM Modal CTA Plugin - .gitignore
+# =============================================================================
+
+# WordPress Core Files (si se desarrolla dentro de WordPress)
+wp-config.php
+wp-content/uploads/
+wp-content/cache/
+wp-content/backup-db/
+wp-content/advanced-cache.php
+wp-content/wp-cache-config.php
+
+# WordPress Debug & Error Logs
+debug.log
+error_log
+*.log
+wp-content/debug.log
+
+# Plugin Development
+*.zip
+*.tar.gz
+*.rar
+build/Release
+dist/
+
+# Node.js & Build Tools
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.eslintcache
+*.tgz
+package-lock.json
+yarn.lock
+
+# Environment & Configuration
+.env
+.env.local
+.env.development
+.env.production
+wp-config-local.php
+local-config.php
+
+# IDE & Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Temporary Files
+*.tmp
+*.temp
+*.bak
+*.backup
+*~
+
+# Database Exports
+*.sql
+*.sql.gz
+*.sql.zip
+
+# Cache & Compiled Files
+*.cache
+.sass-cache/
+coverage/
+.nyc_output/
+
+# Plugin Specific
+memo/memory_project.txt
+logs/
+uploads/
+cache/
+
+# Development Tools
+.phpunit.result.cache
+composer.phar
+vendor/
+phpunit.xml
+
+# OS Generated Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Custom Files
+ewm-modal-cta_code.txt
+*.local
+*.dev

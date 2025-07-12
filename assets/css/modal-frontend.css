@@ -1,0 +1,917 @@
+/**
+ * EWM Modal Frontend Styles - Modern UI
+ *
+ * @package EWM_Modal_CTA
+ * @since 1.0.0
+ */
+
+/* ==========================================================================
+   CSS Custom Properties (Variables)
+   ========================================================================== */
+
+:root {
+    --ewm-modal-backdrop: rgba(15, 23, 42, 0.75);
+    --ewm-modal-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    --ewm-modal-border-radius: 16px;
+    --ewm-modal-padding: clamp(20px, 4vw, 32px);
+    --ewm-transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --ewm-transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    --ewm-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --ewm-text-primary: #1e293b;
+    --ewm-text-secondary: #64748b;
+    --ewm-text-muted: #94a3b8;
+    --ewm-border-color: #e2e8f0;
+    --ewm-border-focus: #3b82f6;
+    --ewm-surface: #ffffff;
+    --ewm-surface-elevated: #f8fafc;
+}
+
+/* ==========================================================================
+   Modal Base Styles - Modern Layout
+   ========================================================================== */
+
+.ewm-modal {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 999999;
+    overflow: auto;
+    background-color: var(--ewm-modal-backdrop);
+    transition: var(--ewm-transition-smooth);
+    font-family: var(--ewm-font-family);
+}
+
+.ewm-modal.ewm-modal-visible {
+    display: flex;
+}
+
+.ewm-modal-backdrop {
+    display: none;
+}
+
+.ewm-modal-container {
+    position: relative;
+    margin: var(--ewm-modal-padding);
+    padding: 0;
+    box-sizing: border-box;
+    max-width: min(90vw, 600px);
+    width: 100%;
+}
+
+.ewm-modal-content {
+    position: relative;
+    background: var(--ewm-surface);
+    border-radius: var(--ewm-modal-border-radius);
+    box-shadow: var(--ewm-modal-shadow);
+    max-height: 90vh;
+    overflow: hidden;
+    width: 100%;
+    animation-duration: 0.4s;
+    animation-fill-mode: both;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ==========================================================================
+   Modal Sizes - Responsive Design
+   ========================================================================== */
+
+.ewm-modal-size-small .ewm-modal-content {
+    max-width: min(90vw, 480px);
+}
+
+.ewm-modal-size-medium .ewm-modal-content {
+    max-width: min(90vw, 720px);
+}
+
+.ewm-modal-size-large .ewm-modal-content {
+    max-width: min(95vw, 1024px);
+}
+
+/* ==========================================================================
+   Modal Animations - Enhanced with Modern Easing
+   ========================================================================== */
+
+.ewm-modal-animation-fade .ewm-modal-content {
+    animation-name: ewmFadeIn;
+}
+
+.ewm-modal-animation-slide .ewm-modal-content {
+    animation-name: ewmSlideIn;
+}
+
+.ewm-modal-animation-zoom .ewm-modal-content {
+    animation-name: ewmZoomIn;
+}
+
+@keyframes ewmFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes ewmSlideIn {
+    from {
+        transform: translateY(-32px) scale(0.95);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes ewmZoomIn {
+    from {
+        transform: scale(0.85);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* ==========================================================================
+   Modal Header - Modern Close Button
+   ========================================================================== */
+
+.ewm-modal-header {
+    position: relative;
+    padding: 0;
+    height: 0;
+}
+
+.ewm-modal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: var(--ewm-surface-elevated);
+    border: 1px solid var(--ewm-border-color);
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    color: var(--ewm-text-secondary);
+    padding: 0;
+    border-radius: 8px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--ewm-transition-smooth);
+    z-index: 10;
+}
+
+.ewm-modal-close:hover {
+    background: #fee2e2;
+    border-color: #fecaca;
+    color: #dc2626;
+    transform: scale(1.05);
+}
+
+.ewm-modal-close:active {
+    transform: scale(0.95);
+}
+
+/* ==========================================================================
+   Modal Body - Enhanced Spacing
+   ========================================================================== */
+
+.ewm-modal-body {
+    padding: calc(var(--ewm-modal-padding) + 16px) var(--ewm-modal-padding) var(--ewm-modal-padding);
+    overflow-y: auto;
+    max-height: calc(90vh - 80px);
+}
+
+/* ==========================================================================
+   Form Container - Modern Layout
+   ========================================================================== */
+
+.ewm-form-container {
+    width: 100%;
+    max-width: 100%;
+}
+
+/* ==========================================================================
+   Progress Bar - Enhanced Design
+   ========================================================================== */
+
+.ewm-progress-bar {
+    margin-bottom: clamp(24px, 5vw, 40px);
+    position: relative;
+}
+
+.ewm-progress-bar[data-style="line"] {
+    height: 6px;
+    background: var(--ewm-border-color);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.ewm-progress-bar[data-style="line"] .ewm-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--ewm-primary-color, #3b82f6), var(--ewm-primary-color, #1d4ed8));
+    border-radius: 6px;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.ewm-progress-bar[data-style="line"] .ewm-progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3));
+    border-radius: 6px;
+}
+
+.ewm-progress-bar[data-style="dots"] {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 16px;
+}
+
+.ewm-progress-steps {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    position: relative;
+}
+
+.ewm-progress-step {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--ewm-surface-elevated);
+    border: 2px solid var(--ewm-border-color);
+    color: var(--ewm-text-secondary);
+    font-size: 14px;
+    font-weight: 600;
+    transition: var(--ewm-transition-smooth);
+    position: relative;
+    z-index: 2;
+}
+
+.ewm-progress-step.active {
+    background: var(--ewm-primary-color, #3b82f6);
+    border-color: var(--ewm-primary-color, #3b82f6);
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.ewm-progress-step.completed {
+    background: var(--ewm-primary-color, #3b82f6);
+    border-color: var(--ewm-primary-color, #3b82f6);
+    color: white;
+}
+
+.ewm-progress-step.completed::before {
+    content: '✓';
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.ewm-progress-steps::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 20px;
+    right: 20px;
+    height: 2px;
+    background: var(--ewm-border-color);
+    transform: translateY(-50%);
+    z-index: 1;
+}
+
+/* ==========================================================================
+   Form Steps - Modern Typography & Layout
+   ========================================================================== */
+
+.ewm-form-step {
+    display: none;
+    animation: ewmStepIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ewm-form-step.active {
+    display: block;
+}
+
+.ewm-step-title {
+    font-size: clamp(20px, 4vw, 28px);
+    font-weight: 700;
+    color: var(--ewm-text-primary);
+    margin: 0 0 12px 0;
+    text-align: center;
+    line-height: 1.2;
+    letter-spacing: -0.025em;
+}
+
+.ewm-step-subtitle {
+    font-size: clamp(14px, 3vw, 18px);
+    color: var(--ewm-text-secondary);
+    margin: 0 0 24px 0;
+    text-align: center;
+    line-height: 1.5;
+    font-weight: 400;
+}
+
+.ewm-step-content {
+    font-size: 16px;
+    color: var(--ewm-text-secondary);
+    margin: 0 0 24px 0;
+    line-height: 1.6;
+    text-align: center;
+}
+
+.ewm-step-description {
+    font-size: 14px;
+    color: var(--ewm-text-muted);
+    margin: 20px 0 0 0;
+    text-align: center;
+    line-height: 1.5;
+    font-style: italic;
+}
+
+@keyframes ewmStepIn {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* ==========================================================================
+   Form Fields - Modern Input Design
+   ========================================================================== */
+
+.ewm-step-fields {
+    margin-bottom: clamp(24px, 5vw, 40px);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.ewm-field {
+    position: relative;
+}
+
+.ewm-field-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--ewm-text-primary);
+    font-size: 14px;
+    letter-spacing: 0.025em;
+}
+
+.ewm-required {
+    color: #ef4444;
+    margin-left: 4px;
+    font-weight: 700;
+}
+
+.ewm-field-input {
+    width: 100%;
+    padding: 16px 20px;
+    border: 2px solid var(--ewm-border-color);
+    border-radius: 12px;
+    font-size: 16px;
+    transition: var(--ewm-transition-smooth);
+    box-sizing: border-box;
+    font-family: inherit;
+    background: var(--ewm-surface);
+    color: var(--ewm-text-primary);
+    line-height: 1.5;
+}
+
+.ewm-field-input::placeholder {
+    color: var(--ewm-text-muted);
+    opacity: 1;
+}
+
+.ewm-field-input:focus {
+    outline: none;
+    border-color: var(--ewm-border-focus);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    transform: translateY(-1px);
+}
+
+.ewm-field-input.ewm-error {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.ewm-field-error {
+    color: #ef4444;
+    font-size: 12px;
+    margin-top: 6px;
+    display: none;
+    font-weight: 500;
+}
+
+.ewm-field-error.visible {
+    display: block;
+    animation: ewmErrorSlide 0.3s ease;
+}
+
+@keyframes ewmErrorSlide {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ==========================================================================
+   Options Groups (Radio/Checkbox) - Modern Selection
+   ========================================================================== */
+
+.ewm-options-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.ewm-option-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 16px 20px;
+    border: 2px solid var(--ewm-border-color);
+    border-radius: 12px;
+    transition: var(--ewm-transition-smooth);
+    background: var(--ewm-surface);
+    position: relative;
+    font-weight: 500;
+}
+
+.ewm-option-label:hover {
+    border-color: var(--ewm-border-focus);
+    background: rgba(59, 130, 246, 0.02);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.ewm-option-label input {
+    margin-right: 12px;
+    width: 18px;
+    height: 18px;
+    accent-color: var(--ewm-primary-color, #3b82f6);
+}
+
+.ewm-option-label input:checked + span {
+    color: var(--ewm-primary-color, #3b82f6);
+    font-weight: 600;
+}
+
+/* ==========================================================================
+   Navigation Buttons - Modern Button Design
+   ========================================================================== */
+
+.ewm-step-navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-top: clamp(24px, 5vw, 40px);
+    padding-top: 24px;
+    border-top: 1px solid var(--ewm-border-color);
+}
+
+.ewm-btn {
+    padding: 14px 28px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--ewm-transition-smooth);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 140px;
+    position: relative;
+    overflow: hidden;
+    letter-spacing: 0.025em;
+}
+
+.ewm-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.ewm-btn:hover::before {
+    left: 100%;
+}
+
+.ewm-btn-primary {
+    background: linear-gradient(135deg, var(--ewm-primary-color, #3b82f6), var(--ewm-primary-color, #1d4ed8));
+    color: white;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.ewm-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+}
+
+.ewm-btn-secondary {
+    background: var(--ewm-surface-elevated);
+    color: var(--ewm-text-secondary);
+    border: 2px solid var(--ewm-border-color);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.ewm-btn-secondary:hover {
+    background: var(--ewm-surface);
+    border-color: var(--ewm-border-focus);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.ewm-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.ewm-btn:active {
+    transform: translateY(0) !important;
+}
+
+/* ==========================================================================
+   Success Step - Celebration Design
+   ========================================================================== */
+
+.ewm-success-step {
+    text-align: center;
+    padding: clamp(32px, 6vw, 48px) var(--ewm-modal-padding);
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    border-radius: var(--ewm-modal-border-radius);
+    margin: -var(--ewm-modal-padding);
+    margin-top: 0;
+}
+
+.ewm-success-content h3 {
+    color: #16a34a;
+    font-size: clamp(24px, 5vw, 32px);
+    margin: 0 0 16px;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+}
+
+.ewm-success-content h3::before {
+    content: '🎉';
+    display: block;
+    font-size: clamp(32px, 6vw, 48px);
+    margin-bottom: 12px;
+    animation: ewmBounce 1s ease-in-out;
+}
+
+.ewm-success-content p {
+    color: var(--ewm-text-secondary);
+    font-size: 16px;
+    line-height: 1.6;
+    margin: 0;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+@keyframes ewmBounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-10px);
+    }
+    60% {
+        transform: translateY(-5px);
+    }
+}
+
+/* ==========================================================================
+   Loading States - Modern Spinner
+   ========================================================================== */
+
+.ewm-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 20px;
+    gap: 12px;
+    flex-direction: column;
+}
+
+.ewm-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--ewm-border-color);
+    border-top: 3px solid var(--ewm-primary-color, #3b82f6);
+    border-radius: 50%;
+    animation: ewmSpin 1s linear infinite;
+}
+
+.ewm-loading p {
+    color: var(--ewm-text-secondary);
+    font-size: 14px;
+    margin: 0;
+    font-weight: 500;
+}
+
+@keyframes ewmSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ==========================================================================
+   Responsive Design - Mobile-First Approach
+   ========================================================================== */
+
+@media (max-width: 768px) {
+    :root {
+        --ewm-modal-padding: 16px;
+        --ewm-modal-border-radius: 12px;
+    }
+
+    .ewm-modal-container {
+        padding: 12px;
+        align-items: flex-end;
+    }
+
+    .ewm-modal-content {
+        max-height: 95vh;
+        max-width: 100%;
+        border-radius: var(--ewm-modal-border-radius) var(--ewm-modal-border-radius) 0 0;
+        margin-bottom: 0;
+    }
+
+    .ewm-modal-body {
+        padding: calc(var(--ewm-modal-padding) + 16px) var(--ewm-modal-padding) var(--ewm-modal-padding);
+        max-height: calc(95vh - 60px);
+    }
+
+    .ewm-step-navigation {
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 24px;
+        padding-top: 20px;
+    }
+
+    .ewm-btn {
+        width: 100%;
+        min-width: unset;
+        padding: 16px 24px;
+    }
+
+    .ewm-progress-steps {
+        margin-top: 16px;
+        padding: 0 8px;
+    }
+
+    .ewm-progress-step {
+        width: 32px;
+        height: 32px;
+        font-size: 12px;
+    }
+
+    .ewm-field-input {
+        padding: 14px 16px;
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+
+    .ewm-step-fields {
+        gap: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .ewm-modal-container {
+        padding: 8px;
+    }
+
+    .ewm-progress-steps {
+        padding: 0 4px;
+    }
+
+    .ewm-progress-step {
+        width: 28px;
+        height: 28px;
+        font-size: 11px;
+    }
+
+    .ewm-btn {
+        padding: 14px 20px;
+        font-size: 15px;
+    }
+}
+
+/* ==========================================================================
+   Accessibility - Enhanced Focus States
+   ========================================================================== */
+
+.ewm-modal[aria-hidden="true"] {
+    display: none !important;
+}
+
+.ewm-field-input:focus,
+.ewm-btn:focus,
+.ewm-modal-close:focus,
+.ewm-option-label:focus-within {
+    outline: 2px solid var(--ewm-border-focus);
+    outline-offset: 2px;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+    .ewm-modal,
+    .ewm-modal-content,
+    .ewm-btn,
+    .ewm-field-input,
+    .ewm-progress-fill,
+    .ewm-progress-step {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .ewm-modal-content {
+        border: 2px solid;
+    }
+
+    .ewm-field-input {
+        border-width: 2px;
+    }
+
+    .ewm-btn {
+        border: 2px solid;
+    }
+}
+
+/* ==========================================================================
+   Block Placeholder Styles - Modern Editor Preview
+   ========================================================================== */
+
+.ewm-block-placeholder {
+    border: 2px dashed var(--ewm-border-color);
+    border-radius: var(--ewm-modal-border-radius);
+    padding: clamp(24px, 5vw, 40px);
+    text-align: center;
+    background: var(--ewm-surface-elevated);
+    margin: 20px 0;
+    transition: var(--ewm-transition-smooth);
+}
+
+.ewm-block-placeholder:hover {
+    border-color: var(--ewm-border-focus);
+    background: rgba(59, 130, 246, 0.02);
+}
+
+.ewm-placeholder-content {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.ewm-placeholder-icon {
+    font-size: clamp(32px, 6vw, 48px);
+    display: block;
+    margin-bottom: 16px;
+    opacity: 0.8;
+}
+
+.ewm-placeholder-content h4 {
+    color: var(--ewm-text-primary);
+    margin: 0 0 12px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.ewm-placeholder-content p {
+    color: var(--ewm-text-secondary);
+    margin: 6px 0;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.ewm-placeholder-content code {
+    background: var(--ewm-surface);
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+    font-size: 12px;
+    color: var(--ewm-text-primary);
+    border: 1px solid var(--ewm-border-color);
+}
+
+/* ==========================================================================
+   Dark Mode Support
+   ========================================================================== */
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --ewm-modal-backdrop: rgba(0, 0, 0, 0.8);
+        --ewm-text-primary: #f1f5f9;
+        --ewm-text-secondary: #cbd5e1;
+        --ewm-text-muted: #94a3b8;
+        --ewm-border-color: #334155;
+        --ewm-surface: #1e293b;
+        --ewm-surface-elevated: #334155;
+    }
+
+    .ewm-modal-close:hover {
+        background: #374151;
+        border-color: #4b5563;
+        color: #f87171;
+    }
+
+    .ewm-success-step {
+        background: linear-gradient(135deg, #064e3b, #065f46);
+    }
+
+    .ewm-success-content h3 {
+        color: #34d399;
+    }
+}
+
+/* ==========================================================================
+   Print Styles
+   ========================================================================== */
+
+@media print {
+    .ewm-modal {
+        display: none !important;
+    }
+}
+
+/* ==========================================================================
+   Performance Optimizations
+   ========================================================================== */
+
+.ewm-modal-content {
+    contain: layout style paint;
+    will-change: transform, opacity;
+}
+
+.ewm-progress-fill {
+    will-change: width;
+}
+
+.ewm-btn {
+    will-change: transform;
+}
+
+/* ==========================================================================
+   Custom Scrollbar for Modal Body
+   ========================================================================== */
+
+.ewm-modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.ewm-modal-body::-webkit-scrollbar-track {
+    background: var(--ewm-surface-elevated);
+    border-radius: 3px;
+}
+
+.ewm-modal-body::-webkit-scrollbar-thumb {
+    background: var(--ewm-border-color);
+    border-radius: 3px;
+}
+
+.ewm-modal-body::-webkit-scrollbar-thumb:hover {
+    background: var(--ewm-text-muted);
+}
