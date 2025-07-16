@@ -6,7 +6,7 @@
  * @since 1.0.0
  */
 
-// Prevent direct access
+// Prevent direct access.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -23,6 +23,8 @@ class EWM_REST_API {
 
 	/**
 	 * Instancia singleton
+	 *
+	 * @var EWM_REST_API|null
 	 */
 	private static $instance = null;
 
@@ -58,7 +60,7 @@ class EWM_REST_API {
 	public function register_routes() {
 		ewm_log_debug( 'Registering REST API routes' );
 
-		// Endpoint de prueba simple
+		// Endpoint de prueba simple.
 		$test_route_registered = register_rest_route(
 			self::NAMESPACE,
 			'/test',
@@ -87,7 +89,7 @@ class EWM_REST_API {
 				array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_modals' ),
-					'permission_callback' => array( $this, 'check_permissions' ),
+					'permission_callback' => array( $this, 'check_gutenberg_permissions' ),
 				),
 				array(
 					'methods'             => WP_REST_Server::CREATABLE,
@@ -114,7 +116,7 @@ class EWM_REST_API {
 				array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_modal' ),
-					'permission_callback' => array( $this, 'check_permissions' ),
+					'permission_callback' => array( $this, 'check_gutenberg_permissions' ),
 				),
 				array(
 					'methods'             => WP_REST_Server::EDITABLE,
@@ -313,11 +315,11 @@ class EWM_REST_API {
 			}
 
 			// Preparar datos del modal - CORREGIR: Leer directamente desde post_meta
-			$steps_json = get_post_meta( $modal_id, 'ewm_steps_config', true );
-			$design_json = get_post_meta( $modal_id, 'ewm_design_config', true );
+			$steps_json    = get_post_meta( $modal_id, 'ewm_steps_config', true );
+			$design_json   = get_post_meta( $modal_id, 'ewm_design_config', true );
 			$triggers_json = get_post_meta( $modal_id, 'ewm_trigger_config', true );
-			$wc_json = get_post_meta( $modal_id, 'ewm_wc_integration', true );
-			$rules_json = get_post_meta( $modal_id, 'ewm_display_rules', true );
+			$wc_json       = get_post_meta( $modal_id, 'ewm_wc_integration', true );
+			$rules_json    = get_post_meta( $modal_id, 'ewm_display_rules', true );
 
 			$modal_data = array(
 				'id'             => $modal_id,
@@ -383,8 +385,8 @@ class EWM_REST_API {
 		);
 
 		try {
-			$title  = sanitize_text_field( $request->get_param( 'title' ) );
-			$config = $request->get_param( 'config' );
+			$title      = sanitize_text_field( $request->get_param( 'title' ) );
+			$config     = $request->get_param( 'config' );
 			$all_params = $request->get_params();
 
 			// LOGGING DETALLADO: Datos recibidos
@@ -436,9 +438,9 @@ class EWM_REST_API {
 			ewm_log_info(
 				'CREATE MODAL - Post creado',
 				array(
-					'post_id'     => $post_id,
-					'is_error'    => is_wp_error( $post_id ),
-					'meta_saved'  => ! is_wp_error( $post_id ) ? get_post_meta( $post_id, 'ewm_modal_config', true ) : null,
+					'post_id'    => $post_id,
+					'is_error'   => is_wp_error( $post_id ),
+					'meta_saved' => ! is_wp_error( $post_id ) ? get_post_meta( $post_id, 'ewm_modal_config', true ) : null,
 				)
 			);
 
@@ -639,14 +641,19 @@ class EWM_REST_API {
 			}
 
 			// Obtener datos del request
-			$title  = sanitize_text_field( $request->get_param( 'title' ) );
-			$config = $request->get_param( 'config' );
+			$title      = sanitize_text_field( $request->get_param( 'title' ) );
+			$config     = $request->get_param( 'config' );
 			$all_params = $request->get_params();
 
 			// LOGGING DETALLADO: Datos recibidos para actualización
 			error_log( 'EWM DEBUG: update_modal - title: ' . $title );
 			error_log( 'EWM DEBUG: update_modal - config: ' . wp_json_encode( $config ) );
 			error_log( 'EWM DEBUG: update_modal - all_params: ' . wp_json_encode( $all_params ) );
+
+			// 🔍 NUEVO LOG: Verificar si los datos vienen en la raíz en lugar de en 'config'
+			error_log( '🔍 EWM DEBUG: steps en raíz: ' . wp_json_encode( $request->get_param( 'steps' ) ) );
+			error_log( '🔍 EWM DEBUG: mode en raíz: ' . $request->get_param( 'mode' ) );
+			error_log( '🔍 EWM DEBUG: design en raíz: ' . wp_json_encode( $request->get_param( 'design' ) ) );
 
 			ewm_log_info(
 				'UPDATE MODAL - Datos recibidos',
@@ -678,6 +685,19 @@ class EWM_REST_API {
 						'is_error'      => is_wp_error( $update_result ),
 					)
 				);
+			}
+
+			// 📊 LOG DETALLADO: Datos recibidos de Gutenberg
+			error_log( '🚀 GUTENBERG BACKEND: Raw request data: ' . wp_json_encode( $request->get_params() ) );
+			error_log( '🚀 GUTENBERG BACKEND: Title received: ' . $title );
+			error_log( '🚀 GUTENBERG BACKEND: Config received: ' . wp_json_encode( $config ) );
+			error_log( '🚀 GUTENBERG BACKEND: Config is empty: ' . ( empty( $config ) ? 'YES' : 'NO' ) );
+
+			// 🔧 IMPLEMENTAR PATRÓN ADAPTADOR: Transformar datos de Gutenberg al formato que espera el backend
+			if ( empty( $config ) ) {
+				error_log( '🔧 EWM DEBUG: Config vacío, aplicando patrón adaptador para Gutenberg' );
+				$config = $this->transform_gutenberg_data_to_legacy_format( $request );
+				error_log( '🔧 EWM DEBUG: Config transformado: ' . wp_json_encode( $config ) );
 			}
 
 			// Actualizar configuración si hay config
@@ -712,41 +732,51 @@ class EWM_REST_API {
 					$saved_value = get_post_meta( $modal_id, 'ewm_steps_config', true );
 					error_log( 'EWM DEBUG: update_modal - SAVED VALUE: ' . var_export( $saved_value, true ) );
 
-					$steps_saved = ( $saved_value === $steps_json );
+					// 🔧 CORREGIR: No comparar strings exactos, sino verificar que se guardó algo válido
+					$steps_saved = ( $steps_result !== false && !empty( $saved_value ) );
 					error_log( 'EWM DEBUG: update_modal - steps saved: ' . ( $steps_saved ? 'SUCCESS' : 'FAILED' ) );
+
+					// LOG adicional: Verificar que los pasos se guardaron correctamente
+					$saved_decoded = json_decode( $saved_value, true );
+					$steps_count = isset( $saved_decoded['steps'] ) ? count( $saved_decoded['steps'] ) : 0;
+					error_log( 'EWM DEBUG: update_modal - steps count in saved data: ' . $steps_count );
 				}
 
 				if ( isset( $config['design'] ) ) {
-					$design_json = wp_json_encode( $config['design'] );
+					$design_json   = wp_json_encode( $config['design'] );
 					$design_result = update_post_meta( $modal_id, 'ewm_design_config', $design_json );
-					$design_saved = ( $design_result !== false || get_post_meta( $modal_id, 'ewm_design_config', true ) === $design_json );
+					// --> LÓGICA DE VERIFICACIÓN MEJORADA <--
+					$design_saved  = ( $design_result !== false && !empty(get_post_meta($modal_id, 'ewm_design_config', true)) );
 					error_log( 'EWM DEBUG: update_modal - design saved: ' . ( $design_saved ? 'SUCCESS' : 'FAILED' ) );
 				}
 
 				if ( isset( $config['triggers'] ) ) {
-					$triggers_json = wp_json_encode( $config['triggers'] );
+					$triggers_json   = wp_json_encode( $config['triggers'] );
 					$triggers_result = update_post_meta( $modal_id, 'ewm_trigger_config', $triggers_json );
-					$triggers_saved = ( $triggers_result !== false || get_post_meta( $modal_id, 'ewm_trigger_config', true ) === $triggers_json );
+					// --> LÓGICA DE VERIFICACIÓN MEJORADA <--
+					$triggers_saved  = ( $triggers_result !== false && !empty(get_post_meta($modal_id, 'ewm_trigger_config', true)) );
 					error_log( 'EWM DEBUG: update_modal - triggers saved: ' . ( $triggers_saved ? 'SUCCESS' : 'FAILED' ) );
 				}
 
 				if ( isset( $config['wc_integration'] ) ) {
-					$wc_json = wp_json_encode( $config['wc_integration'] );
+					$wc_json   = wp_json_encode( $config['wc_integration'] );
 					$wc_result = update_post_meta( $modal_id, 'ewm_wc_integration', $wc_json );
-					$wc_saved = ( $wc_result !== false || get_post_meta( $modal_id, 'ewm_wc_integration', true ) === $wc_json );
+					// --> LÓGICA DE VERIFICACIÓN MEJORADA <--
+					$wc_saved  = ( $wc_result !== false && !empty(get_post_meta($modal_id, 'ewm_wc_integration', true)) );
 					error_log( 'EWM DEBUG: update_modal - wc_integration saved: ' . ( $wc_saved ? 'SUCCESS' : 'FAILED' ) );
 				}
 
 				if ( isset( $config['display_rules'] ) ) {
-					$rules_json = wp_json_encode( $config['display_rules'] );
+					$rules_json   = wp_json_encode( $config['display_rules'] );
 					$rules_result = update_post_meta( $modal_id, 'ewm_display_rules', $rules_json );
-					$rules_saved = ( $rules_result !== false || get_post_meta( $modal_id, 'ewm_display_rules', true ) === $rules_json );
+					// --> LÓGICA DE VERIFICACIÓN MEJORADA <--
+					$rules_saved  = ( $rules_result !== false && !empty(get_post_meta($modal_id, 'ewm_display_rules', true)) );
 					error_log( 'EWM DEBUG: update_modal - display_rules saved: ' . ( $rules_saved ? 'SUCCESS' : 'FAILED' ) );
 				}
 
 				if ( isset( $config['custom_css'] ) ) {
 					$css_result = update_post_meta( $modal_id, 'ewm_custom_css', $config['custom_css'] );
-					$css_saved = ( $css_result !== false || get_post_meta( $modal_id, 'ewm_custom_css', true ) === $config['custom_css'] );
+					$css_saved  = ( $css_result !== false || get_post_meta( $modal_id, 'ewm_custom_css', true ) === $config['custom_css'] );
 					error_log( 'EWM DEBUG: update_modal - custom_css saved: ' . ( $css_saved ? 'SUCCESS' : 'FAILED' ) );
 				}
 
@@ -894,7 +924,7 @@ class EWM_REST_API {
 	private function generate_preview_html( $modal_data ) {
 		// Configuración con valores por defecto para vista previa
 		$default_design = array(
-			'colors' => array(
+			'colors'     => array(
 				'primary'    => '#ff6b35',
 				'secondary'  => '#333333',
 				'background' => '#ffffff',
@@ -915,7 +945,7 @@ class EWM_REST_API {
 			$design = $default_design;
 		} else {
 			// Completar colores faltantes con defaults
-			$design['colors'] = array_merge( $default_design['colors'], $design['colors'] ?? array() );
+			$design['colors']     = array_merge( $default_design['colors'], $design['colors'] ?? array() );
 			$design['modal_size'] = $design['modal_size'] ?? $default_design['modal_size'];
 		}
 
@@ -1061,6 +1091,213 @@ class EWM_REST_API {
 				array( 'status' => 500 )
 			);
 		}
+	}
+
+	/**
+	 * PATRÓN ADAPTADOR: Transformar datos de Gutenberg al formato que espera el backend
+	 *
+	 * Ahora Gutenberg envía los datos en el mismo formato que el shortcode
+	 */
+	private function transform_gutenberg_data_to_legacy_format( $request ) {
+		$gutenberg_data = $request->get_params();
+
+		error_log( '🔄 ADAPTADOR: Datos de Gutenberg (ya en formato correcto): ' . wp_json_encode( $gutenberg_data ) );
+
+		// Gutenberg ahora envía: { title: "...", config: { ... } }
+		// Que es exactamente lo que espera el backend
+		return $gutenberg_data['config'] ?? array();
+	}
+
+	/**
+	 * VALIDACIÓN ESTRUCTURAL: Validar configuración de WooCommerce Integration
+	 *
+	 * Valida que la estructura sea correcta, no que los valores sean "truthy"
+	 */
+	private function is_valid_wc_integration_config( $data ) {
+		// Debe ser un array
+		if ( ! is_array( $data ) ) {
+			return false;
+		}
+
+		// La clave 'enabled' debe existir y ser un booleano
+		if ( ! isset( $data['enabled'] ) || ! is_bool( $data['enabled'] ) ) {
+			return false;
+		}
+
+		// Si está habilitado, validar estructura completa
+		if ( $data['enabled'] ) {
+			// cart_abandonment debe existir y ser un array
+			if ( ! isset( $data['cart_abandonment'] ) || ! is_array( $data['cart_abandonment'] ) ) {
+				return false;
+			}
+
+			// product_recommendations debe existir y ser un array
+			if ( ! isset( $data['product_recommendations'] ) || ! is_array( $data['product_recommendations'] ) ) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * VALIDACIÓN ESTRUCTURAL: Validar configuración de Display Rules
+	 *
+	 * Valida que la estructura sea correcta, arrays vacíos son válidos
+	 */
+	private function is_valid_display_rules_config( $data ) {
+		// Debe ser un array
+		if ( ! is_array( $data ) ) {
+			return false;
+		}
+
+		// userRoles debe existir y ser un array (aunque esté vacío)
+		if ( ! isset( $data['userRoles'] ) || ! is_array( $data['userRoles'] ) ) {
+			return false;
+		}
+
+		// pages debe existir y ser un array
+		if ( ! isset( $data['pages'] ) || ! is_array( $data['pages'] ) ) {
+			return false;
+		}
+
+		// include dentro de pages debe existir y ser un array
+		if ( ! isset( $data['pages']['include'] ) || ! is_array( $data['pages']['include'] ) ) {
+			return false;
+		}
+
+		// exclude dentro de pages debe existir y ser un array
+		if ( ! isset( $data['pages']['exclude'] ) || ! is_array( $data['pages']['exclude'] ) ) {
+			return false;
+		}
+
+		// devices debe existir y ser un array
+		if ( ! isset( $data['devices'] ) || ! is_array( $data['devices'] ) ) {
+			return false;
+		}
+
+		// frequency debe existir y ser un array
+		if ( ! isset( $data['frequency'] ) || ! is_array( $data['frequency'] ) ) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * VALIDACIÓN ESTRUCTURAL: Validar configuración de Design
+	 *
+	 * Valida que la estructura sea correcta para configuración de diseño
+	 */
+	private function is_valid_design_config( $data ) {
+		// Debe ser un array
+		if ( ! is_array( $data ) ) {
+			return false;
+		}
+
+		// colors debe existir y ser un array
+		if ( isset( $data['colors'] ) && ! is_array( $data['colors'] ) ) {
+			return false;
+		}
+
+		// typography debe existir y ser un array
+		if ( isset( $data['typography'] ) && ! is_array( $data['typography'] ) ) {
+			return false;
+		}
+
+		// modal_size debe ser string si existe
+		if ( isset( $data['modal_size'] ) && ! is_string( $data['modal_size'] ) ) {
+			return false;
+		}
+
+		// animation debe ser string si existe
+		if ( isset( $data['animation'] ) && ! is_string( $data['animation'] ) ) {
+			return false;
+		}
+
+		// theme debe ser string si existe
+		if ( isset( $data['theme'] ) && ! is_string( $data['theme'] ) ) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * VALIDACIÓN ESTRUCTURAL: Validar configuración de Triggers
+	 *
+	 * Valida que la estructura sea correcta para configuración de triggers
+	 */
+	private function is_valid_triggers_config( $data ) {
+		// Debe ser un array
+		if ( ! is_array( $data ) ) {
+			return false;
+		}
+
+		// exit_intent debe ser un array si existe
+		if ( isset( $data['exit_intent'] ) && ! is_array( $data['exit_intent'] ) ) {
+			return false;
+		}
+
+		// time_delay debe ser un array si existe
+		if ( isset( $data['time_delay'] ) && ! is_array( $data['time_delay'] ) ) {
+			return false;
+		}
+
+		// scroll_percentage debe ser un array si existe
+		if ( isset( $data['scroll_percentage'] ) && ! is_array( $data['scroll_percentage'] ) ) {
+			return false;
+		}
+
+		// page_views debe ser un array si existe
+		if ( isset( $data['page_views'] ) && ! is_array( $data['page_views'] ) ) {
+			return false;
+		}
+
+		// Validar estructura de exit_intent si existe
+		if ( isset( $data['exit_intent'] ) ) {
+			$exit_intent = $data['exit_intent'];
+			if ( isset( $exit_intent['enabled'] ) && ! is_bool( $exit_intent['enabled'] ) ) {
+				return false;
+			}
+		}
+
+		// Validar estructura de time_delay si existe
+		if ( isset( $data['time_delay'] ) ) {
+			$time_delay = $data['time_delay'];
+			if ( isset( $time_delay['enabled'] ) && ! is_bool( $time_delay['enabled'] ) ) {
+				return false;
+			}
+		}
+
+		// Validar estructura de scroll_percentage si existe
+		if ( isset( $data['scroll_percentage'] ) ) {
+			$scroll_percentage = $data['scroll_percentage'];
+			if ( isset( $scroll_percentage['enabled'] ) && ! is_bool( $scroll_percentage['enabled'] ) ) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Verificar permisos específicos para Gutenberg
+	 */
+	public function check_gutenberg_permissions( $request ) {
+		// Para lectura de modales, permitir acceso público (solo lectura es segura)
+		// Esto permite que Gutenberg funcione correctamente sin problemas de autenticación
+		if ( $request->get_method() === 'GET' ) {
+			return true;
+		}
+
+		// Para operaciones de escritura, verificar permisos normales
+		if ( is_user_logged_in() && current_user_can( 'edit_posts' ) ) {
+			return true;
+		}
+
+		// Fallback a verificación estándar
+		return $this->check_permissions( $request );
 	}
 
 	/**

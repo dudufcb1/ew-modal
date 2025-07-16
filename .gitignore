@@ -1,6 +1,8 @@
 # =============================================================================
 # EWM Modal CTA Plugin - .gitignore
 # =============================================================================
+.augment
+.augment/
 
 # WordPress Core Files (si se desarrolla dentro de WordPress)
 wp-config.php
@@ -94,3 +96,4 @@ Thumbs.db
 ewm-modal-cta_code.txt
 *.local
 *.dev
+ewm-modal-cta_consultant_history.json

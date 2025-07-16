@@ -59,20 +59,18 @@ class EWM_Logger_Manager {
 	 */
 	private function load_config() {
 		$defaults = array(
-			'enabled'             => true,  // FORZADO: Habilitado para debugging
-			'level'               => 'debug',  // FORZADO: Nivel debug para máximo detalle
-			'frontend_enabled'    => true,  // FORZADO: También frontend para debugging completo
+			'enabled'             => false,  // Deshabilitado por defecto para producción
+			'level'               => 'info',  // Nivel info por defecto (no debug)
+			'frontend_enabled'    => false,  // Frontend deshabilitado por defecto
 			'api_logging'         => true,
 			'form_logging'        => true,
-			'performance_logging' => true,  // También performance para debugging
+			'performance_logging' => false,  // Performance deshabilitado por defecto
 			'max_log_size'        => '10MB',
 			'retention_days'      => 30,
 		);
 
 		$saved_config = get_option( 'ewm_logging_config', array() );
-		// TEMPORAL: Forzar configuración para debugging
-		$this->config = $defaults;
-		update_option( 'ewm_logging_config', $this->config );
+		$this->config = wp_parse_args( $saved_config, $defaults );
 	}
 
 	/**

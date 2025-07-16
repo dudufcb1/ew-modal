@@ -1,9 +1,668 @@
 /**
- * The following styles get applied inside the editor only.
- *
- * Replace them with your own styles or remove the file completely.
+ * Estilos específicos para el editor de Gutenberg del bloque EWM Modal CTA
+ * Estos estilos solo se aplican en el editor, no en el frontend
  */
 
-.wp-block-create-block-ewm-modal-cta {
-	border: 1px dotted #f00;
+/* Contenedor principal del bloque en el editor */
+.wp-block-ewm-modal-cta {
+	/* Aislamiento de estilos del editor */
+	.ewm-modal-block-editor-wrapper {
+		border: 2px solid #0073aa;
+		border-radius: 12px;
+		padding: 24px;
+		background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+		margin: 16px 0;
+		box-shadow: 0 4px 12px rgba(0, 115, 170, 0.1);
+		position: relative;
+
+		/* Evitar que los estilos del editor contaminen nuestro bloque */
+		box-sizing: border-box;
+
+		/* Indicador visual de que es un bloque EWM */
+		&::before {
+			content: "EWM Modal CTA";
+			position: absolute;
+			top: -12px;
+			left: 16px;
+			background: #0073aa;
+			color: white;
+			padding: 4px 12px;
+			border-radius: 6px;
+			font-size: 11px;
+			font-weight: 600;
+			text-transform: uppercase;
+			letter-spacing: 0.5px;
+		}
+
+		.components-card {
+			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+			border: 1px solid #e1e5e9;
+			border-radius: 8px;
+			overflow: hidden;
+			background: #ffffff;
+
+			.components-card-header {
+				background: linear-gradient(135deg, #0073aa 0%, #005a87 100%);
+				border-bottom: none;
+				padding: 16px 20px;
+
+				h3 {
+					margin: 0;
+					color: #ffffff;
+					font-size: 16px;
+					font-weight: 600;
+					text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+				}
+
+				/* Icono del modal */
+				&::before {
+					content: "🎯";
+					margin-right: 8px;
+					font-size: 18px;
+				}
+			}
+
+			.components-card-body {
+				padding: 20px;
+				background: #ffffff;
+
+				.components-notice {
+					margin: 12px 0;
+					border-radius: 6px;
+
+					&.is-success {
+						border-left-color: #00a32a;
+						background: #f0f9f0;
+					}
+
+					&.is-error {
+						border-left-color: #cc1818;
+						background: #fef7f7;
+					}
+				}
+
+				.ewm-modal-preview {
+					margin: 16px 0;
+					position: relative;
+
+					/* Indicador de preview */
+					&::before {
+						content: "👁️ Preview en Vivo";
+						position: absolute;
+						top: -12px;
+						right: 16px;
+						background: #0073aa;
+						color: white;
+						padding: 6px 12px;
+						border-radius: 6px;
+						font-size: 11px;
+						font-weight: 600;
+						z-index: 10;
+						box-shadow: 0 2px 4px rgba(0, 115, 170, 0.3);
+					}
+
+					/* Overlay simulado - Adaptado para usar clases del frontend */
+					.ewm-preview-overlay {
+						background: rgba(0, 0, 0, 0.6);
+						border-radius: 8px;
+						padding: 40px 20px;
+						position: relative;
+						min-height: 400px;
+						display: flex;
+						align-items: center;
+						justify-content: center;
+					}
+
+					/* Modal simulado - Usa clases del frontend con adaptaciones para el editor */
+					.ewm-modal-container {
+						/* Adaptaciones específicas para el preview del editor */
+						position: relative !important;
+						margin: 0 !important;
+						padding: 0 !important;
+						max-width: 500px !important;
+						width: 100% !important;
+
+						/* Tamaños específicos del editor */
+						&.ewm-size-small { max-width: 400px !important; }
+						&.ewm-size-medium { max-width: 500px !important; }
+						&.ewm-size-large { max-width: 600px !important; }
+						&.ewm-size-fullscreen { max-width: 90% !important; }
+					}
+
+					/* Header del modal */
+					.ewm-preview-header {
+						display: flex;
+						justify-content: space-between;
+						align-items: center;
+						padding: 20px 24px 16px;
+						border-bottom: 1px solid #e1e5e9;
+
+						.ewm-preview-title h3 {
+							margin: 0;
+							color: var(--ewm-primary-color, #0073aa);
+							font-size: 18px;
+							font-weight: 700;
+						}
+
+						.ewm-preview-close {
+							background: none;
+							border: none;
+							font-size: 24px;
+							color: #666;
+							cursor: pointer;
+							padding: 4px;
+							border-radius: 4px;
+							transition: all 0.2s ease;
+
+							&:hover {
+								background: #f0f0f0;
+								color: #333;
+							}
+						}
+					}
+
+					/* Barra de progreso */
+					.ewm-preview-progress-container {
+						padding: 16px 24px;
+						background: #f8f9fa;
+						border-bottom: 1px solid #e1e5e9;
+
+						.ewm-progress-label {
+							display: flex;
+							justify-content: space-between;
+							margin-bottom: 8px;
+							font-size: 12px;
+							color: #666;
+							font-weight: 500;
+						}
+
+						.ewm-preview-progress {
+							height: 6px;
+							background: #e1e5e9;
+							border-radius: 3px;
+							overflow: hidden;
+
+							.ewm-progress-fill {
+								height: 100%;
+								background: var(--ewm-primary-color, #0073aa);
+								border-radius: 3px;
+								transition: width 0.3s ease;
+							}
+						}
+
+						&.ewm-progress-dots {
+							.ewm-preview-progress {
+								display: flex;
+								gap: 4px;
+								height: auto;
+								background: none;
+
+								.ewm-progress-fill {
+									width: 8px !important;
+									height: 8px;
+									border-radius: 50%;
+									background: var(--ewm-primary-color, #0073aa);
+								}
+							}
+						}
+					}
+
+					/* Contenido del modal */
+					.ewm-preview-content {
+						padding: 24px;
+					}
+
+					/* Formulario */
+					.ewm-preview-form {
+						.ewm-step-header {
+							margin-bottom: 20px;
+
+							.ewm-step-title {
+								margin: 0 0 8px 0;
+								color: var(--ewm-primary-color, #0073aa);
+								font-size: 20px;
+								font-weight: 700;
+							}
+
+							.ewm-step-content {
+								margin: 0;
+								color: #555;
+								font-size: 14px;
+								line-height: 1.5;
+							}
+						}
+
+						.ewm-form-fields {
+							margin-bottom: 20px;
+						}
+
+						.ewm-preview-field {
+							margin-bottom: 16px;
+
+							.ewm-field-label {
+								display: block;
+								margin-bottom: 6px;
+								font-weight: 600;
+								color: #333;
+								font-size: 14px;
+
+								.ewm-required {
+									color: #d63638;
+									margin-left: 2px;
+								}
+							}
+
+							.ewm-field-input {
+								width: 100%;
+								padding: 10px 12px;
+								border: 2px solid #e1e5e9;
+								border-radius: 6px;
+								font-size: 14px;
+								transition: border-color 0.2s ease;
+
+								&:focus {
+									outline: none;
+									border-color: var(--ewm-primary-color, #0073aa);
+									box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.1);
+								}
+
+								&::placeholder {
+									color: #999;
+								}
+							}
+
+							textarea.ewm-field-input {
+								resize: vertical;
+								min-height: 80px;
+							}
+
+							.ewm-checkbox-group,
+							.ewm-radio-group {
+								display: flex;
+								flex-direction: column;
+								gap: 8px;
+
+								.ewm-checkbox-item,
+								.ewm-radio-item {
+									display: flex;
+									align-items: center;
+									gap: 8px;
+									cursor: pointer;
+
+									input {
+										margin: 0;
+									}
+
+									span {
+										font-size: 14px;
+										color: #333;
+									}
+								}
+							}
+						}
+
+						.ewm-form-info {
+							margin-bottom: 20px;
+							text-align: center;
+
+							.ewm-step-indicator {
+								display: flex;
+								justify-content: center;
+								gap: 6px;
+								margin-bottom: 8px;
+
+								.ewm-step-dot {
+									width: 8px;
+									height: 8px;
+									border-radius: 50%;
+									background: #e0e0e0;
+									transition: background-color 0.2s ease;
+								}
+							}
+
+							.ewm-step-count {
+								color: #666;
+								font-size: 12px;
+							}
+						}
+
+						.ewm-empty-state {
+							text-align: center;
+							padding: 20px;
+							margin-bottom: 20px;
+
+							.ewm-empty-icon {
+								font-size: 32px;
+								margin-bottom: 12px;
+							}
+
+							h4 {
+								margin: 0 0 8px 0;
+								color: #666;
+								font-size: 16px;
+							}
+
+							p {
+								margin: 0;
+								color: #999;
+								font-size: 14px;
+							}
+						}
+					}
+
+					/* Anuncio */
+					.ewm-preview-announcement {
+						text-align: center;
+
+						.ewm-announcement-icon {
+							font-size: 48px;
+							margin-bottom: 16px;
+						}
+
+						h3 {
+							margin: 0 0 12px 0;
+							color: var(--ewm-primary-color, #0073aa);
+							font-size: 24px;
+							font-weight: 700;
+						}
+
+						p {
+							margin: 0 0 24px 0;
+							color: #555;
+							font-size: 16px;
+							line-height: 1.5;
+						}
+					}
+
+					/* Botones */
+					.ewm-form-actions {
+						display: flex;
+						gap: 12px;
+						justify-content: center;
+						flex-wrap: wrap;
+
+						.ewm-preview-button {
+							padding: 12px 24px;
+							border: 2px solid;
+							border-radius: 6px;
+							font-size: 14px;
+							font-weight: 600;
+							cursor: pointer;
+							transition: all 0.2s ease;
+							text-decoration: none;
+
+							&.ewm-btn-primary {
+								background: var(--ewm-primary-color, #0073aa);
+								color: white;
+								border-color: var(--ewm-primary-color, #0073aa);
+
+								&:hover {
+									transform: translateY(-1px);
+									box-shadow: 0 4px 12px rgba(0, 115, 170, 0.3);
+								}
+							}
+
+							&.ewm-btn-secondary {
+								background: transparent;
+								color: var(--ewm-secondary-color, #333);
+								border-color: var(--ewm-secondary-color, #333);
+
+								&:hover {
+									background: var(--ewm-secondary-color, #333);
+									color: white;
+								}
+							}
+						}
+					}
+
+					/* Footer del modal */
+					.ewm-preview-footer {
+						padding: 16px 24px;
+						border-top: 1px solid #e1e5e9;
+						background: #f8f9fa;
+						text-align: center;
+						border-radius: 0 0 12px 12px;
+
+						small {
+							font-size: 12px;
+							color: #666;
+						}
+					}
+				}
+
+				.ewm-color-preview {
+					display: flex;
+					gap: 8px;
+					margin: 10px 0;
+
+					.ewm-color-swatch {
+						width: 20px;
+						height: 20px;
+						border-radius: 3px;
+						border: 1px solid #ddd;
+					}
+				}
+
+				.components-button-group {
+					margin-top: 20px;
+					display: flex;
+					gap: 12px;
+					flex-wrap: wrap;
+
+					.components-button {
+						border-radius: 6px;
+						font-weight: 500;
+						transition: all 0.2s ease;
+
+						&.is-primary {
+							background: linear-gradient(135deg, #0073aa 0%, #005a87 100%);
+							border-color: #0073aa;
+							box-shadow: 0 2px 4px rgba(0, 115, 170, 0.2);
+
+							&:hover {
+								background: linear-gradient(135deg, #005a87 0%, #004a73 100%);
+								transform: translateY(-1px);
+								box-shadow: 0 4px 8px rgba(0, 115, 170, 0.3);
+							}
+						}
+
+						&.is-secondary {
+							border-color: #0073aa;
+							color: #0073aa;
+
+							&:hover {
+								background: rgba(0, 115, 170, 0.05);
+								border-color: #005a87;
+							}
+						}
+					}
+				}
+			}
+		}
+
+		/* Estados del bloque con animaciones */
+		&.ewm-loading {
+			opacity: 0.7;
+			pointer-events: none;
+			position: relative;
+
+			&::after {
+				content: "";
+				position: absolute;
+				top: 50%;
+				left: 50%;
+				width: 24px;
+				height: 24px;
+				margin: -12px 0 0 -12px;
+				border: 3px solid #0073aa;
+				border-top-color: transparent;
+				border-radius: 50%;
+				animation: ewm-spin 1s linear infinite;
+			}
+		}
+
+		&.ewm-error {
+			border-color: #cc1818;
+			background: linear-gradient(135deg, #fef7f7 0%, #ffffff 100%);
+
+			&::before {
+				background: #cc1818;
+			}
+		}
+
+		&.ewm-success {
+			border-color: #00a32a;
+			background: linear-gradient(135deg, #f7fcf7 0%, #ffffff 100%);
+
+			&::before {
+				background: #00a32a;
+			}
+		}
+	}
+
+	/* Placeholder cuando no hay modal seleccionado */
+	.ewm-block-placeholder {
+		text-align: center;
+		padding: 48px 24px;
+		border: 2px dashed #0073aa;
+		border-radius: 12px;
+		background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+		position: relative;
+		transition: all 0.3s ease;
+
+		&:hover {
+			border-color: #005a87;
+			background: linear-gradient(135deg, #f0f8ff 0%, #ffffff 100%);
+			transform: translateY(-2px);
+			box-shadow: 0 8px 24px rgba(0, 115, 170, 0.15);
+		}
+
+		.ewm-placeholder-icon {
+			font-size: 64px;
+			margin-bottom: 20px;
+			opacity: 0.8;
+			animation: ewm-pulse 2s ease-in-out infinite;
+		}
+
+		h3 {
+			margin: 0 0 12px 0;
+			color: #0073aa;
+			font-size: 20px;
+			font-weight: 700;
+		}
+
+		p {
+			margin: 0;
+			color: #666;
+			font-size: 15px;
+			line-height: 1.5;
+		}
+	}
+
+	/* Error state */
+	.ewm-block-error {
+		text-align: center;
+		padding: 20px;
+		border: 2px solid #cc1818;
+		border-radius: 8px;
+		background: #fef7f7;
+
+		.ewm-error-icon {
+			font-size: 32px;
+			margin-bottom: 12px;
+		}
+
+		h4 {
+			margin: 0 0 8px 0;
+			color: #cc1818;
+			font-size: 16px;
+			font-weight: 600;
+		}
+
+		p {
+			margin: 0;
+			color: #666;
+			font-size: 14px;
+		}
+	}
+}
+
+/* Animaciones */
+@keyframes ewm-spin {
+	0% { transform: rotate(0deg); }
+	100% { transform: rotate(360deg); }
+}
+
+@keyframes ewm-pulse {
+	0%, 100% {
+		opacity: 0.8;
+		transform: scale(1);
+	}
+	50% {
+		opacity: 1;
+		transform: scale(1.05);
+	}
+}
+
+@keyframes ewm-modal-appear {
+	0% {
+		opacity: 0;
+		transform: scale(0.8) translateY(-20px);
+	}
+	100% {
+		opacity: 1;
+		transform: scale(1) translateY(0);
+	}
+}
+
+/* Animaciones para feedback visual */
+@keyframes ewm-pulse {
+	0% { opacity: 0.6; transform: scale(0.95); }
+	50% { opacity: 1; transform: scale(1.05); }
+	100% { opacity: 0.8; transform: scale(1); }
+}
+
+@keyframes ewm-highlight {
+	0% { background-color: transparent; }
+	50% { background-color: rgba(0, 163, 42, 0.1); }
+	100% { background-color: transparent; }
+}
+
+/* Estilos para feedback visual en el panel lateral */
+.ewm-field-changed {
+	animation: ewm-highlight 2s ease-in-out;
+	border-left: 3px solid #00a32a;
+	padding-left: 8px;
+	transition: all 0.3s ease;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+	.wp-block-ewm-modal-cta {
+		.ewm-modal-block-editor-wrapper {
+			padding: 16px;
+			margin: 12px 0;
+
+			&::before {
+				font-size: 10px;
+				padding: 3px 8px;
+			}
+		}
+
+		.ewm-block-placeholder {
+			padding: 32px 16px;
+
+			.ewm-placeholder-icon {
+				font-size: 48px;
+			}
+
+			h3 {
+				font-size: 18px;
+			}
+
+			p {
+				font-size: 14px;
+			}
+		}
+	}
 }

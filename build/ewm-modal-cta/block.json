@@ -1,19 +1,198 @@
 {
   "$schema": "https://schemas.wp.org/trunk/block.json",
   "apiVersion": 3,
-  "name": "create-block/ewm-modal-cta",
-  "version": "0.1.0",
-  "title": "Ewm Modal Cta",
+  "name": "ewm/modal-cta",
+  "version": "1.0.0",
+  "title": "Modal CTA Multi-Paso",
   "category": "widgets",
-  "icon": "smiley",
-  "description": "Example block scaffolded with Create Block tool.",
-  "example": {},
+  "icon": "admin-page",
+  "description": "Crea modales interactivos de captura de leads con formularios multi-paso. Sistema unificado con auto-generación de shortcodes.",
+  "keywords": [
+    "modal",
+    "formulario",
+    "lead",
+    "conversion",
+    "multi-paso"
+  ],
+  "attributes": {
+    "modalId": {
+      "type": "string",
+      "default": ""
+    },
+    "autoGenerateShortcode": {
+      "type": "boolean",
+      "default": true
+    },
+    "modalMode": {
+      "type": "string",
+      "default": "formulario",
+      "enum": [
+        "formulario",
+        "anuncio"
+      ]
+    },
+    "triggerType": {
+      "type": "string",
+      "default": "manual",
+      "enum": [
+        "auto",
+        "manual",
+        "exit-intent",
+        "time-delay",
+        "scroll"
+      ]
+    },
+    "triggerDelay": {
+      "type": "number",
+      "default": 5000
+    },
+    "modalSize": {
+      "type": "string",
+      "default": "medium",
+      "enum": [
+        "small",
+        "medium",
+        "large"
+      ]
+    },
+    "animation": {
+      "type": "string",
+      "default": "fade",
+      "enum": [
+        "fade",
+        "slide",
+        "zoom"
+      ]
+    },
+    "primaryColor": {
+      "type": "string",
+      "default": "#ff6b35"
+    },
+    "secondaryColor": {
+      "type": "string",
+      "default": "#333333"
+    },
+    "backgroundColor": {
+      "type": "string",
+      "default": "#ffffff"
+    },
+    "showProgressBar": {
+      "type": "boolean",
+      "default": true
+    },
+    "progressBarStyle": {
+      "type": "string",
+      "default": "line",
+      "enum": [
+        "line",
+        "dots"
+      ]
+    },
+    "enableWooCommerce": {
+      "type": "boolean",
+      "default": false
+    },
+    "selectedCoupon": {
+      "type": "number",
+      "default": 0
+    },
+    "enableExitIntent": {
+      "type": "boolean",
+      "default": false
+    },
+    "exitIntentSensitivity": {
+      "type": "number",
+      "default": 20
+    },
+    "enableTimeDelay": {
+      "type": "boolean",
+      "default": false
+    },
+    "timeDelay": {
+      "type": "number",
+      "default": 5000
+    },
+    "enableScrollTrigger": {
+      "type": "boolean",
+      "default": false
+    },
+    "scrollPercentage": {
+      "type": "number",
+      "default": 50
+    },
+    "customCSS": {
+      "type": "string",
+      "default": ""
+    },
+    "displayRules": {
+      "type": "object",
+      "default": {
+        "pages": {
+          "include": [],
+          "exclude": []
+        },
+        "userRoles": [],
+        "devices": {
+          "desktop": true,
+          "tablet": true,
+          "mobile": true
+        },
+        "frequency": {
+          "type": "session",
+          "limit": 1
+        }
+      }
+    },
+    "modalConfigData": {
+      "type": "object",
+      "default": {
+        "steps": [],
+        "final_step": {
+          "title": "",
+          "content": ""
+        }
+      }
+    }
+  },
+  "usesContext": [
+    "postId",
+    "postType"
+  ],
+  "providesContext": {
+    "ewm/modalId": "modalId",
+    "ewm/modalMode": "modalMode"
+  },
+  "example": {
+    "attributes": {
+      "modalMode": "formulario",
+      "triggerType": "manual",
+      "modalSize": "medium",
+      "primaryColor": "#ff6b35",
+      "showProgressBar": true
+    }
+  },
   "supports": {
-    "html": false
+    "html": false,
+    "anchor": true,
+    "className": true,
+    "customClassName": true,
+    "spacing": {
+      "margin": true,
+      "padding": true
+    },
+    "color": {
+      "background": true,
+      "text": true,
+      "gradients": true
+    },
+    "typography": {
+      "fontSize": true,
+      "lineHeight": true
+    }
   },
   "textdomain": "ewm-modal-cta",
   "editorScript": "file:./index.js",
   "editorStyle": "file:./index.css",
   "style": "file:./style-index.css",
-  "viewScript": "file:./view.js"
+  "render": "file:./render.php"
 }
