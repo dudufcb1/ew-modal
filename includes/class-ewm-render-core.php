@@ -806,7 +806,7 @@ class EWM_Render_Core {
 			array(
 				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
 				'restUrl' => rest_url( 'ewm/v1/' ),
-				'nonce'   => wp_create_nonce( 'ewm_frontend_nonce' ),
+				'nonce'   => wp_create_nonce( 'wp_rest' ),
 				'debug'   => defined( 'WP_DEBUG' ) && WP_DEBUG,
 				'strings' => array(
 					'loading'                => __( 'Cargando...', 'ewm-modal-cta' ),
