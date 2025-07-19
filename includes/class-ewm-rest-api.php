@@ -1376,20 +1376,37 @@ class EWM_REST_API {
 	 * Procesar envío de formulario
 	 */
 	private function process_form_submission( $modal_id, $form_data, $step_data ) {
-		// Aquí iría la lógica de procesamiento del formulario
-		// Por ahora, simulamos creando un ID de envío
-
-		$submission_id = wp_insert_post(
+		// Usar la función mejorada de EWM_Submission_CPT para crear el envío
+		// Esto asegura que se use la detección avanzada de página de origen
+		
+		ewm_log_debug(
+			'Creating submission via EWM_Submission_CPT::create_submission',
 			array(
-				'post_type'   => 'ewm_submission',
-				'post_status' => 'private',
-				'meta_input'  => array(
-					'modal_id'        => $modal_id,
-					'form_data'       => wp_json_encode( $form_data ),
-					'step_data'       => wp_json_encode( $step_data ),
-					'submission_time' => current_time( 'mysql' ),
-					'ip_address'      => sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ?? '' ) ),
-				),
+				'modal_id'     => $modal_id,
+				'fields_count' => count( $form_data ),
+				'has_steps'    => ! empty( $step_data ),
+			)
+		);
+
+		$submission_id = EWM_Submission_CPT::create_submission( $modal_id, $form_data, $step_data );
+
+		if ( is_wp_error( $submission_id ) ) {
+			ewm_log_error(
+				'Failed to create submission via EWM_Submission_CPT',
+				array(
+					'modal_id' => $modal_id,
+					'error'    => $submission_id->get_error_message(),
+				)
+			);
+			return $submission_id;
+		}
+
+		ewm_log_info(
+			'Submission created successfully via REST API',
+			array(
+				'submission_id' => $submission_id,
+				'modal_id'      => $modal_id,
+				'method'        => 'EWM_Submission_CPT::create_submission',
 			)
 		);
 

@@ -17,6 +17,65 @@
     --ewm-transition: all 0.3s ease;
 }
 
+/* Estilos para columna de página de origen en listado de envíos */
+.ewm-page-origin {
+    font-weight: 500;
+    color: #0073aa;
+}
+
+.column-page_origin {
+    width: 200px;
+}
+
+.column-page_origin a {
+    text-decoration: none;
+    color: #0073aa;
+    display: inline-flex;
+    align-items: center;
+    max-width: 100%;
+}
+
+.column-page_origin a:hover {
+    color: #005a87;
+}
+
+.column-page_origin a:hover .ewm-page-origin {
+    text-decoration: underline;
+}
+
+.column-page_origin .dashicons {
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+.column-page_origin a:hover .dashicons {
+    opacity: 1;
+}
+
+/* Estados de envíos */
+.ewm-status {
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.ewm-status-new {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.ewm-status-processed {
+    background: #e8f5e8;
+    color: #2e7d32;
+}
+
+.ewm-status-archived {
+    background: #fafafa;
+    color: #616161;
+}
+
 /* Contenedor principal del Modal Builder */
 .ewm-modal-builder {
     max-width: 1200px;

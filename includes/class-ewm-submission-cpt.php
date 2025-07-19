@@ -72,6 +72,11 @@ class EWM_Submission_CPT {
 		add_filter( 'manage_' . self::POST_TYPE . '_posts_columns', array( $this, 'add_custom_columns' ) );
 		add_action( 'manage_' . self::POST_TYPE . '_posts_custom_column', array( $this, 'custom_column_content' ), 10, 2 );
 		add_filter( 'post_row_actions', array( $this, 'modify_row_actions' ), 10, 2 );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_styles' ) );
+		add_action( 'admin_init', array( __CLASS__, 'maybe_trigger_title_update' ) );
+		add_filter( 'bulk_actions-edit-' . self::POST_TYPE, array( $this, 'add_bulk_actions' ) );
+		add_filter( 'handle_bulk_actions-edit-' . self::POST_TYPE, array( $this, 'handle_bulk_actions' ), 10, 3 );
+		add_action( 'admin_notices', array( $this, 'show_bulk_action_notices' ) );
 	}
 
 	/**
@@ -425,6 +430,7 @@ class EWM_Submission_CPT {
 		$new_columns                    = array();
 		$new_columns['cb']              = $columns['cb'];
 		$new_columns['title']           = $columns['title'];
+		$new_columns['page_origin']     = __( 'Página de Origen', 'ewm-modal-cta' );
 		$new_columns['modal']           = __( 'Modal', 'ewm-modal-cta' );
 		$new_columns['status']          = __( 'Estado', 'ewm-modal-cta' );
 		$new_columns['submission_date'] = __( 'Fecha del Lead', 'ewm-modal-cta' );
@@ -438,6 +444,19 @@ class EWM_Submission_CPT {
 	 */
 	public function custom_column_content( $column, $post_id ) {
 		switch ( $column ) {
+			case 'page_origin':
+				$referer_url = get_post_meta( $post_id, 'referer_url', true );
+				if ( $referer_url ) {
+					$page_name = self::detect_page_name_from_url( $referer_url );
+					echo '<a href="' . esc_url( $referer_url ) . '" target="_blank" title="' . esc_attr( $referer_url ) . '">';
+					echo '<span class="ewm-page-origin">' . esc_html( $page_name ) . '</span>';
+					echo '<span class="dashicons dashicons-external" style="font-size: 12px; margin-left: 4px;"></span>';
+					echo '</a>';
+				} else {
+					echo '<em style="color: #666;">' . __( 'No disponible', 'ewm-modal-cta' ) . '</em>';
+				}
+				break;
+
 			case 'modal':
 				$modal_id = get_post_meta( $post_id, 'modal_id', true );
 				if ( $modal_id && get_post( $modal_id ) ) {
@@ -507,6 +526,102 @@ class EWM_Submission_CPT {
 	}
 
 	/**
+	 * Encolar estilos de administración
+	 */
+	public function enqueue_admin_styles( $hook ) {
+		$screen = get_current_screen();
+		
+		// Solo cargar en páginas de envíos
+		if ( ! $screen || $screen->post_type !== self::POST_TYPE ) {
+			return;
+		}
+
+		wp_enqueue_style(
+			'ewm-submission-admin',
+			EWM_PLUGIN_URL . 'assets/css/modal-admin.css',
+			array(),
+			EWM_VERSION
+		);
+
+		ewm_log_debug( 'Submission admin styles enqueued', array( 'hook' => $hook, 'screen' => $screen->id ) );
+	}
+
+	/**
+	 * Agregar acciones masivas personalizadas
+	 */
+	public function add_bulk_actions( $bulk_actions ) {
+		$bulk_actions['ewm_update_titles'] = __( 'Actualizar títulos', 'ewm-modal-cta' );
+		return $bulk_actions;
+	}
+
+	/**
+	 * Manejar acciones masivas personalizadas
+	 */
+	public function handle_bulk_actions( $redirect_to, $doaction, $post_ids ) {
+		if ( $doaction === 'ewm_update_titles' ) {
+			$updated_count = 0;
+
+			foreach ( $post_ids as $post_id ) {
+				$referer_url = get_post_meta( $post_id, 'referer_url', true );
+				$submission_time = get_post_meta( $post_id, 'submission_time', true );
+
+				if ( $referer_url ) {
+					$page_name = self::detect_page_name_from_url( $referer_url );
+					
+					if ( $submission_time ) {
+						$formatted_date = date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), strtotime( $submission_time ) );
+					} else {
+						$post_date = get_post_field( 'post_date', $post_id );
+						$formatted_date = date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), strtotime( $post_date ) );
+					}
+
+					$new_title = sprintf(
+						__( 'Lead obtenido de: %1$s %2$s', 'ewm-modal-cta' ),
+						$page_name,
+						$formatted_date
+					);
+
+					$result = wp_update_post(
+						array(
+							'ID'         => $post_id,
+							'post_title' => $new_title,
+						),
+						true
+					);
+
+					if ( ! is_wp_error( $result ) ) {
+						$updated_count++;
+					}
+				}
+			}
+
+			$redirect_to = add_query_arg( 'ewm_updated_titles', $updated_count, $redirect_to );
+		}
+
+		return $redirect_to;
+	}
+
+	/**
+	 * Mostrar mensajes de acciones masivas
+	 */
+	public function show_bulk_action_notices() {
+		if ( ! empty( $_REQUEST['ewm_updated_titles'] ) ) {
+			$count = intval( $_REQUEST['ewm_updated_titles'] );
+			echo '<div class="notice notice-success is-dismissible">';
+			echo '<p>' . sprintf( 
+				_n( 
+					'Se actualizó el título de %s envío.', 
+					'Se actualizaron los títulos de %s envíos.', 
+					$count, 
+					'ewm-modal-cta' 
+				), 
+				number_format_i18n( $count ) 
+			) . '</p>';
+			echo '</div>';
+		}
+	}
+
+	/**
 	 * Crear nuevo lead de formulario
 	 */
 	public static function create_submission( $modal_id, $form_data, $step_data = array() ) {
@@ -515,23 +630,7 @@ class EWM_Submission_CPT {
 		$page_name   = __( 'Página desconocida', 'ewm-modal-cta' );
 
 		if ( $referer_url ) {
-			// Intentar obtener el título de la página de referencia
-			$parsed_url = parse_url( $referer_url );
-			if ( $parsed_url && isset( $parsed_url['path'] ) ) {
-				$path = trim( $parsed_url['path'], '/' );
-				if ( empty( $path ) ) {
-					$page_name = __( 'Página de inicio', 'ewm-modal-cta' );
-				} else {
-					// Buscar página por slug
-					$page = get_page_by_path( $path );
-					if ( $page ) {
-						$page_name = get_the_title( $page->ID );
-					} else {
-						// Si no encuentra la página, usar el path limpio
-						$page_name = ucwords( str_replace( array( '-', '_' ), ' ', $path ) );
-					}
-				}
-			}
+			$page_name = self::detect_page_name_from_url( $referer_url );
 		}
 
 		// Crear título en formato: "Lead obtenido de: nombre_de_la_pagina fecha"
@@ -575,5 +674,315 @@ class EWM_Submission_CPT {
 		}
 
 		return $submission_id;
+	}
+
+	/**
+	 * Detectar nombre de página desde URL con soporte avanzado
+	 * 
+	 * @param string $url URL de referencia
+	 * @return string Nombre de la página detectado
+	 */
+	private static function detect_page_name_from_url( $url ) {
+		$page_name = __( 'Página desconocida', 'ewm-modal-cta' );
+
+		// Parsear URL
+		$parsed_url = parse_url( $url );
+		if ( ! $parsed_url || ! isset( $parsed_url['path'] ) ) {
+			return $page_name;
+		}
+
+		$path = trim( $parsed_url['path'], '/' );
+		$query = isset( $parsed_url['query'] ) ? $parsed_url['query'] : '';
+
+		// Página de inicio
+		if ( empty( $path ) ) {
+			return __( 'Página de inicio', 'ewm-modal-cta' );
+		}
+
+		// Detectar WooCommerce si está activo
+		if ( class_exists( 'WooCommerce' ) ) {
+			$wc_page = self::detect_woocommerce_page( $path, $query );
+			if ( $wc_page ) {
+				return $wc_page;
+			}
+		}
+
+		// Buscar página por slug
+		$page = get_page_by_path( $path );
+		if ( $page ) {
+			return get_the_title( $page->ID );
+		}
+
+		// Buscar custom post type por slug
+		$post = self::find_post_by_path( $path );
+		if ( $post ) {
+			return get_the_title( $post->ID );
+		}
+
+		// Detectar archivos o categorías
+		$archive_name = self::detect_archive_page( $path );
+		if ( $archive_name ) {
+			return $archive_name;
+		}
+
+		// Fallback: usar path limpio
+		return ucwords( str_replace( array( '-', '_', '/' ), ' ', $path ) );
+	}
+
+	/**
+	 * Detectar páginas de WooCommerce
+	 * 
+	 * @param string $path Path de la URL
+	 * @param string $query Query string
+	 * @return string|false Nombre de página WC o false
+	 */
+	private static function detect_woocommerce_page( $path, $query ) {
+		// Shop page
+		if ( $path === 'shop' || $path === get_option( 'woocommerce_shop_page_id' ) ) {
+			return __( 'Tienda', 'ewm-modal-cta' );
+		}
+
+		// Cart page
+		if ( $path === 'cart' || $path === 'carrito' ) {
+			return __( 'Carrito', 'ewm-modal-cta' );
+		}
+
+		// Checkout page
+		if ( $path === 'checkout' || $path === 'finalizar-compra' ) {
+			return __( 'Finalizar Compra', 'ewm-modal-cta' );
+		}
+
+		// My Account
+		if ( $path === 'my-account' || $path === 'mi-cuenta' ) {
+			return __( 'Mi Cuenta', 'ewm-modal-cta' );
+		}
+
+		// Product page
+		$path_parts = explode( '/', $path );
+		if ( isset( $path_parts[0] ) && ( $path_parts[0] === 'product' || $path_parts[0] === 'producto' ) ) {
+			if ( isset( $path_parts[1] ) ) {
+				$product = get_page_by_path( $path_parts[1], OBJECT, 'product' );
+				if ( $product ) {
+					return sprintf( __( 'Producto: %s', 'ewm-modal-cta' ), get_the_title( $product->ID ) );
+				}
+			}
+			return __( 'Producto', 'ewm-modal-cta' );
+		}
+
+		// Product category
+		if ( isset( $path_parts[0] ) && ( $path_parts[0] === 'product-category' || $path_parts[0] === 'categoria-producto' ) ) {
+			if ( isset( $path_parts[1] ) ) {
+				$term = get_term_by( 'slug', $path_parts[1], 'product_cat' );
+				if ( $term ) {
+					return sprintf( __( 'Categoría: %s', 'ewm-modal-cta' ), $term->name );
+				}
+			}
+			return __( 'Categoría de Productos', 'ewm-modal-cta' );
+		}
+
+		return false;
+	}
+
+	/**
+	 * Buscar post por path en cualquier post type
+	 * 
+	 * @param string $path Path a buscar
+	 * @return WP_Post|false Post encontrado o false
+	 */
+	private static function find_post_by_path( $path ) {
+		global $wpdb;
+
+		// Obtener todos los post types públicos
+		$post_types = get_post_types( array( 'public' => true ), 'names' );
+		$post_types = array_diff( $post_types, array( 'page', 'attachment' ) ); // Excluir páginas y attachments
+
+		if ( empty( $post_types ) ) {
+			return false;
+		}
+
+		$post_types_in = "'" . implode( "', '", array_map( 'esc_sql', $post_types ) ) . "'";
+
+		$sql = $wpdb->prepare(
+			"SELECT ID FROM {$wpdb->posts} 
+			 WHERE post_name = %s 
+			 AND post_type IN ({$post_types_in}) 
+			 AND post_status = 'publish' 
+			 LIMIT 1",
+			$path
+		);
+
+		$post_id = $wpdb->get_var( $sql );
+
+		return $post_id ? get_post( $post_id ) : false;
+	}
+
+	/**
+	 * Detectar páginas de archivo (categorías, tags, etc.)
+	 * 
+	 * @param string $path Path de la URL
+	 * @return string|false Nombre de archivo o false
+	 */
+	private static function detect_archive_page( $path ) {
+		$path_parts = explode( '/', $path );
+
+		// Category archive
+		if ( isset( $path_parts[0] ) && ( $path_parts[0] === 'category' || $path_parts[0] === 'categoria' ) ) {
+			if ( isset( $path_parts[1] ) ) {
+				$term = get_term_by( 'slug', $path_parts[1], 'category' );
+				if ( $term ) {
+					return sprintf( __( 'Categoría: %s', 'ewm-modal-cta' ), $term->name );
+				}
+			}
+			return __( 'Archivo de Categorías', 'ewm-modal-cta' );
+		}
+
+		// Tag archive
+		if ( isset( $path_parts[0] ) && ( $path_parts[0] === 'tag' || $path_parts[0] === 'etiqueta' ) ) {
+			if ( isset( $path_parts[1] ) ) {
+				$term = get_term_by( 'slug', $path_parts[1], 'post_tag' );
+				if ( $term ) {
+					return sprintf( __( 'Etiqueta: %s', 'ewm-modal-cta' ), $term->name );
+				}
+			}
+			return __( 'Archivo de Etiquetas', 'ewm-modal-cta' );
+		}
+
+		// Author archive
+		if ( isset( $path_parts[0] ) && ( $path_parts[0] === 'author' || $path_parts[0] === 'autor' ) ) {
+			if ( isset( $path_parts[1] ) ) {
+				$user = get_user_by( 'slug', $path_parts[1] );
+				if ( $user ) {
+					return sprintf( __( 'Autor: %s', 'ewm-modal-cta' ), $user->display_name );
+				}
+			}
+			return __( 'Archivo de Autor', 'ewm-modal-cta' );
+		}
+
+		// Date archive
+		if ( is_numeric( $path_parts[0] ) && strlen( $path_parts[0] ) === 4 ) {
+			$year = $path_parts[0];
+			if ( isset( $path_parts[1] ) && is_numeric( $path_parts[1] ) ) {
+				$month = $path_parts[1];
+				$month_name = date_i18n( 'F', mktime( 0, 0, 0, $month, 1 ) );
+				return sprintf( __( 'Archivo: %s %s', 'ewm-modal-cta' ), $month_name, $year );
+			}
+			return sprintf( __( 'Archivo: %s', 'ewm-modal-cta' ), $year );
+		}
+
+		return false;
+	}
+
+	/**
+	 * Actualizar títulos de envíos existentes que están sin título
+	 * Función utilitaria para migrar envíos antiguos al nuevo formato
+	 */
+	public static function update_existing_submission_titles() {
+		global $wpdb;
+
+		ewm_log_info( 'Starting bulk update of existing submission titles' );
+
+		// Buscar envíos sin título o con título genérico
+		$submissions = get_posts(
+			array(
+				'post_type'      => self::POST_TYPE,
+				'post_status'    => 'private',
+				'numberposts'    => -1,
+				'fields'         => 'ids',
+				'meta_query'     => array(
+					'relation' => 'OR',
+					array(
+						'key'     => 'referer_url',
+						'compare' => 'EXISTS',
+					),
+				),
+			)
+		);
+
+		$updated_count = 0;
+		$total_count   = count( $submissions );
+
+		ewm_log_info( "Found {$total_count} submissions to potentially update" );
+
+		foreach ( $submissions as $submission_id ) {
+			$current_title = get_the_title( $submission_id );
+			
+			// Actualizar solo si no tiene título o el título está vacío/genérico
+			if ( empty( $current_title ) || $current_title === 'Auto Draft' || strpos( $current_title, '(no title)' ) !== false ) {
+				$referer_url = get_post_meta( $submission_id, 'referer_url', true );
+				$submission_time = get_post_meta( $submission_id, 'submission_time', true );
+
+				if ( $referer_url ) {
+					$page_name = self::detect_page_name_from_url( $referer_url );
+					
+					// Usar submission_time si existe, sino usar post_date
+					if ( $submission_time ) {
+						$formatted_date = date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), strtotime( $submission_time ) );
+					} else {
+						$post_date = get_post_field( 'post_date', $submission_id );
+						$formatted_date = date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), strtotime( $post_date ) );
+					}
+
+					$new_title = sprintf(
+						__( 'Lead obtenido de: %1$s %2$s', 'ewm-modal-cta' ),
+						$page_name,
+						$formatted_date
+					);
+
+					// Actualizar título
+					$result = wp_update_post(
+						array(
+							'ID'         => $submission_id,
+							'post_title' => $new_title,
+						),
+						true
+					);
+
+					if ( ! is_wp_error( $result ) ) {
+						$updated_count++;
+						ewm_log_debug( "Updated submission {$submission_id} title to: {$new_title}" );
+					} else {
+						ewm_log_warning( "Failed to update submission {$submission_id}: " . $result->get_error_message() );
+					}
+				}
+			}
+		}
+
+		ewm_log_info( "Bulk title update completed: {$updated_count}/{$total_count} submissions updated" );
+
+		return array(
+			'total'   => $total_count,
+			'updated' => $updated_count,
+		);
+	}
+
+	/**
+	 * Hook para ejecutar actualización de títulos en admin
+	 * Se puede llamar desde una página de admin o vía wp-cli
+	 */
+	public static function maybe_trigger_title_update() {
+		// Solo en admin y con permisos
+		if ( ! is_admin() || ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		// Verificar si se solicitó la actualización
+		if ( isset( $_GET['ewm_update_titles'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'ewm_update_titles' ) ) {
+			$result = self::update_existing_submission_titles();
+			
+			// Mostrar mensaje de admin
+			add_action( 'admin_notices', function() use ( $result ) {
+				echo '<div class="notice notice-success is-dismissible">';
+				echo '<p><strong>EWM:</strong> ' . sprintf( 
+					__( 'Títulos actualizados: %d de %d envíos procesados.', 'ewm-modal-cta' ),
+					$result['updated'], 
+					$result['total'] 
+				) . '</p>';
+				echo '</div>';
+			} );
+
+			// Redireccionar para evitar reenvío
+			wp_redirect( remove_query_arg( array( 'ewm_update_titles', '_wpnonce' ) ) );
+			exit;
+		}
 	}
 }
