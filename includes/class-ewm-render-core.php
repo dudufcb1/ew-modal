@@ -213,9 +213,9 @@ class EWM_Render_Core {
 				'post_status'        => $post ? $post->post_status : 'none',
 				'post_title'         => $post ? $post->post_title : 'none',
 				'condition_1'        => ! $post,
-				'condition_2'        => $post ? ( $post->post_type !== 'ewm_modal' ) : 'n/a',
+				'condition_2'        => $post ? ( $post->post_type !== 'ew_modal' ) : 'n/a',
 				'condition_3'        => $post ? ( $post->post_status !== 'publish' ) : 'n/a',
-				'overall_condition'  => ( ! $post || $post->post_type !== 'ewm_modal' || $post->post_status !== 'publish' ),
+				'overall_condition'  => ( ! $post || $post->post_type !== 'ew_modal' || $post->post_status !== 'publish' ),
 			)
 		);
 

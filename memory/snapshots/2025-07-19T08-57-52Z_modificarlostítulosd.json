@@ -1,0 +1,93 @@
+{
+  "analysis": {
+    "hypotheses": [
+      "El sistema ya implementa parcialmente la funcionalidad solicitada",
+      "La detección de página actual funciona solo para páginas WordPress básicas",
+      "Se necesita mejorar soporte para WooCommerce y URLs complejas",
+      "Las columnas del admin pueden optimizarse para mejor UX"
+    ],
+    "root_cause": "Lógica de detección de página de origen limitada a páginas WordPress simples",
+    "tradeoffs": [
+      "Precisión vs performance en detección de página",
+      "Compatibilidad universal vs optimización específica",
+      "Simplicidad vs funcionalidades avanzadas"
+    ]
+  },
+  "experiments": [],
+  "implementation_plan": {
+    "md_reference": "docs/memory/ENVIOS_TITULOS_MODIFICACION_20250719.md",
+    "steps": [
+      {
+        "estimated_time": "30min",
+        "status": "todo",
+        "step": "Analizar y documentar lógica actual de create_submission()"
+      },
+      {
+        "estimated_time": "45min",
+        "status": "todo",
+        "step": "Mejorar función de detección de página con soporte WooCommerce"
+      },
+      {
+        "estimated_time": "20min",
+        "status": "todo",
+        "step": "Añadir parsing robusto para URLs complejas"
+      },
+      {
+        "estimated_time": "15min",
+        "status": "todo",
+        "step": "Optimizar columnas del admin para mejor display"
+      },
+      {
+        "estimated_time": "30min",
+        "status": "todo",
+        "step": "Testing con diferentes tipos de páginas y URLs"
+      }
+    ]
+  },
+  "links": {
+    "designs": [],
+    "docs": [],
+    "runs": [],
+    "tickets": []
+  },
+  "meta": {
+    "author": "ai_agent",
+    "date": "2025-07-19T00:00:00Z",
+    "project": "ewm-modal-cta",
+    "status": "todo",
+    "task_id": "ENVIOS_TITULOS_MODIFICACION_20250719"
+  },
+  "next_actions": [
+    "Implementar mejoras en create_submission()",
+    "Añadir soporte WooCommerce",
+    "Mejorar parsing de URLs",
+    "Testing exhaustivo"
+  ],
+  "open_questions": [
+    "¿Se requiere retroactividad para envíos existentes?",
+    "¿Qué hacer con URLs de páginas externas?",
+    "¿Se necesita configuración de formato de título?"
+  ],
+  "problem": {
+    "business_goal": "Mejorar la identificación y claridad de la página de origen en los títulos de envíos del sistema",
+    "constraints": [
+      "Mantener compatibilidad con sistema actual",
+      "No romper funcionalidad existente",
+      "Preservar rendimiento del sistema"
+    ],
+    "user_request": "Modificar los títulos de los envíos con la página donde fueron generados además de la fecha"
+  },
+  "schema_version": "1.0.0",
+  "scope": {
+    "components": [
+      "EWM_Submission_CPT",
+      "create_submission method",
+      "Admin columns system",
+      "Page detection logic"
+    ],
+    "files": [
+      "includes/class-ewm-submission-cpt.php"
+    ]
+  },
+  "strategies_tried": []
+}
