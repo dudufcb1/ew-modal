@@ -277,9 +277,13 @@ class EWM_Submission_CPT {
 	public function render_data_meta_box( $post ) {
 		$form_data = get_post_meta( $post->ID, 'form_data', true );
 		$step_data = get_post_meta( $post->ID, 'step_data', true );
+		$modal_id  = get_post_meta( $post->ID, 'modal_id', true );
 
 		$form_data_decoded = $form_data ? json_decode( $form_data, true ) : array();
 		$step_data_decoded = $step_data ? json_decode( $step_data, true ) : array();
+
+		// Obtener mapeo de field_id a label del modal
+		$field_mapping = $this->get_field_mapping( $modal_id );
 
 		?>
 		<div class="ewm-submission-data">
@@ -294,8 +298,12 @@ class EWM_Submission_CPT {
 					</thead>
 					<tbody>
 						<?php foreach ( $form_data_decoded as $field => $value ) : ?>
+							<?php 
+							// Mapear field_id a label legible
+							$field_label = isset( $field_mapping[ $field ] ) ? $field_mapping[ $field ] : $field;
+							?>
 							<tr>
-								<td><strong><?php echo esc_html( $field ); ?></strong></td>
+								<td><strong><?php echo esc_html( $field_label ); ?></strong></td>
 								<td><?php echo esc_html( is_array( $value ) ? implode( ', ', $value ) : $value ); ?></td>
 							</tr>
 						<?php endforeach; ?>
@@ -372,6 +380,36 @@ class EWM_Submission_CPT {
 			<?php endif; ?>
 		</table>
 		<?php
+	}
+
+	/**
+	 * Obtener mapeo de field_id a label desde la configuración del modal
+	 */
+	private function get_field_mapping( $modal_id ) {
+		if ( ! $modal_id ) {
+			return array();
+		}
+
+		// Obtener configuración del modal
+		$modal_config = EWM_Modal_CPT::get_modal_config( $modal_id );
+		$field_mapping = array();
+
+		if ( ! empty( $modal_config['steps'] ) ) {
+			foreach ( $modal_config['steps'] as $step ) {
+				if ( ! empty( $step['fields'] ) ) {
+					foreach ( $step['fields'] as $field ) {
+						$field_id = $field['id'] ?? '';
+						$field_label = $field['label'] ?? '';
+						
+						if ( $field_id && $field_label ) {
+							$field_mapping[ $field_id ] = $field_label;
+						}
+					}
+				}
+			}
+		}
+
+		return $field_mapping;
 	}
 
 	/**
