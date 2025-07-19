@@ -398,8 +398,9 @@ class EWM_Logger_Settings {
 	public function render_frequency_debug_mode_field() {
 		$options = get_option( self::OPTION_NAME, $this->get_default_settings() );
 		$checked = checked( $options['frequency_debug_mode'], true, false );
+		$field_id = 'ewm_frequency_debug_mode';
 
-		echo "<input type='checkbox' name='" . self::OPTION_NAME . "[frequency_debug_mode]' value='1' {$checked} />";
+		echo "<input type='checkbox' id='{$field_id}' name='" . self::OPTION_NAME . "[frequency_debug_mode]' value='1' {$checked} />";
 		echo '<p class="description">' . __( 'Bypass frequency limits for testing modal behavior (use only for debugging).', 'ewm-modal-cta' ) . '</p>';
 	}
 
