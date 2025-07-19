@@ -1,0 +1,134 @@
+{
+  "schema_version": "1.0.0",
+  "meta": {
+    "author": "agent_code",
+    "date": "2025-07-19T21:25:00Z",
+    "project": "ewm-modal-cta",
+    "status": "review",
+    "task_id": "MODAL_FREQUENCY_BUG_20250719"
+  },
+  "scope": {
+    "components": [
+      "Admin Builder Modal",
+      "Frequency System",
+      "Cookie Management",
+      "Settings Panel"
+    ],
+    "files": [
+      "assets/js/modal-frontend.js",
+      "includes/class-ewm-render-core.php",
+      "includes/class-ewm-shortcodes.php",
+      "includes/logging/class-ewm-logger-settings.php"
+    ]
+  },
+  "problem": {
+    "business_goal": "Garantizar que los modales aparezcan según la frecuencia configurada para mejorar UX y evitar spam",
+    "constraints": [
+      "No modificar sistema legacy",
+      "Mantener compatibilidad"
+    ],
+    "user_request": "Investigar por qué el modal creado con admin builder no respeta la configuración de frecuencia (ej: 1 semana)"
+  },
+  "analysis": {
+    "hypotheses": [
+      "Cookie no se está guardando correctamente",
+      "Frecuencia no se está aplicando",
+      "Conflicto entre sistema clásico y Gutenberg"
+    ],
+    "root_cause": "Múltiples problemas: 1) WP_DEBUG bypass ignoraba frecuencia, 2) display_rules no se enviaba al frontend, 3) JavaScript no verificaba frecuencia en triggers",
+    "tradeoffs": [
+      "Tiempo de investigación vs impacto en UX"
+    ]
+  },
+  "implementation_plan": {
+    "steps": [
+      {
+        "step": "Analizar código de cookies y frecuencia",
+        "status": "done",
+        "estimated_time": "30min"
+      },
+      {
+        "step": "Identificar el flujo del admin builder",
+        "status": "done",
+        "estimated_time": "20min"
+      },
+      {
+        "step": "Localizar el bug específico",
+        "status": "done",
+        "estimated_time": "30min"
+      },
+      {
+        "step": "Implementar corrección backend PHP",
+        "status": "done",
+        "estimated_time": "45min"
+      },
+      {
+        "step": "Implementar corrección frontend JS",
+        "status": "done",
+        "estimated_time": "30min"
+      },
+      {
+        "step": "Crear sistema de debug controlado",
+        "status": "done",
+        "estimated_time": "40min"
+      }
+    ],
+    "md_reference": "docs/memory/MODAL_FREQUENCY_BUG_20250719.md"
+  },
+  "experiments": [
+    {
+      "test_case": "Identificado que display_rules no se enviaba al frontend",
+      "result": "Confirmado: solo se enviaban triggers, design y wc_integration",
+      "logs_link": ""
+    },
+    {
+      "test_case": "Modificado get_modal_data_attributes para incluir display_rules",
+      "result": "Backend ahora envía display_rules al frontend",
+      "logs_link": ""
+    },
+    {
+      "test_case": "Actualizado JavaScript para usar frecuencia dinámica",
+      "result": "markAsShown() y hasBeenShown() ahora usan configuración real",
+      "logs_link": ""
+    },
+    {
+      "test_case": "Reemplazado WP_DEBUG bypass con configuración granular",
+      "result": "Creado campo frequency_debug_mode en settings",
+      "logs_link": ""
+    },
+    {
+      "test_case": "Agregado verificación de frecuencia en exit intent trigger",
+      "result": "setupExitIntent ahora verifica hasBeenShown()",
+      "logs_link": ""
+    }
+  ],
+  "strategies_tried": [
+    {
+      "strategy": "Analizar flujo completo desde PHP hasta JavaScript",
+      "outcome": "Éxito - encontrado el eslabón perdido",
+      "reason_for_failure": "N/A - Estrategia exitosa"
+    },
+    {
+      "strategy": "Comparar sistema shortcode vs admin builder",
+      "outcome": "Éxito - confirmó diferencias en implementación",
+      "reason_for_failure": "N/A - Estrategia exitosa"
+    },
+    {
+      "strategy": "Crear sistema de debug granular",
+      "outcome": "Éxito - reemplazó WP_DEBUG hardcoded",
+      "reason_for_failure": "N/A - Estrategia exitosa"
+    }
+  ],
+  "open_questions": [],
+  "next_actions": [
+    "Probar el fix completo en entorno real",
+    "Verificar que funciona con diferentes tipos de frecuencia",
+    "Confirmar que el panel de settings funciona correctamente"
+  ],
+  "links": {
+    "docs": [],
+    "tickets": [],
+    "designs": [],
+    "runs": []
+  }
+}

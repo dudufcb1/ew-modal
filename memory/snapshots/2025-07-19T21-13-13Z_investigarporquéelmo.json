@@ -1,0 +1,105 @@
+{
+  "analysis": {
+    "hypotheses": [
+      "Cookie no se está guardando correctamente",
+      "Frecuencia no se está aplicando",
+      "Conflicto entre sistema clásico y Gutenberg"
+    ],
+    "root_cause": "El modal admin builder no tenía acceso a display_rules.frequency en el frontend. JavaScript usaba 24h hardcoded en lugar de configuración dinámica",
+    "tradeoffs": [
+      "Tiempo de investigación vs impacto en UX"
+    ]
+  },
+  "experiments": [
+    {
+      "logs_link": "",
+      "result": "Confirmado: solo se enviaban triggers, design y wc_integration",
+      "test_case": "Identificado que display_rules no se enviaba al frontend"
+    },
+    {
+      "logs_link": "",
+      "result": "Backend ahora envía display_rules al frontend",
+      "test_case": "Modificado get_modal_data_attributes para incluir display_rules"
+    },
+    {
+      "logs_link": "",
+      "result": "markAsShown() y hasBeenShown() ahora usan configuración real",
+      "test_case": "Actualizado JavaScript para usar frecuencia dinámica"
+    }
+  ],
+  "implementation_plan": {
+    "md_reference": "docs/memory/MODAL_FREQUENCY_BUG_20250719.md",
+    "steps": [
+      {
+        "estimated_time": "30min",
+        "status": "done",
+        "step": "Analizar código de cookies y frecuencia"
+      },
+      {
+        "estimated_time": "20min",
+        "status": "done",
+        "step": "Identificar el flujo del admin builder"
+      },
+      {
+        "estimated_time": "30min",
+        "status": "done",
+        "step": "Localizar el bug específico"
+      },
+      {
+        "estimated_time": "20min",
+        "status": "done",
+        "step": "Implementar la corrección"
+      }
+    ]
+  },
+  "links": {
+    "designs": [],
+    "docs": [],
+    "runs": [],
+    "tickets": []
+  },
+  "meta": {
+    "author": "agent_code",
+    "date": "2025-07-19T09:45:00Z",
+    "project": "ewm-modal-cta",
+    "status": "done",
+    "task_id": "MODAL_FREQUENCY_BUG_20250719"
+  },
+  "next_actions": [
+    "Probar el fix en un entorno real",
+    "Verificar que funciona con diferentes tipos de frecuencia"
+  ],
+  "open_questions": [],
+  "problem": {
+    "business_goal": "Garantizar que los modales aparezcan según la frecuencia configurada para mejorar UX y evitar spam",
+    "constraints": [
+      "No modificar sistema legacy",
+      "Mantener compatibilidad"
+    ],
+    "user_request": "Investigar por qué el modal creado con admin builder no respeta la configuración de frecuencia (ej: 1 semana)"
+  },
+  "schema_version": "1.0.0",
+  "scope": {
+    "components": [
+      "Admin Builder Modal",
+      "Frequency System",
+      "Cookie Management"
+    ],
+    "files": [
+      "assets/js/modal-frontend.js",
+      "includes/class-ewm-render-core.php"
+    ]
+  },
+  "strategies_tried": [
+    {
+      "outcome": "Éxito - encontrado el eslabón perdido",
+      "reason_for_failure": "N/A - Estrategia exitosa",
+      "strategy": "Analizar flujo completo desde PHP hasta JavaScript"
+    },
+    {
+      "outcome": "Éxito - confirmó diferencias en implementación",
+      "reason_for_failure": "N/A - Estrategia exitosa",
+      "strategy": "Comparar sistema shortcode vs admin builder"
+    }
+  ]
+}

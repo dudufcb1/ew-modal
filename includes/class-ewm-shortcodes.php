@@ -455,12 +455,14 @@ class EWM_Shortcodes {
 		// --- 4. VALIDACIÓN DE FRECUENCIA ---
 		if ( ! empty( $display_rules['frequency'] ) ) {
 			error_log( '[EWM DEBUG] FRECUENCIA - Verificando límite de frecuencia.' );
-			// TEMPORAL: Bypasear frecuencia para testing del shortcode
-			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-				error_log( '[EWM DEBUG] FRECUENCIA - BYPASEADA para testing (WP_DEBUG activo).' );
+			
+			// Verificar si el modo debug de frecuencia está activo
+			$logger_settings = EWM_Logger_Settings::get_instance();
+			if ( $logger_settings->is_frequency_debug_enabled() ) {
+				error_log( '[EWM DEBUG] FRECUENCIA - BYPASEADA para testing (Frequency Debug Mode activo en settings).' );
 			} elseif ( ! $this->check_frequency_limit( $modal_id, $display_rules['frequency'] ) ) {
-					error_log( '[EWM DEBUG] BLOCKED: Se ha alcanzado el límite de frecuencia.' );
-					return false;
+				error_log( '[EWM DEBUG] BLOCKED: Se ha alcanzado el límite de frecuencia.' );
+				return false;
 			}
 			error_log( '[EWM DEBUG] FRECUENCIA - Validación PASSED.' );
 		}
@@ -495,13 +497,18 @@ class EWM_Shortcodes {
 		$cookie_name   = "ewm_modal_{$modal_id}_count";
 		$current_count = intval( $_COOKIE[ $cookie_name ] ?? 0 );
 
+		error_log( "[EWM DEBUG] FRECUENCIA CHECK - Modal ID: {$modal_id}, Type: {$type}, Limit: {$limit}, Current Count: {$current_count}, Cookie: {$cookie_name}" );
+
 		if ( $current_count >= $limit ) {
+			error_log( "[EWM DEBUG] FRECUENCIA CHECK - BLOCKED: Count {$current_count} >= Limit {$limit}" );
 			return false;
 		}
 
 		// Incrementar contador
 		$expiry = $this->get_frequency_expiry( $type );
-		setcookie( $cookie_name, $current_count + 1, $expiry, '/' );
+		$new_count = $current_count + 1;
+		setcookie( $cookie_name, $new_count, $expiry, '/' );
+		error_log( "[EWM DEBUG] FRECUENCIA CHECK - ALLOWED: Setting cookie {$cookie_name} = {$new_count}, Expiry: " . date('Y-m-d H:i:s', $expiry) );
 
 		return true;
 	}

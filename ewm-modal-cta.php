@@ -349,28 +349,3 @@ function ewm_has_modal_shortcode() {
 	}
 	return false;
 }
-
-/**
- * Add admin menu for logging settings
- */
-function ewm_modal_cta_admin_menu() {
-	add_options_page(
-		__( 'EWM Logging Settings', 'ewm-modal-cta' ),
-		__( 'EWM Logging', 'ewm-modal-cta' ),
-		'manage_options',
-		'ewm-logging-settings',
-		'ewm_logging_settings_page'
-	);
-}
-add_action( 'admin_menu', 'ewm_modal_cta_admin_menu' );
-
-/**
- * Logging settings page callback
- */
-function ewm_logging_settings_page() {
-	// This will be handled by the EWM_Logger_Settings class.
-	if ( class_exists( 'EWM_Logger_Settings' ) ) {
-		$settings = EWM_Logger_Settings::get_instance();
-		$settings->render_settings_page();
-	}
-}

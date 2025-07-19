@@ -1,0 +1,91 @@
+{
+  "analysis": {
+    "hypotheses": [
+      "Bypass de WP_DEBUG impide validación",
+      "JavaScript nunca se ejecuta porque modal ya está visible",
+      "Falta implementar control de frecuencia en PHP"
+    ],
+    "root_cause": "Bypass temporal en class-ewm-shortcodes.php línea 459-461 saltaba validación de frecuencia cuando WP_DEBUG=true",
+    "tradeoffs": [
+      "Mantener bypass para desarrollo vs funcionalidad correcta",
+      "Control en PHP vs JavaScript",
+      "Performance vs validación"
+    ]
+  },
+  "experiments": [],
+  "implementation_plan": {
+    "md_reference": "docs/memory/FREQUENCY_WP_DEBUG_BYPASS_20250719.md",
+    "steps": [
+      {
+        "estimated_time": "15min",
+        "status": "done",
+        "step": "Localizar código de bypass WP_DEBUG"
+      },
+      {
+        "estimated_time": "30min",
+        "status": "done",
+        "step": "Eliminar bypass temporal y activar validación"
+      },
+      {
+        "estimated_time": "15min",
+        "status": "todo",
+        "step": "Probar que modal respeta configuración de 1 semana"
+      }
+    ]
+  },
+  "links": {
+    "designs": [],
+    "docs": [],
+    "runs": [],
+    "tickets": []
+  },
+  "meta": {
+    "author": "agent_code",
+    "date": "2025-07-19T21:25:00Z",
+    "project": "ewm-modal-cta",
+    "status": "review",
+    "task_id": "FREQUENCY_WP_DEBUG_BYPASS_20250719"
+  },
+  "next_actions": [
+    "Llamar al líder para probar el fix",
+    "Verificar que modal ya no aparece en cada recarga"
+  ],
+  "open_questions": [],
+  "problem": {
+    "business_goal": "Sistema de frecuencia debe funcionar correctamente para evitar mostrar modales muy seguido",
+    "constraints": [
+      "WP_DEBUG está activo",
+      "Usuario quiere testing funcional",
+      "Modal se renderiza desde shortcode"
+    ],
+    "user_request": "Modal aparece en cada recarga pese a configurar frecuencia de 1 semana"
+  },
+  "schema_version": "1.0.0",
+  "scope": {
+    "components": [
+      "Sistema de frecuencia",
+      "Shortcode render",
+      "WP_DEBUG bypass"
+    ],
+    "files": [
+      "includes/class-ewm-shortcodes.php"
+    ]
+  },
+  "strategies_tried": [
+    {
+      "outcome": "Identificó bypass pero no solucionó problema",
+      "reason_for_failure": "Modificación en JavaScript cuando problema estaba en PHP",
+      "strategy": "Modificar JavaScript para manejo de frecuencia"
+    },
+    {
+      "outcome": "Encontró logs que mostraban bypass activo",
+      "reason_for_failure": "No era fallo, era investigación exitosa",
+      "strategy": "Agregar logs de debug para diagnóstico"
+    },
+    {
+      "outcome": "Éxito - encontró el bypass temporal en shortcodes.php",
+      "reason_for_failure": "N/A - fue exitoso",
+      "strategy": "Investigar logs y buscar texto específico del bypass"
+    }
+  ]
+}

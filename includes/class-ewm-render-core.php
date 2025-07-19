@@ -760,6 +760,7 @@ class EWM_Render_Core {
 						'triggers'       => $config['triggers'],
 						'design'         => $config['design'],
 						'wc_integration' => $config['wc_integration'],
+						'display_rules'  => $config['display_rules'],
 					)
 				)
 			),

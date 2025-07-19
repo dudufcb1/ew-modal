@@ -1,0 +1,126 @@
+{
+  "schema_version": "1.0.0",
+  "project_name": "EWM Modal CTA",
+  "created_on": "2025-07-19T12:20:00Z",
+  "last_updated": "2025-07-19T06:26:08.368947Z",
+  "history": [
+    {
+      "timestamp": "2025-07-19T06:21:05.050295Z",
+      "author": "augment_agent",
+      "event_type": "INITIAL_CREATION",
+      "summary": "Creación inicial de la documentación arquitectural completa del proyecto EWM Modal CTA con análisis de arquitectura dual"
+    },
+    {
+      "timestamp": "2025-07-19T06:25:25.725758Z",
+      "author": "augment_agent",
+      "event_type": "UPDATE",
+      "summary": "Actualización de estándares de desarrollo: WP-CLI global, PHPCS WordPress, prioridad en errores críticos sobre cosméticos"
+    },
+    {
+      "timestamp": "2025-07-19T06:26:08.368911Z",
+      "author": "augment_agent",
+      "event_type": "COMPONENT_ADDED",
+      "summary": "Incorporación de herramientas y workflow de desarrollo con WP-CLI y PHPCS como componentes arquitecturales"
+    }
+  ],
+  "purpose": "Plugin moderno para WordPress que permite crear modales interactivos de captura de leads con formularios multi-paso. Sistema unificado con bloques Gutenberg y shortcodes clásicos que comparten el mismo motor de renderizado universal.",
+  "core_technologies": [
+    "PHP 7.4+",
+    "WordPress 5.0+",
+    "React (Gutenberg)",
+    "WordPress REST API",
+    "Custom Post Types",
+    "JavaScript ES6+",
+    "@wordpress/create-block scaffold",
+    "WordPress Meta API",
+    "WooCommerce API"
+  ],
+  "components": [
+    {
+      "description": "Herramienta de línea de comandos oficial de WordPress instalada globalmente para scaffolding, testing y tareas automatizadas.",
+      "name": "WP-CLI Development Environment",
+      "path": "wp-cli (global)",
+      "responsibilities": [
+        "Scaffolding de nuevos componentes y funcionalidades",
+        "Ejecución de tests automatizados",
+        "Gestión de base de datos y configuración",
+        "Deploy y sincronización entre entornos",
+        "Generación de contenido de prueba",
+        "Análisis y debugging de WordPress core"
+      ]
+    },
+    {
+      "description": "Estándar de codificación WordPress con verificación automática de calidad de código.",
+      "name": "PHPCS WordPress Standards",
+      "path": "phpcs.xml / composer.json",
+      "responsibilities": [
+        "Verificación automática de estándares WordPress",
+        "Detección de errores críticos de seguridad",
+        "Validación de compatibilidad con WordPress core",
+        "Corrección automática de formato cosmético",
+        "Integración con IDE para feedback en tiempo real",
+        "Reports de calidad de código"
+      ]
+    },
+    {
+      "description": "Workflow de desarrollo enfocado en correcciones críticas por encima de ajustes cosméticos.",
+      "name": "Critical-First Development Workflow",
+      "path": "development-process",
+      "responsibilities": [
+        "Priorización de errores de lógica y seguridad",
+        "Identificación de problemas de funcionalidad crítica",
+        "Automatización de correcciones de formato",
+        "Testing de funcionalidad core antes que estética",
+        "Validación de performance y compatibilidad",
+        "Review de código centrado en arquitectura"
+      ]
+    }
+  ],
+  "decisions": [
+    {
+      "date": "2025-07-19",
+      "decision": "Uso obligatorio de WP-CLI para tareas de desarrollo",
+      "id": "ARCH_008",
+      "rationale": "WP-CLI está instalado globalmente en el entorno de desarrollo. Facilita scaffolding, testing, deployment y tareas automatizadas.",
+      "status": "Implementado"
+    },
+    {
+      "date": "2025-07-19",
+      "decision": "Seguir estándares PHPCS de WordPress estrictamente",
+      "id": "ARCH_009",
+      "rationale": "Garantiza calidad de código, compatibilidad y mantenibilidad a largo plazo siguiendo las mejores prácticas oficiales.",
+      "status": "Implementado"
+    },
+    {
+      "date": "2025-07-19",
+      "decision": "Priorizar errores críticos sobre correcciones cosméticas",
+      "id": "ARCH_010",
+      "rationale": "Los errores cosméticos (puntuación, indentación) se corrigen automáticamente con herramientas. El foco debe estar en lógica, seguridad y funcionalidad crítica.",
+      "status": "Implementado"
+    }
+  ],
+  "constraints": [
+    "WordPress 5.0+ (requerido para soporte completo de Gutenberg)",
+    "PHP 7.4+ (requerido para sintaxis moderna y performance)",
+    "Compatibilidad obligatoria con temas clásicos sin Gutenberg",
+    "No dependencias externas en frontend (vanilla JS puro)",
+    "Mantener retrocompatibilidad con shortcodes existentes",
+    "Seguir WordPress Coding Standards (PHPCS) estrictamente",
+    "Usar WP-CLI para todas las tareas de desarrollo posibles",
+    "Sistema de permisos WordPress nativo únicamente",
+    "Soporte para WooCommerce opcional pero integrado",
+    "Priorizar correcciones críticas sobre cosméticas"
+  ],
+  "preferences": [
+    "WP-CLI como herramienta principal de desarrollo",
+    "PHPCS WordPress como estándar de código obligatorio",
+    "Prioridad en errores críticos de lógica y seguridad",
+    "Herramientas automáticas para formato cosmético",
+    "Código modular y extensible por defecto",
+    "Documentación exhaustiva en código",
+    "Sistema de logging detallado para debugging",
+    "Interfaces intuitivas para usuarios finales",
+    "Performance optimizada en frontend",
+    "Testing comprehensivo automatizado"
+  ]
+}

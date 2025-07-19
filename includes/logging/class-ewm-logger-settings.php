@@ -163,6 +163,15 @@ class EWM_Logger_Settings {
 			'ewm_logging_advanced'
 		);
 
+		// Campo: Frequency Debug Mode
+		add_settings_field(
+			'frequency_debug_mode',
+			__( 'Frequency Debug Mode', 'ewm-modal-cta' ),
+			array( $this, 'render_frequency_debug_mode_field' ),
+			self::PAGE_SLUG,
+			'ewm_logging_advanced'
+		);
+
 		// Campo: Tamaño máximo
 		add_settings_field(
 			'max_log_size',
@@ -193,6 +202,7 @@ class EWM_Logger_Settings {
 			'api_logging'         => true,
 			'form_logging'        => true,
 			'performance_logging' => false,
+			'frequency_debug_mode' => false,
 			'max_log_size'        => '10MB',
 			'retention_days'      => 30,
 		);
@@ -211,6 +221,7 @@ class EWM_Logger_Settings {
 		$sanitized['api_logging']         = ! empty( $input['api_logging'] );
 		$sanitized['form_logging']        = ! empty( $input['form_logging'] );
 		$sanitized['performance_logging'] = ! empty( $input['performance_logging'] );
+		$sanitized['frequency_debug_mode'] = ! empty( $input['frequency_debug_mode'] );
 
 		// Sanitizar tamaño máximo
 		$max_size = sanitize_text_field( $input['max_log_size'] ?? '10MB' );
@@ -382,6 +393,17 @@ class EWM_Logger_Settings {
 	}
 
 	/**
+	 * Renderizar campo: Frequency Debug Mode
+	 */
+	public function render_frequency_debug_mode_field() {
+		$options = get_option( self::OPTION_NAME, $this->get_default_settings() );
+		$checked = checked( $options['frequency_debug_mode'], true, false );
+
+		echo "<input type='checkbox' name='" . self::OPTION_NAME . "[frequency_debug_mode]' value='1' {$checked} />";
+		echo '<p class="description">' . __( 'Bypass frequency limits for testing modal behavior (use only for debugging).', 'ewm-modal-cta' ) . '</p>';
+	}
+
+	/**
 	 * Renderizar campo: Tamaño máximo
 	 */
 	public function render_max_log_size_field() {
@@ -535,5 +557,13 @@ class EWM_Logger_Settings {
 		$recent_lines = array_slice( $lines, -10 ); // Últimas 10 líneas
 
 		wp_send_json_success( array( 'logs' => $recent_lines ) );
+	}
+
+	/**
+	 * Verificar si el modo debug de frecuencia está activado
+	 */
+	public function is_frequency_debug_enabled() {
+		$options = get_option( self::OPTION_NAME, $this->get_default_settings() );
+		return ! empty( $options['frequency_debug_mode'] );
 	}
 }

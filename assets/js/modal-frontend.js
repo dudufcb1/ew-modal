@@ -65,13 +65,29 @@
          */
         parseConfig() {
             const configData = this.modalElement.getAttribute('data-config');
+            
+            console.log('🔍 EWM FREQUENCY DEBUG - parseConfig iniciado', {
+                modalId: this.modalId,
+                hasConfigData: !!configData,
+                configDataPreview: configData ? configData.substring(0, 200) + '...' : null
+            });
+            
             if (configData) {
                 try {
                     this.config = JSON.parse(configData);
+                    console.log('🔍 EWM FREQUENCY DEBUG - Config parseado exitosamente', {
+                        configKeys: Object.keys(this.config),
+                        hasDisplayRules: !!this.config.display_rules,
+                        displayRules: this.config.display_rules,
+                        frequency: this.config.display_rules?.frequency
+                    });
                 } catch (e) {
                     console.error('EWM Modal: Invalid config JSON', e);
                     this.config = {};
                 }
+            } else {
+                console.log('🔍 EWM FREQUENCY DEBUG - No data-config found');
+                this.config = {};
             }
 
             // Obtener configuración adicional de atributos data
@@ -79,6 +95,13 @@
             this.config.delay = parseInt(this.modalElement.getAttribute('data-delay')) || 0;
             this.config.size = this.modalElement.getAttribute('data-size') || 'medium';
             this.config.animation = this.modalElement.getAttribute('data-animation') || 'fade';
+            
+            console.log('🔍 EWM FREQUENCY DEBUG - Config final', {
+                trigger: this.config.trigger,
+                delay: this.config.delay,
+                hasFrequencyConfig: !!this.config.display_rules?.frequency,
+                frequencyConfig: this.config.display_rules?.frequency
+            });
         }
 
         /**
@@ -210,9 +233,25 @@
          * Configurar trigger por tiempo
          */
         setupTimeDelay(delay) {
+            console.log('🔍 EWM FREQUENCY DEBUG - setupTimeDelay iniciado', {
+                modalId: this.modalId,
+                delay
+            });
+            
             setTimeout(() => {
-                if (!this.isVisible && !this.hasBeenShown()) {
+                const hasBeenShown = this.hasBeenShown();
+                console.log('🔍 EWM FREQUENCY DEBUG - TimeDelay trigger evaluando', {
+                    modalId: this.modalId,
+                    isVisible: this.isVisible,
+                    hasBeenShown,
+                    shouldOpen: !this.isVisible && !hasBeenShown
+                });
+                
+                if (!this.isVisible && !hasBeenShown) {
+                    console.log('🔍 EWM FREQUENCY DEBUG - TimeDelay trigger abriendo modal');
                     this.open();
+                } else {
+                    console.log('🔍 EWM FREQUENCY DEBUG - TimeDelay trigger NO abre modal');
                 }
             }, delay);
         }
@@ -236,21 +275,148 @@
         }
 
         /**
-         * Verificar si el modal ya se mostró
+         * Verificar si el modal ya se mostró considerando la frecuencia configurada
          */
         hasBeenShown() {
-            const cookieName = `ewm_modal_${this.modalId}_shown`;
-            return document.cookie.includes(cookieName);
+            console.log('🔍 EWM FREQUENCY DEBUG - hasBeenShown() iniciado', {
+                modalId: this.modalId,
+                configExists: !!this.config,
+                displayRulesExists: !!this.config?.display_rules,
+                frequencyExists: !!this.config?.display_rules?.frequency
+            });
+            
+            const frequencyConfig = this.config.display_rules?.frequency;
+            
+            console.log('🔍 EWM FREQUENCY DEBUG - frequencyConfig:', frequencyConfig);
+            
+            if (!frequencyConfig) {
+                // Sin configuración de frecuencia, usar comportamiento legacy
+                const cookieName = `ewm_modal_${this.modalId}_shown`;
+                const hasLegacyCookie = document.cookie.includes(cookieName);
+                console.log('🔍 EWM FREQUENCY DEBUG - Sin configuración, usando legacy', {
+                    cookieName,
+                    hasLegacyCookie,
+                    allCookies: document.cookie
+                });
+                return hasLegacyCookie;
+            }
+            
+            const type = frequencyConfig.type || 'session';
+            const limit = parseInt(frequencyConfig.limit) || 1;
+            const cookieName = `ewm_modal_${this.modalId}_count`;
+            
+            console.log('🔍 EWM FREQUENCY DEBUG - Configuración detectada', {
+                type,
+                limit,
+                cookieName
+            });
+            
+            // Obtener contador actual de la cookie
+            const currentCount = this.getCookieValue(cookieName) || 0;
+            const hasReachedLimit = parseInt(currentCount) >= limit;
+            
+            console.log('🔍 EWM FREQUENCY DEBUG - Verificación de límite', {
+                currentCount,
+                limit,
+                hasReachedLimit,
+                allCookies: document.cookie
+            });
+            
+            return hasReachedLimit;
+        }
+        
+        /**
+         * Obtener valor de una cookie específica
+         */
+        getCookieValue(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) {
+                return parts.pop().split(';').shift();
+            }
+            return null;
         }
 
         /**
-         * Marcar modal como mostrado
+         * Marcar modal como mostrado e incrementar contador
          */
         markAsShown() {
-            const cookieName = `ewm_modal_${this.modalId}_shown`;
+            console.log('🔍 EWM FREQUENCY DEBUG - markAsShown() iniciado', {
+                modalId: this.modalId,
+                configExists: !!this.config,
+                displayRulesExists: !!this.config?.display_rules,
+                frequencyExists: !!this.config?.display_rules?.frequency
+            });
+            
+            const frequencyConfig = this.config.display_rules?.frequency;
+            
+            console.log('🔍 EWM FREQUENCY DEBUG - markAsShown frequencyConfig:', frequencyConfig);
+            
+            if (!frequencyConfig) {
+                // Sin configuración de frecuencia, usar comportamiento legacy
+                const cookieName = `ewm_modal_${this.modalId}_shown`;
+                const expiryDate = new Date();
+                expiryDate.setTime(expiryDate.getTime() + (24 * 60 * 60 * 1000)); // 24 horas
+                const legacyCookie = `${cookieName}=1; expires=${expiryDate.toUTCString()}; path=/`;
+                document.cookie = legacyCookie;
+                
+                console.log('🔍 EWM FREQUENCY DEBUG - Legacy cookie establecida', {
+                    cookieName,
+                    cookieString: legacyCookie,
+                    expiryDate: expiryDate.toUTCString()
+                });
+                return;
+            }
+            
+            const type = frequencyConfig.type || 'session';
+            const cookieName = `ewm_modal_${this.modalId}_count`;
+            
+            // Obtener contador actual e incrementarlo
+            const currentCount = parseInt(this.getCookieValue(cookieName)) || 0;
+            const newCount = currentCount + 1;
+            
+            console.log('🔍 EWM FREQUENCY DEBUG - Incrementando contador', {
+                type,
+                cookieName,
+                currentCount,
+                newCount
+            });
+            
+            // Calcular fecha de expiración según el tipo
+            let expiryTime;
+            let cookieString;
+            
+            switch (type) {
+                case 'daily':
+                    expiryTime = 24 * 60 * 60 * 1000; // 24 horas
+                    break;
+                case 'weekly':
+                    expiryTime = 7 * 24 * 60 * 60 * 1000; // 7 días
+                    break;
+                case 'session':
+                default:
+                    // Session cookie (expires when browser closes)
+                    cookieString = `${cookieName}=${newCount}; path=/`;
+                    document.cookie = cookieString;
+                    console.log('🔍 EWM FREQUENCY DEBUG - Session cookie establecida', {
+                        cookieString,
+                        allCookies: document.cookie
+                    });
+                    return;
+            }
+            
             const expiryDate = new Date();
-            expiryDate.setTime(expiryDate.getTime() + (24 * 60 * 60 * 1000)); // 24 horas
-            document.cookie = `${cookieName}=1; expires=${expiryDate.toUTCString()}; path=/`;
+            expiryDate.setTime(expiryDate.getTime() + expiryTime);
+            cookieString = `${cookieName}=${newCount}; expires=${expiryDate.toUTCString()}; path=/`;
+            document.cookie = cookieString;
+            
+            console.log('🔍 EWM FREQUENCY DEBUG - Cookie con tiempo establecida', {
+                type,
+                expiryTime,
+                expiryDate: expiryDate.toUTCString(),
+                cookieString,
+                allCookies: document.cookie
+            });
         }
 
         /**
@@ -274,7 +440,15 @@
          * Abrir modal
          */
         open() {
-            if (this.isVisible) return;
+            console.log('🔍 EWM FREQUENCY DEBUG - open() iniciado', {
+                modalId: this.modalId,
+                isVisible: this.isVisible
+            });
+            
+            if (this.isVisible) {
+                console.log('🔍 EWM FREQUENCY DEBUG - Modal ya visible, saliendo');
+                return;
+            }
 
             this.isVisible = true;
             this.modalElement.style.display = 'flex';
@@ -291,11 +465,14 @@
             // Focus management
             this.trapFocus();
             
+            console.log('🔍 EWM FREQUENCY DEBUG - Llamando a markAsShown()');
             // Mark as shown
             this.markAsShown();
 
             // Trigger event
             this.triggerEvent('ewm:modal:opened', { modalId: this.modalId });
+            
+            console.log('🔍 EWM FREQUENCY DEBUG - open() completado');
         }
 
         /**

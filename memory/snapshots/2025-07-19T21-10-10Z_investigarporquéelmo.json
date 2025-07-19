@@ -1,0 +1,82 @@
+{
+  "schema_version": "1.0.0",
+  "meta": {
+    "date": "2025-07-19T09:45:00Z",
+    "project": "ewm-modal-cta",
+    "author": "agent_code",
+    "task_id": "MODAL_FREQUENCY_BUG_20250719",
+    "status": "doing"
+  },
+  "scope": {
+    "files": [
+      "assets/js/modal-frontend.js",
+      "includes/class-ewm-shortcodes.php",
+      "includes/class-ewm-render-core.php"
+    ],
+    "components": [
+      "Admin Builder Modal",
+      "Frequency System",
+      "Cookie Management"
+    ]
+  },
+  "problem": {
+    "user_request": "Investigar por qué el modal creado con admin builder no respeta la configuración de frecuencia (ej: 1 semana)",
+    "business_goal": "Garantizar que los modales aparezcan según la frecuencia configurada para mejorar UX y evitar spam",
+    "constraints": [
+      "No modificar sistema legacy",
+      "Mantener compatibilidad"
+    ]
+  },
+  "analysis": {
+    "root_cause": "Por determinar - posible problema en manejo de cookies o configuración de frecuencia",
+    "hypotheses": [
+      "Cookie no se está guardando correctamente",
+      "Frecuencia no se está aplicando",
+      "Conflicto entre sistema clásico y Gutenberg"
+    ],
+    "tradeoffs": [
+      "Tiempo de investigación vs impacto en UX"
+    ]
+  },
+  "implementation_plan": {
+    "steps": [
+      {
+        "step": "Analizar código de cookies y frecuencia",
+        "status": "doing",
+        "estimated_time": "30min"
+      },
+      {
+        "step": "Identificar el flujo del admin builder",
+        "status": "todo",
+        "estimated_time": "20min"
+      },
+      {
+        "step": "Localizar el bug específico",
+        "status": "todo",
+        "estimated_time": "30min"
+      },
+      {
+        "step": "Implementar la corrección",
+        "status": "todo",
+        "estimated_time": "20min"
+      }
+    ],
+    "md_reference": "docs/memory/MODAL_FREQUENCY_BUG_20250719.md"
+  },
+  "experiments": [],
+  "strategies_tried": [],
+  "open_questions": [
+    "¿Dónde se guarda la configuración de frecuencia?",
+    "¿Cómo se diferencia admin builder de shortcode?"
+  ],
+  "next_actions": [
+    "Revisar frontend-logger.js y modal-frontend.js",
+    "Buscar lógica de cookies"
+  ],
+  "links": {
+    "docs": [],
+    "tickets": [],
+    "designs": [],
+    "runs": []
+  }
+}
