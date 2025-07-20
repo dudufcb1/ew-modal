@@ -801,6 +801,9 @@ class EWM_Render_Core {
 			true
 		);
 
+		// Obtener configuración del logger para el bypass de frecuencia
+		$logger_settings = EWM_Logger_Settings::get_instance();
+
 		wp_localize_script(
 			'ewm-modal-scripts',
 			'ewmModal',
@@ -809,6 +812,7 @@ class EWM_Render_Core {
 				'restUrl' => rest_url( 'ewm/v1/' ),
 				'nonce'   => wp_create_nonce( 'wp_rest' ),
 				'debug'   => defined( 'WP_DEBUG' ) && WP_DEBUG,
+				'frequencyDebug' => $logger_settings->is_frequency_debug_enabled(),
 				'strings' => array(
 					'loading'                => __( 'Cargando...', 'ewm-modal-cta' ),
 					'error'                  => __( 'Ha ocurrido un error. Por favor, inténtalo de nuevo.', 'ewm-modal-cta' ),

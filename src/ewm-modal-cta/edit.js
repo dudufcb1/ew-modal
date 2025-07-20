@@ -625,8 +625,8 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 							options={[
 								{ value: 'always', label: __('Siempre mostrar', 'ewm-modal-cta') },
 								{ value: 'session', label: __('Una vez por sesión', 'ewm-modal-cta') },
-								{ value: 'day', label: __('Una vez por día', 'ewm-modal-cta') },
-								{ value: 'week', label: __('Una vez por semana', 'ewm-modal-cta') }
+								{ value: 'daily', label: __('Una vez por día', 'ewm-modal-cta') },
+								{ value: 'weekly', label: __('Una vez por semana', 'ewm-modal-cta') }
 							]}
 							onChange={(value) => {
 								const newDisplayRules = {

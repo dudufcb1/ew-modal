@@ -35,6 +35,7 @@
          */
         init() {
             this.parseConfig();
+            this.clearObsoleteFrequencyCookies(); // Limpiar cookies obsoletas
             this.moveModalToBody(); // Mover modal al body para evitar problemas de posicionamiento
             this.setupElements();
             this.setupEventListeners();
@@ -278,6 +279,12 @@
          * Verificar si el modal ya se mostró considerando la frecuencia configurada
          */
         hasBeenShown() {
+            // Si el modo debug de frecuencia está activo, siempre permitir mostrar el modal
+            if (window.ewmModal && window.ewmModal.frequencyDebug) {
+                console.log('🔍 EWM FREQUENCY DEBUG - Bypass activo desde JS. Modal permitido.');
+                return false; // Retornar false significa "no se ha mostrado", por lo tanto, se mostrará
+            }
+
             console.log('🔍 EWM FREQUENCY DEBUG - hasBeenShown() iniciado', {
                 modalId: this.modalId,
                 configExists: !!this.config,
@@ -303,7 +310,7 @@
             
             const type = frequencyConfig.type || 'session';
             const limit = parseInt(frequencyConfig.limit) || 1;
-            const cookieName = `ewm_modal_${this.modalId}_count`;
+            const cookieName = `ewm_modal_${this.modalId}_count_${type}`;
             
             console.log('🔍 EWM FREQUENCY DEBUG - Configuración detectada', {
                 type,
@@ -324,7 +331,35 @@
             
             return hasReachedLimit;
         }
-        
+
+        /**
+         * Limpia las cookies de frecuencia obsoletas si la configuración ha cambiado
+         */
+        clearObsoleteFrequencyCookies() {
+            const currentType = this.config.display_rules?.frequency?.type || 'session';
+            const allTypes = ['session', 'daily', 'weekly'];
+
+            console.log('🔍 EWM FREQUENCY DEBUG - Limpiando cookies obsoletas', {
+                modalId: this.modalId,
+                currentType,
+                allTypes
+            });
+
+            allTypes.forEach(type => {
+                if (type !== currentType) {
+                    const cookieNameToDelete = `ewm_modal_${this.modalId}_count_${type}`;
+                    // Para eliminar una cookie, la establecemos con una fecha de expiración pasada
+                    document.cookie = `${cookieNameToDelete}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
+                    console.log(`🔍 EWM FREQUENCY DEBUG - Cookie eliminada: ${cookieNameToDelete}`);
+                }
+            });
+
+            // También limpiar la cookie genérica anterior para una transición limpia
+            const legacyCookie = `ewm_modal_${this.modalId}_count`;
+            document.cookie = `${legacyCookie}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
+            console.log(`🔍 EWM FREQUENCY DEBUG - Cookie legacy eliminada: ${legacyCookie}`);
+        }
+
         /**
          * Obtener valor de una cookie específica
          */
@@ -369,7 +404,7 @@
             }
             
             const type = frequencyConfig.type || 'session';
-            const cookieName = `ewm_modal_${this.modalId}_count`;
+            const cookieName = `ewm_modal_${this.modalId}_count_${type}`;
             
             // Obtener contador actual e incrementarlo
             const currentCount = parseInt(this.getCookieValue(cookieName)) || 0;

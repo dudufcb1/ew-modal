@@ -1,0 +1,88 @@
+================================================================================
+1. COMENTARIOS DEL AGENTE
+================================================================================
+PREGUNTA/PROBLEMA:
+¿Por qué el modal 173 no respeta los cambios de configuración de frecuencia y el bypass de debug mode no funciona completamente?
+
+CONTEXTO/DEBUG:
+PROBLEMA CONFIRMADO POR CONSULTOR:
+
+**ARQUITECTURA UNIFICADA CONFIRMADA**:
+- ✅ Shortcodes y bloques usan exactamente el mismo JavaScript (`modal-frontend.js`)
+- ✅ Ambos usan el mismo motor de renderizado (`EWM_Render_Core`)
+- ✅ Los cambios que hicimos son seguros para ambos sistemas
+
+**CAUSA RAÍZ IDENTIFICADA**:
+El consultor confirma que el problema NO está en JavaScript, sino en el **PHP backend** que genera configuración inconsistente.
+
+**PROBLEMAS ESPECÍFICOS**:
+
+1. **VALIDACIÓN PHP INCOMPLETA** (`includes/class-ewm-meta-fields.php:544-558`):
+   ```php
+   'type' => in_array($config['frequency']['type'] ?? 'session', 
+                     array('session', 'daily', 'weekly')) ? // ❌ FALTA 'always'
+   ```
+   - El backend NO acepta `'always'` como tipo válido
+   - Lo sobrescribe a `'session'` durante sanitización
+   - Esto causa la discrepancia: JS lee configuración corrupta
+
+2. **CONFIGURACIÓN INCONSISTENTE EN BD**:
+   - WP CLI: `{"type":"session","limit":1}` ✅
+   - JavaScript lee: `{"type":"session","limit":0}` ❌
+   - Causa: PHP genera `data-config` con datos sanitizados incorrectamente
+
+3. **TRIGGERS DESHABILITADOS**:
+   - Modal 173 tiene todos los triggers en `false`
+   - Por eso nunca se activa, independiente de la frecuencia
+
+**SOLUCIONES PROPUESTAS POR CONSULTOR**:
+1. Agregar `'always'` a la validación PHP
+2. Verificar por qué triggers se deshabilitaron
+3. Confirmar que `data-config` se genera correctamente
+
+**EVIDENCIA DE LOGS**:
+- Modal se inicializa correctamente
+- Configuración parseada muestra `limit: 0` (incorrecto)
+- Todos los triggers están `enabled: false`
+
+================================================================================
+2. CÓDIGO DEL PROYECTO
+================================================================================
+⚠️ No se pudo cargar el archivo de codebase
+
+================================================================================
+3. LOGS ADJUNTADOS
+================================================================================
+(No se adjuntaron logs adicionales)
+
+================================================================================
+4. FORMATO DE RESPUESTA ESPERADO DEL CONSULTOR
+================================================================================
+# Hipótesis del consultor
+1. [Primera hipótesis técnica]
+2. [Segunda hipótesis técnica]
+3. [Tercera hipótesis técnica]
+
+# Sugerencias principales
+- [Acción clave 1]
+- [Acción clave 2]
+- [Acción clave 3]
+
+# Pruebas a ejecutar
+| Prueba | Comando / paso | Resultado esperado |
+|--------|----------------|-------------------|
+| [Prueba 1] | [Comando] | [Resultado] |
+
+# Información adicional requerida
+- [Dato/log/métrica faltante 1]
+- [Dato/log/métrica faltante 2]
+
+# Archivos tocados hasta ahora
+- [Ruta relativa 1]
+- [Ruta relativa 2]
+
+# Análisis detallado
+[Hallazgos técnicos detallados]
+
+# Riesgos y trade-offs
+[Consideraciones importantes]
