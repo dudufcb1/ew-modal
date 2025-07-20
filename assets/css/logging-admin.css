@@ -219,6 +219,9 @@ h2.title {
     margin: 15px 0;
     border-radius: 3px;
     font-weight: 500;
+    box-sizing: border-box; /* Asegurar el modelo de caja */
+    width: auto;            /* Permitir que el ancho se ajuste automáticamente */
+    max-width: 100%;        /* Limitar el ancho máximo a 100% del padre */
 }
 
 .ewm-message.success {

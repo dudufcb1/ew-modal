@@ -615,6 +615,34 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 						/>
 					</PanelRow>
 				</PanelBody>
+
+				{/* Panel de Reglas de Visualización */}
+				<PanelBody title={__('Reglas de Visualización', 'ewm-modal-cta')} initialOpen={false}>
+					<PanelRow>
+						<SelectControl
+							label={__('Frecuencia de Visualización', 'ewm-modal-cta')}
+							value={displayRules?.frequency?.type || 'session'}
+							options={[
+								{ value: 'always', label: __('Siempre mostrar', 'ewm-modal-cta') },
+								{ value: 'session', label: __('Una vez por sesión', 'ewm-modal-cta') },
+								{ value: 'day', label: __('Una vez por día', 'ewm-modal-cta') },
+								{ value: 'week', label: __('Una vez por semana', 'ewm-modal-cta') }
+							]}
+							onChange={(value) => {
+								const newDisplayRules = {
+									...displayRules,
+									frequency: {
+										...displayRules?.frequency,
+										type: value,
+										limit: value === 'always' ? 0 : 1
+									}
+								};
+								setAttributes({ displayRules: newDisplayRules });
+							}}
+							help={__('Controla con qué frecuencia se muestra el modal al mismo usuario', 'ewm-modal-cta')}
+						/>
+					</PanelRow>
+				</PanelBody>
 			</InspectorControls>
 
 			<div {...blockProps}>

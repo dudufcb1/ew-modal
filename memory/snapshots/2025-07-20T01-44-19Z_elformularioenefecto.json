@@ -1,0 +1,91 @@
+{
+  "analysis": {
+    "hypotheses": [
+      "Los bloques Gutenberg usan render.php diferente que no valida frecuencia",
+      "El sistema de debug mode no incluye validación para bloques",
+      "Falta integración entre displayRules del bloque y la validación backend"
+    ],
+    "root_cause": "Los bloques de Gutenberg no están aplicando las reglas de visualización/frecuencia como lo hacen los shortcodes",
+    "tradeoffs": [
+      "Implementar validación en render.php vs unificar con shortcodes",
+      "Logging detallado vs performance"
+    ]
+  },
+  "experiments": [],
+  "implementation_plan": {
+    "md_reference": "docs/memory/GUTENBERG_FREQUENCY_VALIDATION_BUG_20250719.md",
+    "steps": [
+      {
+        "estimated_time": "30min",
+        "status": "todo",
+        "step": "Revisar logs masivos para identificar diferencias entre shortcodes y bloques"
+      },
+      {
+        "estimated_time": "20min",
+        "status": "todo",
+        "step": "Examinar render.php del bloque y comparar con shortcodes"
+      },
+      {
+        "estimated_time": "25min",
+        "status": "todo",
+        "step": "Verificar si bloques llaman a validaciones de frecuencia"
+      },
+      {
+        "estimated_time": "15min",
+        "status": "todo",
+        "step": "Revisar sistema de debug mode para bloques"
+      },
+      {
+        "estimated_time": "45min",
+        "status": "todo",
+        "step": "Implementar validación de frecuencia en bloques si falta"
+      }
+    ]
+  },
+  "links": {
+    "designs": [],
+    "docs": [],
+    "runs": [],
+    "tickets": []
+  },
+  "meta": {
+    "author": "augment_agent",
+    "date": "2025-07-19T10:00:00Z",
+    "project": "ewm-modal-cta",
+    "status": "doing",
+    "task_id": "GUTENBERG_FREQUENCY_VALIDATION_BUG_20250719"
+  },
+  "next_actions": [
+    "Revisar logs con números altos (js=1000, wp=100)",
+    "Comparar renderizado shortcodes vs bloques",
+    "Identificar dónde falta validación de frecuencia"
+  ],
+  "open_questions": [
+    "¿Los bloques usan el mismo sistema de validación que shortcodes?",
+    "¿El debug mode está configurado para incluir bloques?",
+    "¿Dónde se debe agregar la validación faltante?"
+  ],
+  "problem": {
+    "business_goal": "Asegurar que los bloques de Gutenberg respeten las reglas de frecuencia de visualización igual que los shortcodes",
+    "constraints": [
+      "No romper funcionalidad existente de shortcodes",
+      "Mantener sistema de debug mode",
+      "Preservar performance"
+    ],
+    "user_request": "El formulario en efecto existe, pero no se muestra. Los bloques de Gutenberg NO respetan las configuraciones de frecuencia ni el modo debug de bypass, a diferencia de los shortcodes que funcionan correctamente."
+  },
+  "schema_version": "1.0.0",
+  "scope": {
+    "components": [
+      "Gutenberg Block Render",
+      "Frequency Validation",
+      "Debug Mode System",
+      "Block vs Shortcode Comparison"
+    ],
+    "files": [
+      "src/ewm-modal-cta/render.php",
+      "includes/class-ewm-shortcodes.php"
+    ]
+  },
+  "strategies_tried": []
+}

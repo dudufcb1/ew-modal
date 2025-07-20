@@ -41,11 +41,49 @@ if ( ! $modal_post || $modal_post->post_type !== 'ew_modal' ) {
 	return '';
 }
 
-// Verificar que la clase EWM_Render_Core existe
+// Verificar que las clases necesarias existen
 if ( ! class_exists( 'EWM_Render_Core' ) ) {
 	error_log( 'EWM BLOCK RENDER: EWM_Render_Core class not found' );
 	if ( is_admin() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
 		return '<div style="padding: 20px; border: 2px solid #dc3232; text-align: center; color: #dc3232;">[EWM Modal: Error - Motor de renderizado no disponible]</div>';
+	}
+	return '';
+}
+
+// **NUEVO: Aplicar validaciones de frecuencia como en shortcodes**
+if ( ! class_exists( 'EWM_Shortcodes' ) ) {
+	error_log( 'EWM BLOCK RENDER: EWM_Shortcodes class not found for validation' );
+	if ( is_admin() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
+		return '<div style="padding: 20px; border: 2px solid #dc3232; text-align: center; color: #dc3232;">[EWM Modal: Error - Sistema de validación no disponible]</div>';
+	}
+	return '';
+}
+
+// Aplicar las mismas validaciones que los shortcodes
+$shortcodes_instance = EWM_Shortcodes::get_instance();
+
+// Usar reflection para acceder al método privado can_display_modal
+$reflection = new ReflectionClass( $shortcodes_instance );
+$can_display_method = $reflection->getMethod( 'can_display_modal' );
+$can_display_method->setAccessible( true );
+
+// Log antes de validación
+error_log( 'EWM BLOCK RENDER: Checking display rules for modal ' . $modal_id );
+
+// Verificar permisos de visualización (incluye validación de frecuencia)
+try {
+	$can_display = $can_display_method->invoke( $shortcodes_instance, $modal_id );
+	error_log( 'EWM BLOCK RENDER: Display validation result for modal ' . $modal_id . ': ' . ( $can_display ? 'ALLOWED' : 'BLOCKED' ) );
+	
+	if ( ! $can_display ) {
+		error_log( 'EWM BLOCK RENDER: Modal ' . $modal_id . ' blocked by display rules (frequency, pages, roles, etc.)' );
+		// No mostrar error en frontend si está bloqueado por reglas válidas
+		return '';
+	}
+} catch ( Exception $e ) {
+	error_log( 'EWM BLOCK RENDER: Error validating display rules for modal ' . $modal_id . ': ' . $e->getMessage() );
+	if ( is_admin() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
+		return '<div style="padding: 20px; border: 2px solid #dc3232; text-align: center; color: #dc3232;">[EWM Modal: Error validando reglas - ' . esc_html( $e->getMessage() ) . ']</div>';
 	}
 	return '';
 }

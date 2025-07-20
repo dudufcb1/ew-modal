@@ -1,0 +1,114 @@
+{
+  "schema_version": "1.0.0",
+  "meta": {
+    "task_id": "FRONTEND_ISSUE_INVESTIGATION_20250720",
+    "status": "done",
+    "date": "2025-07-20T02:03:00Z",
+    "project": "ewm-modal-cta",
+    "author": "agent_code"
+  },
+  "scope": {
+    "files": [
+      "assets/js/modal-admin.js",
+      "src/ewm-modal-cta/render.php",
+      "includes/class-ewm-shortcodes.php"
+    ],
+    "components": [
+      "Modal Rendering",
+      "Frequency Validation",
+      "Frontend Display",
+      "Admin JavaScript"
+    ]
+  },
+  "problem": {
+    "user_request": "Investigar issue con el frontend donde los modales siguen sin aparecer a pesar de los cambios realizados. Los logs muestran discrepancia en configuración de frecuencia.",
+    "business_goal": "Resolver el problema de visualización de modales en el frontend para que respeten las configuraciones de frecuencia correctamente",
+    "constraints": [
+      "No romper funcionalidad existente",
+      "Mantener compatibilidad con shortcodes",
+      "Preservar performance"
+    ]
+  },
+  "analysis": {
+    "root_cause": "Dos problemas principales: 1) Mapeo incorrecto de frecuencia 'always' a 'never' en modal-admin.js, 2) Todos los triggers del modal 173 estaban deshabilitados",
+    "hypotheses": [
+      "Problema de sincronización entre editor y BD",
+      "Fallo en proceso de guardado de metadatos",
+      "Conflicto entre diferentes fuentes de configuración"
+    ],
+    "tradeoffs": [
+      "Debugging detallado vs performance",
+      "Validación estricta vs flexibilidad"
+    ]
+  },
+  "implementation_plan": {
+    "steps": [
+      {
+        "step": "Verificar integridad de metadatos en BD",
+        "status": "done",
+        "estimated_time": "15min"
+      },
+      {
+        "step": "Revisar proceso de guardado en admin",
+        "status": "done",
+        "estimated_time": "20min"
+      },
+      {
+        "step": "Testing directo en frontend con debug",
+        "status": "done",
+        "estimated_time": "25min"
+      }
+    ],
+    "md_reference": "docs/memory/FRONTEND_ISSUE_INVESTIGATION_20250720.md"
+  },
+  "experiments": [
+    {
+      "test_case": "Verificar configuración de modal 173 con WP CLI",
+      "result": "Configuración correcta en BD: frequency type=session, limit=1",
+      "logs_link": ""
+    },
+    {
+      "test_case": "Revisar triggers del modal 173",
+      "result": "Todos los triggers estaban deshabilitados, incluyendo manual",
+      "logs_link": ""
+    },
+    {
+      "test_case": "Testing en frontend después de correcciones",
+      "result": "Modal funciona correctamente, se abre y respeta frecuencia",
+      "logs_link": ""
+    }
+  ],
+  "strategies_tried": [
+    {
+      "strategy": "Revisión de logs masivos",
+      "outcome": "Identificada discrepancia en configuración",
+      "reason_for_failure": "N/A"
+    },
+    {
+      "strategy": "Verificación con WP CLI",
+      "outcome": "Confirmada configuración correcta en BD",
+      "reason_for_failure": "N/A"
+    },
+    {
+      "strategy": "Corrección de mapeo de frecuencia en JavaScript",
+      "outcome": "Solucionado mapeo incorrecto always->never",
+      "reason_for_failure": "N/A"
+    },
+    {
+      "strategy": "Habilitación de triggers en modal 173",
+      "outcome": "Modal ahora se muestra correctamente",
+      "reason_for_failure": "N/A"
+    }
+  ],
+  "open_questions": [],
+  "next_actions": [
+    "Verificar que otros modales no tengan el mismo problema de triggers",
+    "Considerar agregar validación para prevenir triggers todos deshabilitados"
+  ],
+  "links": {
+    "docs": [],
+    "tickets": [],
+    "designs": [],
+    "runs": []
+  }
+}

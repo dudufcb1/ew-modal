@@ -753,7 +753,7 @@
 
             switch (frequencyType) {
                 case 'always':
-                    frequencyConfig = { type: 'never', limit: 0 };
+                    frequencyConfig = { type: 'always', limit: 0 };
                     break;
                 case 'once_per_session':
                     frequencyConfig = { type: 'session', limit: 1 };
@@ -765,7 +765,7 @@
                     frequencyConfig = { type: 'weekly', limit: 1 };
                     break;
                 default:
-                    frequencyConfig = { type: 'never', limit: 0 };
+                    frequencyConfig = { type: 'always', limit: 0 };
             }
 
             const display_rules = {
@@ -1082,7 +1082,7 @@
 
                 // Mapear de la estructura de BD al valor del formulario
                 switch (frequency.type) {
-                    case 'never':
+                    case 'always':
                         displayFrequencyValue = 'always';
                         break;
                     case 'session':

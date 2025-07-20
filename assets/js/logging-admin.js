@@ -266,7 +266,8 @@
             $('.ewm-message').remove();
             
             const $message = $(`<div class="ewm-message ${type}">${message}</div>`);
-            $('.ewm-logging-dashboard').prepend($message);
+            // Insertar DENTRO de la columna principal para no afectar el layout flexbox
+            $('.ewm-logging-main').prepend($message);
             
             // Auto-ocultar después de 5 segundos
             setTimeout(() => {

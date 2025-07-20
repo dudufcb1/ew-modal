@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "project_name": "EWM Modal CTA",
   "created_on": "2025-07-19T12:20:00Z",
-  "last_updated": "2025-07-19T06:26:08.368947Z",
+  "last_updated": "2025-07-19T18:44:01.803853Z",
   "history": [
     {
       "timestamp": "2025-07-19T06:21:05.050295Z",
@@ -21,6 +21,12 @@
       "author": "augment_agent",
       "event_type": "COMPONENT_ADDED",
       "summary": "Incorporación de herramientas y workflow de desarrollo con WP-CLI y PHPCS como componentes arquitecturales"
+    },
+    {
+      "timestamp": "2025-07-19T18:44:01.803828Z",
+      "author": "augment_agent",
+      "event_type": "DEVELOPMENT_GUIDELINE_ADDED",
+      "summary": "Agregada consideración crítica sobre caché del navegador en desarrollo WordPress"
     }
   ],
   "purpose": "Plugin moderno para WordPress que permite crear modales interactivos de captura de leads con formularios multi-paso. Sistema unificado con bloques Gutenberg y shortcodes clásicos que comparten el mismo motor de renderizado universal.",
@@ -122,5 +128,27 @@
     "Interfaces intuitivas para usuarios finales",
     "Performance optimizada en frontend",
     "Testing comprehensivo automatizado"
-  ]
+  ],
+  "development_considerations": {
+    "browser_cache": {
+      "critical_note": "En desarrollo WordPress SIEMPRE considerar caché del navegador para problemas visuales",
+      "symptoms": [
+        "Cambios CSS/JS no se reflejan",
+        "Problemas de layout persisten después de fixes",
+        "Comportamiento inconsistente"
+      ],
+      "solutions": [
+        "Ctrl+F5 para hard refresh",
+        "DevTools > Network > Disable cache",
+        "Usar private browsing/incognito",
+        "Limpiar caché del navegador"
+      ],
+      "when_to_check": [
+        "Después de cambios CSS/JS",
+        "Al reportar problemas de UI",
+        "Durante testing de funcionalidad visual",
+        "Cuando los cambios no se aplican"
+      ]
+    }
+  }
 }

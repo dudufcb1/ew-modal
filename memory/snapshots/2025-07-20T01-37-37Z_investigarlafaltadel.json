@@ -1,0 +1,98 @@
+{
+  "schema_version": "1.0.0",
+  "meta": {
+    "date": "2025-07-19T09:15:00Z",
+    "project": "ewm-modal-cta",
+    "author": "augment_agent",
+    "task_id": "GUTENBERG_FREQUENCY_FIELD_MISSING_20250719",
+    "status": "doing"
+  },
+  "scope": {
+    "files": [
+      "src/ewm-modal-cta/edit.js",
+      "src/ewm-modal-cta/block.json"
+    ],
+    "components": [
+      "Gutenberg Block Editor",
+      "Display Rules",
+      "Frequency Controls"
+    ]
+  },
+  "problem": {
+    "user_request": "Investigar la falta del campo de Frecuencia de Visualización en los bloques de Gutenberg. El modal se guarda y funciona bien en los bloques, pero no hay forma de configurar la frecuencia, aunque en los shortcodes sí está implementado.",
+    "business_goal": "Permitir configurar la frecuencia de visualización de modales desde el editor de Gutenberg para mantener consistencia con la funcionalidad disponible en shortcodes y panel de administración",
+    "constraints": [
+      "Mantener compatibilidad con bloques existentes",
+      "No afectar funcionalidad de shortcodes",
+      "Usar componentes de WordPress existentes"
+    ]
+  },
+  "analysis": {
+    "root_cause": "El editor de Gutenberg no tiene un panel de configuración para las reglas de visualización, específicamente para la frecuencia de visualización del modal",
+    "hypotheses": [
+      "El atributo displayRules.frequency existe en block.json pero no se usa en edit.js",
+      "La funcionalidad está implementada en backend pero falta UI en frontend",
+      "Se requiere agregar PanelBody específico para reglas de visualización"
+    ],
+    "tradeoffs": [
+      "Agregar nuevo panel vs mantener interfaz simple",
+      "Exposer todas las opciones vs solo las básicas"
+    ]
+  },
+  "implementation_plan": {
+    "steps": [
+      {
+        "step": "Agregar PanelBody para Reglas de Visualización en edit.js",
+        "status": "todo",
+        "estimated_time": "30min"
+      },
+      {
+        "step": "Implementar SelectControl para tipo de frecuencia",
+        "status": "todo",
+        "estimated_time": "20min"
+      },
+      {
+        "step": "Conectar con atributo displayRules",
+        "status": "todo",
+        "estimated_time": "15min"
+      },
+      {
+        "step": "Probar funcionalidad en editor de bloques",
+        "status": "todo",
+        "estimated_time": "30min"
+      }
+    ],
+    "md_reference": "docs/memory/GUTENBERG_FREQUENCY_FIELD_MISSING_20250719.md"
+  },
+  "experiments": [
+    {
+      "test_case": "Verificar implementación en panel de administración",
+      "result": "Funcional - Campo select con 4 opciones de frecuencia en líneas 415-430 de class-ewm-admin-page.php"
+    },
+    {
+      "test_case": "Verificar implementación en shortcodes",
+      "result": "Funcional - Validación completa de frecuencia con cookies en líneas 455-511 de class-ewm-shortcodes.php"
+    },
+    {
+      "test_case": "Verificar definición en block.json",
+      "result": "Definido - Atributo displayRules.frequency existe pero no se usa en UI"
+    }
+  ],
+  "strategies_tried": [],
+  "open_questions": [
+    "¿Se debe mantener el mismo estilo visual que otros paneles?",
+    "¿Se requieren opciones adicionales de frecuencia?"
+  ],
+  "next_actions": [
+    "Implementar PanelBody en edit.js",
+    "Agregar SelectControl para frecuencia",
+    "Sincronizar con displayRules attribute",
+    "Probar funcionalidad"
+  ],
+  "links": {
+    "docs": [],
+    "tickets": [],
+    "designs": [],
+    "runs": []
+  }
+}
