@@ -1,0 +1,89 @@
+{
+  "schema_version": "2.0.0",
+  "meta": {
+    "task_id": "BRAINSTORMING_TEORIAS_PERSISTENCIA_20250721",
+    "status": "done",
+    "date": "2025-07-21T07:30:00Z",
+    "project": "ewm-modal-cta",
+    "author": "augment_agent",
+    "revision": 1,
+    "snapshot_id": "da1a873e-3bda-44e5-b892-29678724a6c4",
+    "group_id": "investigacion_ewm_modal_builder",
+    "timestamp": "2025-07-21T12:01:28.619444Z",
+    "can_agent_set_done": true,
+    "rolled_back": false,
+    "group_md": "groups/investigacion_ewm_modal_builder/group.md"
+  },
+  "scope": {
+    "files": [
+      "admin/class-ewm-modal-builder.php",
+      "includes/class-ewm-rest-api.php",
+      "admin/js/modal-builder.js"
+    ],
+    "components": [
+      "Modal Builder",
+      "Persistencia de Datos",
+      "Frontend JavaScript"
+    ]
+  },
+  "problem": {
+    "user_request": "Brainstorming e investigación profunda de teorías sobre por qué los cambios del modal no persisten",
+    "business_goal": "Identificar todas las posibles causas del problema de persistencia",
+    "constraints": [
+      "Enfoque en JavaScript",
+      "Sin Gutenberg",
+      "Considerar que WP CLI hardcodeado funciona"
+    ]
+  },
+  "analysis": {
+    "root_cause": "Por determinar - problema de persistencia al guardar",
+    "hypotheses": [
+      "Frontend no envía datos correctamente",
+      "Backend no procesa datos correctamente",
+      "Conflicto entre datos de BD y frontend",
+      "Problema en el flujo de guardado/carga",
+      "Cache o estado local interfiriendo"
+    ],
+    "tradeoffs": [
+      "Investigación exhaustiva vs solución rápida"
+    ]
+  },
+  "implementation_plan": {
+    "steps": [
+      {
+        "step": "Analizar flujo completo de guardado",
+        "status": "todo",
+        "estimated_time": "45min"
+      },
+      {
+        "step": "Investigar diferencias WP CLI vs Frontend",
+        "status": "todo",
+        "estimated_time": "30min"
+      },
+      {
+        "step": "Documentar teorías y hipótesis",
+        "status": "todo",
+        "estimated_time": "20min"
+      }
+    ],
+    "md_reference": ""
+  },
+  "experiments": [],
+  "strategies_tried": [],
+  "open_questions": [
+    "¿Por qué WP CLI hardcodeado funciona pero el frontend no?",
+    "¿Dónde se pierde la persistencia en el flujo?",
+    "¿Hay conflicto entre estado frontend y BD?"
+  ],
+  "next_actions": [
+    "Mapear flujo completo de datos",
+    "Comparar WP CLI vs Frontend",
+    "Generar hipótesis detalladas"
+  ],
+  "links": {
+    "docs": [],
+    "tickets": [],
+    "designs": [],
+    "runs": []
+  }
+}

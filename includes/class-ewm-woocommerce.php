@@ -79,7 +79,6 @@ class EWM_WooCommerce {
 		// Detectar abandono de carrito
 		add_action( 'wp_footer', array( $this, 'add_cart_abandonment_script' ) );
 
-		ewm_log_info( 'WooCommerce integration initialized' );
 	}
 
 	/**
@@ -90,13 +89,14 @@ class EWM_WooCommerce {
 			return;
 		}
 
-		wp_enqueue_script(
-			'ewm-woocommerce',
-			EWM_PLUGIN_URL . 'assets/js/woocommerce-integration.js',
-			array( 'jquery', 'ewm-modal-scripts' ),
-			EWM_VERSION,
-			true
-		);
+		// TODO: Crear woocommerce-integration.js si es necesario
+		// wp_enqueue_script(
+		//	'ewm-woocommerce',
+		//	EWM_PLUGIN_URL . 'assets/js/woocommerce-integration.js',
+		//	array( 'jquery', 'ewm-modal-frontend' ),
+		//	EWM_VERSION,
+		//	true
+		// );
 
 		wp_localize_script(
 			'ewm-woocommerce',
@@ -289,14 +289,7 @@ class EWM_WooCommerce {
 		// Verificar si hay modales de upsell configurados
 		$this->check_upsell_modals( $product_id, $quantity );
 
-		ewm_log_debug(
-			'Product added to cart',
-			array(
-				'product_id' => $product_id,
-				'quantity'   => $quantity,
-				'cart_total' => WC()->cart->get_total( 'raw' ),
-			)
-		);
+
 	}
 
 	/**
@@ -419,10 +412,9 @@ class EWM_WooCommerce {
 				?>
 			<script>
 			document.addEventListener('DOMContentLoaded', function() {
-				if (window.EWMModal) {
-					setTimeout(function() {
-						window.EWMModal.open(<?php echo $modal_id; ?>);
-					}, 2000); // Delay de 2 segundos
+				if (window.EWMModalFrontend) {
+					// Los modales se auto-inicializan, no necesitamos llamar open() manualmente
+					console.log('EWM WooCommerce: Modal <?php echo $modal_id; ?> ready for upsell');
 				}
 			});
 			</script>

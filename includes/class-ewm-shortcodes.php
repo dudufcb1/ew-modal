@@ -55,6 +55,11 @@ class EWM_Shortcodes {
 		add_action( 'init', array( $this, 'register_shortcodes' ) );
 		add_filter( 'widget_text', 'do_shortcode' );
 		add_filter( 'the_excerpt', 'do_shortcode' );
+
+		// AJAX handlers para sistema de transients
+		add_action( 'wp_ajax_ewm_register_modal_view', array( $this, 'register_modal_view' ) );
+		add_action( 'wp_ajax_nopriv_ewm_register_modal_view', array( $this, 'register_modal_view' ) );
+		add_action( 'wp_ajax_ewm_clear_modal_transients', array( $this, 'clear_modal_transients' ) );
 	}
 
 	/**
@@ -65,12 +70,7 @@ class EWM_Shortcodes {
 			add_shortcode( $tag, array( $this, $callback ) );
 		}
 
-		ewm_log_info(
-			'Shortcodes registered',
-			array(
-				'shortcodes' => array_keys( $this->shortcodes ),
-			)
-		);
+		
 	}
 
 	/**
@@ -79,18 +79,7 @@ class EWM_Shortcodes {
 	public function render_modal_shortcode( $atts, $content = null ) {
 		$start_time = microtime( true );
 
-		// LOGGING CRÍTICO: Inicio del shortcode
-		ewm_log_info(
-			'SHORTCODE DEBUG - render_modal_shortcode STARTED',
-			array(
-				'raw_atts'     => $atts,
-				'content'      => $content,
-				'is_admin'     => is_admin(),
-				'current_user' => get_current_user_id(),
-				'request_uri'  => $_SERVER['REQUEST_URI'] ?? 'unknown',
-				'user_agent'   => $_SERVER['HTTP_USER_AGENT'] ?? 'unknown',
-			)
-		);
+		
 
 		// Atributos por defecto
 		$atts = shortcode_atts(
@@ -105,140 +94,47 @@ class EWM_Shortcodes {
 			'ew_modal'
 		);
 
-		ewm_log_info(
-			'SHORTCODE DEBUG - attributes processed',
-			array(
-				'processed_atts' => $atts,
-				'is_admin'       => is_admin(),
-				'current_user'   => get_current_user_id(),
-			)
-		);
+		
 
-		// LOGGING CRÍTICO: Antes de validar modal ID
-		ewm_log_info(
-			'SHORTCODE DEBUG - About to validate modal ID',
-			array(
-				'provided_id'   => $atts['id'],
-				'id_type'       => gettype( $atts['id'] ),
-				'id_empty'      => empty( $atts['id'] ),
-				'id_numeric'    => is_numeric( $atts['id'] ),
-			)
-		);
+		
 
 		// Validar ID del modal
 		$modal_id = $this->validate_modal_id( $atts['id'] );
 
-		ewm_log_info(
-			'SHORTCODE DEBUG - Modal ID validation result',
-			array(
-				'provided_id'   => $atts['id'],
-				'validated_id'  => $modal_id,
-				'validation_ok' => ! empty( $modal_id ),
-			)
-		);
+		
 
 		if ( ! $modal_id ) {
-			ewm_log_warning(
-				'SHORTCODE DEBUG - Invalid modal ID in shortcode',
-				array(
-					'provided_id' => $atts['id'],
-					'shortcode'   => 'ew_modal',
-				)
-			);
+			
 
 			// TEMPORAL: Forzar mensaje de error para debug
 			return '<div class="ewm-error">Error: Modal ID inválido o modal no encontrado. ID proporcionado: ' . esc_html( $atts['id'] ) . '</div>';
 		}
 
-		ewm_log_info(
-			'SHORTCODE DEBUG - Modal ID validated successfully',
-			array(
-				'modal_id'    => $modal_id,
-				'provided_id' => $atts['id'],
-			)
-		);
+		
 
 		// Verificar permisos de visualización
 		if ( ! $this->can_display_modal( $modal_id ) ) {
-			ewm_log_debug(
-				'Modal display blocked by permissions',
-				array(
-					'modal_id' => $modal_id,
-					'user_id'  => get_current_user_id(),
-				)
-			);
+			
 			// TEMPORAL: Forzar mensaje de error para debug
 			return '<div class="ewm-error">Error: Permisos insuficientes para mostrar el modal.</div>';
 		}
 
-		// Obtener configuración del modal
-		$modal_config = EWM_Modal_CPT::get_modal_config( $modal_id );
-		ewm_log_info(
-			'Modal config retrieved',
-			array(
-				'modal_id'     => $modal_id,
-				'config_empty' => empty( $modal_config ),
-				'config_keys'  => is_array( $modal_config ) ? array_keys( $modal_config ) : 'not_array',
-			)
-		);
+		
 
-		if ( empty( $modal_config ) ) {
-			ewm_log_warning(
-				'Empty modal configuration',
-				array(
-					'modal_id' => $modal_id,
-				)
-			);
+		// Preparar configuración para el renderizado (solo atributos del shortcode)
+		$render_config = $this->prepare_render_config( $modal_id, $atts );
+		
 
-			// TEMPORAL: Forzar mensaje de error para debug
-			return '<div class="ewm-error">Error: Configuración del modal vacía. Modal ID: ' . esc_html( $modal_id ) . '</div>';
-		}
-
-		// Preparar configuración para el renderizado
-		$render_config = $this->prepare_render_config( $modal_id, $atts, $modal_config );
-		ewm_log_info(
-			'Render config prepared',
-			array(
-				'modal_id'           => $modal_id,
-				'render_config_keys' => array_keys( $render_config ),
-			)
-		);
-
-		// LOGGING CRÍTICO: Antes de llamar al motor de renderizado
-		ewm_log_info(
-			'SHORTCODE DEBUG - About to call ewm_render_modal_core',
-			array(
-				'modal_id'           => $modal_id,
-				'render_config_keys' => array_keys( $render_config ),
-				'function_exists'    => function_exists( 'ewm_render_modal_core' ),
-				'class_exists'       => class_exists( 'EWM_Render_Core' ),
-			)
-		);
+		
 
 		// Usar el motor de renderizado universal
 		$output = ewm_render_modal_core( $modal_id, $render_config );
 
-		ewm_log_info(
-			'SHORTCODE DEBUG - ewm_render_modal_core completed',
-			array(
-				'modal_id'      => $modal_id,
-				'output_length' => strlen( $output ),
-				'output_empty'  => empty( $output ),
-				'output_type'   => gettype( $output ),
-				'output_preview' => substr( $output, 0, 100 ) . '...',
-			)
-		);
+		
 
 		$execution_time = microtime( true ) - $start_time;
 
-		ewm_log_debug(
-			'Modal shortcode rendered',
-			array(
-				'modal_id'       => $modal_id,
-				'trigger'        => $atts['trigger'],
-				'execution_time' => round( $execution_time * 1000, 2 ) . 'ms',
-			)
-		);
+		
 
 		return $output;
 	}
@@ -309,45 +205,28 @@ class EWM_Shortcodes {
 	 * Validar ID del modal
 	 */
 	private function validate_modal_id( $id ) {
-		ewm_log_info(
-			'VALIDATE DEBUG - validate_modal_id started',
-			array(
-				'id'         => $id,
-				'id_type'    => gettype( $id ),
-				'id_empty'   => empty( $id ),
-				'id_numeric' => is_numeric( $id ),
-			)
-		);
+		
 
 		if ( empty( $id ) ) {
-			ewm_log_warning( 'VALIDATE DEBUG - ID is empty', array( 'id' => $id ) );
+			
 			return false;
 		}
 
 		// Si es numérico, verificar que existe
 		if ( is_numeric( $id ) ) {
 			$post = get_post( $id );
-			ewm_log_info(
-				'VALIDATE DEBUG - Numeric ID check',
-				array(
-					'id'          => $id,
-					'post_exists' => ! empty( $post ),
-					'post_type'   => $post ? $post->post_type : 'none',
-					'post_status' => $post ? $post->post_status : 'none',
-					'post_title'  => $post ? $post->post_title : 'none',
-				)
-			);
+			
 
 			if ( $post && $post->post_type === 'ew_modal' && $post->post_status === 'publish' ) {
-				ewm_log_info( 'VALIDATE DEBUG - Numeric ID validation SUCCESS', array( 'id' => $id ) );
+				
 				return intval( $id );
 			} else {
-				ewm_log_warning( 'VALIDATE DEBUG - Numeric ID validation FAILED', array( 'id' => $id ) );
+				
 			}
 		}
 
 		// Si es string, buscar por slug o título
-		ewm_log_info( 'VALIDATE DEBUG - Trying string search by slug', array( 'id' => $id, 'sanitized' => sanitize_title( $id ) ) );
+		
 
 		$query = new WP_Query(
 			array(
@@ -359,15 +238,15 @@ class EWM_Shortcodes {
 			)
 		);
 
-		ewm_log_info( 'VALIDATE DEBUG - Slug search result', array( 'found' => $query->have_posts(), 'count' => $query->found_posts ) );
+		
 
 		if ( $query->have_posts() ) {
-			ewm_log_info( 'VALIDATE DEBUG - String slug validation SUCCESS', array( 'id' => $id, 'found_id' => $query->posts[0] ) );
+			
 			return $query->posts[0];
 		}
 
 		// Buscar por título
-		ewm_log_info( 'VALIDATE DEBUG - Trying string search by title', array( 'id' => $id ) );
+		
 
 		$query = new WP_Query(
 			array(
@@ -379,14 +258,14 @@ class EWM_Shortcodes {
 			)
 		);
 
-		ewm_log_info( 'VALIDATE DEBUG - Title search result', array( 'found' => $query->have_posts(), 'count' => $query->found_posts ) );
+		
 
 		if ( $query->have_posts() ) {
-			ewm_log_info( 'VALIDATE DEBUG - String title validation SUCCESS', array( 'id' => $id, 'found_id' => $query->posts[0] ) );
+			
 			return $query->posts[0];
 		}
 
-		ewm_log_warning( 'VALIDATE DEBUG - All validation methods FAILED', array( 'id' => $id ) );
+		
 		return false;
 	}
 
@@ -394,80 +273,69 @@ class EWM_Shortcodes {
 	 * Verificar si se puede mostrar el modal
 	 */
 	private function can_display_modal( $modal_id ) {
-		error_log( "--- [EWM DEBUG] Iniciando can_display_modal() para Modal ID: $modal_id ---" );
+		
 
-		// Obtener reglas de visualización
-		$display_rules = EWM_Meta_Fields::get_meta( $modal_id, 'ewm_display_rules', array() );
-		error_log( '[EWM DEBUG] Reglas de visualización obtenidas: ' . json_encode( $display_rules ) );
+		// ARQUITECTURA UNIFICADA: Obtener reglas de visualización desde configuración unificada
+		$modal_config = $this->get_unified_modal_config( $modal_id );
+		$display_rules = $modal_config['display_rules'] ?? array();
+		
 
 		// Si no hay reglas, permitir siempre.
 		if ( empty( $display_rules ) ) {
-			error_log( '[EWM DEBUG] PASSED: No hay reglas de visualización. Se permite el modal.' );
+			
 			return true;
 		}
 
 		// --- 1. VALIDACIÓN DE PÁGINAS ---
 		if ( ! empty( $display_rules['pages'] ) ) {
 			$current_page_id = get_queried_object_id();
-			error_log( "[EWM DEBUG] PÁGINAS - ID de página actual: $current_page_id" );
+			
 
 			// Páginas excluidas
 			if ( ! empty( $display_rules['pages']['exclude'] ) && in_array( $current_page_id, $display_rules['pages']['exclude'] ) ) {
-				error_log( "[EWM DEBUG] BLOCKED: La página $current_page_id está en la lista de exclusión." );
+				
 				return false;
 			}
 
 			// Páginas incluidas (si está definido y no está vacío, solo mostrar en esas páginas)
 			if ( ! empty( $display_rules['pages']['include'] ) && ! in_array( $current_page_id, $display_rules['pages']['include'] ) ) {
-				error_log( "[EWM DEBUG] BLOCKED: La página $current_page_id NO está en la lista de inclusión." );
+				
 				return false;
 			}
-			error_log( '[EWM DEBUG] PÁGINAS - Validación PASSED.' );
+			
 		}
 
 		// --- 2. VALIDACIÓN DE ROLES DE USUARIO ---
 		if ( ! empty( $display_rules['user_roles'] ) ) {
 			$user       = wp_get_current_user();
 			$user_roles = ! empty( $user->roles ) ? $user->roles : array( 'guest' );
-			error_log( '[EWM DEBUG] ROLES - Roles de usuario actual: ' . json_encode( $user_roles ) );
-			error_log( '[EWM DEBUG] ROLES - Roles requeridos: ' . json_encode( $display_rules['user_roles'] ) );
+			
+			
 
 			if ( count( array_intersect( $user_roles, $display_rules['user_roles'] ) ) === 0 ) {
-				error_log( '[EWM DEBUG] BLOCKED: El usuario no tiene ninguno de los roles requeridos.' );
+				
 				return false;
 			}
-			error_log( '[EWM DEBUG] ROLES - Validación PASSED.' );
+			
 		}
 
 		// --- 3. VALIDACIÓN DE DISPOSITIVOS ---
 		if ( ! empty( $display_rules['devices'] ) ) {
 			$device = $this->detect_device();
-			error_log( "[EWM DEBUG] DISPOSITIVOS - Dispositivo detectado: '$device'" );
-			error_log( '[EWM DEBUG] DISPOSITIVOS - Reglas de dispositivo: ' . json_encode( $display_rules['devices'] ) );
+			
+			
 
 			if ( isset( $display_rules['devices'][ $device ] ) && $display_rules['devices'][ $device ] === false ) {
-				error_log( "[EWM DEBUG] BLOCKED: El dispositivo '$device' está explícitamente deshabilitado." );
+				
 				return false;
 			}
-			error_log( '[EWM DEBUG] DISPOSITIVOS - Validación PASSED.' );
-		}
-
-		// --- 4. VALIDACIÓN DE FRECUENCIA ---
-		if ( ! empty( $display_rules['frequency'] ) ) {
-			error_log( '[EWM DEBUG] FRECUENCIA - Verificando límite de frecuencia.' );
 			
-			// Verificar si el modo debug de frecuencia está activo
-			$logger_settings = EWM_Logger_Settings::get_instance();
-			if ( $logger_settings->is_frequency_debug_enabled() ) {
-				error_log( '[EWM DEBUG] FRECUENCIA - BYPASEADA para testing (Frequency Debug Mode activo en settings).' );
-			} elseif ( ! $this->check_frequency_limit( $modal_id, $display_rules['frequency'] ) ) {
-				error_log( '[EWM DEBUG] BLOCKED: Se ha alcanzado el límite de frecuencia.' );
-				return false;
-			}
-			error_log( '[EWM DEBUG] FRECUENCIA - Validación PASSED.' );
 		}
 
-		error_log( '--- [EWM DEBUG] FINAL: Todas las validaciones pasaron. Se permite el modal. ---' );
+		// --- 4. VALIDACIÓN DE FRECUENCIA CON TRANSIENTS ---
+		
+
+		$frequency_config = $this->get_modal_frequency_config( $modal_id );
 		return true;
 	}
 
@@ -494,13 +362,19 @@ class EWM_Shortcodes {
 		$type  = $frequency_config['type'] ?? 'session';
 		$limit = intval( $frequency_config['limit'] ?? 1 );
 
+		// CORRECCIÓN: "always" significa mostrar siempre, ignorar límite
+		if ( $type === 'always' ) {
+			
+			return true;
+		}
+
 		$cookie_name   = "ewm_modal_{$modal_id}_count";
 		$current_count = intval( $_COOKIE[ $cookie_name ] ?? 0 );
 
-		error_log( "[EWM DEBUG] FRECUENCIA CHECK - Modal ID: {$modal_id}, Type: {$type}, Limit: {$limit}, Current Count: {$current_count}, Cookie: {$cookie_name}" );
+		
 
 		if ( $current_count >= $limit ) {
-			error_log( "[EWM DEBUG] FRECUENCIA CHECK - BLOCKED: Count {$current_count} >= Limit {$limit}" );
+			
 			return false;
 		}
 
@@ -508,7 +382,7 @@ class EWM_Shortcodes {
 		$expiry = $this->get_frequency_expiry( $type );
 		$new_count = $current_count + 1;
 		setcookie( $cookie_name, $new_count, $expiry, '/' );
-		error_log( "[EWM DEBUG] FRECUENCIA CHECK - ALLOWED: Setting cookie {$cookie_name} = {$new_count}, Expiry: " . date('Y-m-d H:i:s', $expiry) );
+		
 
 		return true;
 	}
@@ -528,10 +402,25 @@ class EWM_Shortcodes {
 		}
 	}
 
+
+
 	/**
-	 * Preparar configuración para renderizado
+	 * Crear clave única para transient del modal
 	 */
-	private function prepare_render_config( $modal_id, $atts, $modal_config ) {
+	private function get_modal_transient_key( $modal_id ) {
+		$user_id = get_current_user_id();
+		$user_ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+
+		// Usar user_id si está logueado, sino usar hash de IP
+		$identifier = $user_id ? "user_{$user_id}" : "ip_" . md5( $user_ip );
+
+		return "ewm_modal_{$modal_id}_{$identifier}";
+	}
+
+	/**
+	 * Preparar configuración para renderizado (solo atributos del shortcode)
+	 */
+	private function prepare_render_config( $modal_id, $atts ) {
 		$config = array(
 			'modal_id' => $modal_id,
 			'trigger'  => $atts['trigger'],
@@ -539,7 +428,7 @@ class EWM_Shortcodes {
 			'class'    => $atts['class'],
 			'debug'    => $atts['debug'],
 			'source'   => 'shortcode',
-			'config'   => $modal_config,
+			// NO incluir 'config' => $modal_config para evitar sobrescribir configuración de campos separados
 		);
 
 		// Aplicar filtros para personalización
@@ -652,5 +541,119 @@ class EWM_Shortcodes {
 			'total_shortcodes'        => count( $shortcode_tags ),
 			'plugin_shortcodes_count' => count( $this->shortcodes ),
 		);
+	}
+
+	/**
+	 * ARQUITECTURA UNIFICADA: Obtener configuración del modal desde campo unificado
+	 */
+	private function get_unified_modal_config( $modal_id ) {
+		// Leer del campo unificado
+		$config_json = get_post_meta( $modal_id, 'ewm_modal_config', true );
+		$config = json_decode( $config_json, true ) ?: array();
+
+		// COMPATIBILIDAD HACIA ATRÁS: Si no existe el campo unificado, usar método legacy
+		if ( empty( $config ) ) {
+			return EWM_Modal_CPT::get_modal_config( $modal_id );
+		}
+		return $config;
+	}
+
+	/**
+	 * AJAX: Registrar visualización del modal
+	 */
+	public function register_modal_view() {
+		// Verificar nonce
+		if ( ! check_ajax_referer( 'ewm_modal_nonce', 'nonce', false ) ) {
+			wp_send_json_error( 'Invalid nonce' );
+		}
+
+		$modal_id = intval( $_POST['modal_id'] ?? 0 );
+		if ( ! $modal_id ) {
+			wp_send_json_error( 'Invalid modal ID' );
+		}
+
+		// Obtener configuración de frecuencia
+		$frequency_config = $this->get_modal_frequency_config( $modal_id );
+		if ( ! $frequency_config || $frequency_config['type'] === 'always' ) {
+			wp_send_json_success( 'No tracking needed for always type' );
+		}
+
+		// Incrementar contador en transient
+		$transient_key = $this->get_modal_transient_key( $modal_id );
+		$current_count = intval( get_transient( $transient_key ) ?: 0 );
+		$new_count = $current_count + 1;
+
+		// Establecer expiración según tipo de frecuencia
+		$expiration = $this->get_transient_expiration( $frequency_config['type'] );
+		set_transient( $transient_key, $new_count, $expiration );
+
+		error_log( "[EWM DEBUG] TRANSIENT REGISTERED - Key: {$transient_key}, Count: {$new_count}, Expiration: {$expiration}" );
+
+		wp_send_json_success( array(
+			'count' => $new_count,
+			'key' => $transient_key
+		) );
+	}
+
+	/**
+	 * AJAX: Limpiar transients del modal
+	 */
+	public function clear_modal_transients() {
+		// Verificar permisos de admin
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( 'Insufficient permissions' );
+		}
+
+		// Verificar nonce
+		if ( ! check_ajax_referer( 'ewm_admin_nonce', 'nonce', false ) ) {
+			wp_send_json_error( 'Invalid nonce' );
+		}
+
+		$modal_id = intval( $_POST['modal_id'] ?? 0 );
+		if ( ! $modal_id ) {
+			wp_send_json_error( 'Invalid modal ID' );
+		}
+
+		// Buscar y eliminar todos los transients de este modal
+		global $wpdb;
+		$deleted = $wpdb->query( $wpdb->prepare(
+			"DELETE FROM {$wpdb->options}
+			 WHERE option_name LIKE %s",
+			'_transient_ewm_modal_' . $modal_id . '_%'
+		) );
+
+		error_log( "[EWM DEBUG] TRANSIENTS CLEARED - Modal ID: {$modal_id}, Deleted: {$deleted}" );
+
+		wp_send_json_success( array(
+			'deleted' => $deleted,
+			'message' => "Cleared {$deleted} transient records for modal {$modal_id}"
+		) );
+	}
+
+	/**
+	 * Obtener configuración de frecuencia del modal
+	 */
+	private function get_modal_frequency_config( $modal_id ) {
+		// ARQUITECTURA UNIFICADA: Usar el mismo método que can_display_modal para consistencia
+		$config = $this->get_unified_modal_config( $modal_id );
+
+		// La configuración de frecuencia está en display_rules.frequency
+		return $config['display_rules']['frequency'] ?? array( 'type' => 'always', 'limit' => 0 );
+	}
+
+	/**
+	 * Obtener tiempo de expiración para transients
+	 */
+	private function get_transient_expiration( $frequency_type ) {
+		switch ( $frequency_type ) {
+			case 'daily':
+				return DAY_IN_SECONDS;
+			case 'weekly':
+				return WEEK_IN_SECONDS;
+			case 'session':
+				return 30 * MINUTE_IN_SECONDS; // 30 minutos para sesión
+			default:
+				return 0; // Sin expiración
+		}
 	}
 }

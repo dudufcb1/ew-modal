@@ -121,13 +121,7 @@ class EWM_Submission_CPT {
 
 		register_post_type( self::POST_TYPE, $args );
 
-		ewm_log_info(
-			'Submission CPT registered successfully',
-			array(
-				'post_type'    => self::POST_TYPE,
-				'show_in_rest' => false,
-			)
-		);
+	
 	}
 
 	/**
@@ -149,13 +143,7 @@ class EWM_Submission_CPT {
 			);
 		}
 
-		ewm_log_debug(
-			'Submission meta fields registered',
-			array(
-				'fields_count' => count( $this->meta_fields ),
-				'fields'       => $this->meta_fields,
-			)
-		);
+
 	}
 
 	/**
@@ -451,14 +439,7 @@ class EWM_Submission_CPT {
 			update_post_meta( $post_id, 'notes', sanitize_textarea_field( $_POST['submission_notes'] ) );
 		}
 
-		ewm_log_info(
-			'Submission meta fields updated',
-			array(
-				'post_id'          => $post_id,
-				'status'           => $_POST['submission_status'] ?? '',
-				'conversion_value' => $_POST['conversion_value'] ?? '',
-			)
-		);
+	
 	}
 
 	/**
@@ -581,7 +562,6 @@ class EWM_Submission_CPT {
 			EWM_VERSION
 		);
 
-		ewm_log_debug( 'Submission admin styles enqueued', array( 'hook' => $hook, 'screen' => $screen->id ) );
 	}
 
 	/**
@@ -700,15 +680,7 @@ class EWM_Submission_CPT {
 		);
 
 		if ( ! is_wp_error( $submission_id ) ) {
-			ewm_log_info(
-				'New submission created',
-				array(
-					'submission_id' => $submission_id,
-					'modal_id'      => $modal_id,
-					'fields_count'  => count( $form_data ),
-					'user_id'       => get_current_user_id(),
-				)
-			);
+
 		}
 
 		return $submission_id;
@@ -917,7 +889,6 @@ class EWM_Submission_CPT {
 	public static function update_existing_submission_titles() {
 		global $wpdb;
 
-		ewm_log_info( 'Starting bulk update of existing submission titles' );
 
 		// Buscar envíos sin título o con título genérico
 		$submissions = get_posts(
@@ -938,8 +909,6 @@ class EWM_Submission_CPT {
 
 		$updated_count = 0;
 		$total_count   = count( $submissions );
-
-		ewm_log_info( "Found {$total_count} submissions to potentially update" );
 
 		foreach ( $submissions as $submission_id ) {
 			$current_title = get_the_title( $submission_id );
@@ -977,15 +946,12 @@ class EWM_Submission_CPT {
 
 					if ( ! is_wp_error( $result ) ) {
 						$updated_count++;
-						ewm_log_debug( "Updated submission {$submission_id} title to: {$new_title}" );
 					} else {
-						ewm_log_warning( "Failed to update submission {$submission_id}: " . $result->get_error_message() );
 					}
 				}
 			}
 		}
 
-		ewm_log_info( "Bulk title update completed: {$updated_count}/{$total_count} submissions updated" );
 
 		return array(
 			'total'   => $total_count,

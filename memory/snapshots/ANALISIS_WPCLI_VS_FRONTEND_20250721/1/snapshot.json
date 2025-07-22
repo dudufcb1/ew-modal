@@ -1,0 +1,95 @@
+{
+  "schema_version": "2.0.0",
+  "meta": {
+    "task_id": "ANALISIS_WPCLI_VS_FRONTEND_20250721",
+    "status": "todo",
+    "date": "2025-07-21T07:45:00Z",
+    "project": "ewm-modal-cta",
+    "author": "augment_agent",
+    "revision": 1,
+    "snapshot_id": "060653fd-528b-446a-a279-fe2d26b57c10",
+    "group_id": "investigacion_ewm_modal_builder",
+    "timestamp": "2025-07-21T11:45:21.544214Z",
+    "can_agent_set_done": true,
+    "rolled_back": false,
+    "group_md": "groups/investigacion_ewm_modal_builder/group.md"
+  },
+  "scope": {
+    "files": [
+      "admin/class-ewm-modal-builder.php",
+      "includes/class-ewm-rest-api.php",
+      "admin/js/modal-builder.js"
+    ],
+    "components": [
+      "WP CLI Commands",
+      "Frontend JavaScript",
+      "Database Layer",
+      "Data Persistence"
+    ]
+  },
+  "problem": {
+    "user_request": "Analizar por qué hardcodear datos con WP CLI funciona pero el guardado desde frontend se resetea al estado de BD",
+    "business_goal": "Entender la diferencia fundamental entre ambos métodos para identificar la causa raíz",
+    "constraints": [
+      "Comparar ambos flujos de datos",
+      "Identificar diferencias en procesamiento",
+      "Determinar por qué uno persiste y otro no"
+    ]
+  },
+  "analysis": {
+    "root_cause": "Diferencia en el flujo de datos entre WP CLI y Frontend",
+    "hypotheses": [
+      "WP CLI bypasea algún proceso que falla en frontend",
+      "Frontend tiene validaciones que WP CLI no tiene",
+      "Hay conflicto entre estado frontend y persistencia",
+      "Timing o secuencia diferente en los procesos"
+    ],
+    "tradeoffs": [
+      "Análisis profundo vs solución rápida",
+      "Corrección vs entendimiento completo"
+    ]
+  },
+  "implementation_plan": {
+    "steps": [
+      {
+        "step": "Mapear flujo completo WP CLI",
+        "status": "todo",
+        "estimated_time": "30min"
+      },
+      {
+        "step": "Mapear flujo completo Frontend",
+        "status": "todo",
+        "estimated_time": "30min"
+      },
+      {
+        "step": "Comparar ambos flujos paso a paso",
+        "status": "todo",
+        "estimated_time": "25min"
+      },
+      {
+        "step": "Identificar punto de divergencia",
+        "status": "todo",
+        "estimated_time": "20min"
+      }
+    ],
+    "md_reference": ""
+  },
+  "experiments": [],
+  "strategies_tried": [],
+  "open_questions": [
+    "¿Qué hace WP CLI que el frontend no hace?",
+    "¿Dónde exactamente divergen los flujos?",
+    "¿Hay validaciones que interfieren en frontend?"
+  ],
+  "next_actions": [
+    "Testear con WP CLI",
+    "Rastrear flujo frontend",
+    "Comparar diferencias"
+  ],
+  "links": {
+    "docs": [],
+    "tickets": [],
+    "designs": [],
+    "runs": []
+  }
+}

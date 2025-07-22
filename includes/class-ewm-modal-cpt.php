@@ -104,7 +104,7 @@ class EWM_Modal_CPT {
 		$args = array(
 			'labels'                => $labels,
 			'public'                => false,
-			'publicly_queryable'    => true, // CAMBIO: Permitir consultas públicas para bloques dinámicos
+			'publicly_queryable'    => true, // Permitir consultas públicas
 			'show_ui'               => true,
 			'show_in_menu'          => true,
 			'query_var'             => true,
@@ -122,13 +122,7 @@ class EWM_Modal_CPT {
 
 		register_post_type( self::POST_TYPE, $args );
 
-		ewm_log_info(
-			'Modal CPT registered successfully',
-			array(
-				'post_type'     => self::POST_TYPE,
-				'supports_rest' => true,
-			)
-		);
+
 	}
 
 	/**
@@ -150,13 +144,7 @@ class EWM_Modal_CPT {
 			);
 		}
 
-		ewm_log_debug(
-			'Modal meta fields registered',
-			array(
-				'fields_count' => count( $this->meta_fields ),
-				'fields'       => $this->meta_fields,
-			)
-		);
+
 	}
 
 	/**
@@ -229,7 +217,7 @@ class EWM_Modal_CPT {
 		</table>
 		
 		<div id="ewm-modal-builder">
-			<p><?php _e( 'La configuración avanzada se realizará a través del Modal Builder o el bloque de Gutenberg.', 'ewm-modal-cta' ); ?></p>
+			<p><?php _e( 'La configuración avanzada se realizará a través del Modal Builder.', 'ewm-modal-cta' ); ?></p>
 			<p>
 				<a href="<?php echo admin_url( 'admin.php?page=ewm-modal-builder&modal_id=' . $post->ID ); ?>" 
 					class="button button-secondary">
@@ -293,14 +281,7 @@ class EWM_Modal_CPT {
 		$use_serialized = isset( $_POST['ewm_use_serialized'] ) ? '1' : '0';
 		update_post_meta( $post_id, 'ewm_use_serialized', $use_serialized );
 
-		ewm_log_info(
-			'Modal meta fields saved',
-			array(
-				'post_id'        => $post_id,
-				'modal_mode'     => $modal_mode,
-				'use_serialized' => $use_serialized,
-			)
-		);
+
 	}
 
 	/**
@@ -366,13 +347,5 @@ class EWM_Modal_CPT {
 			update_post_meta( $modal_id, 'ewm_steps_config', wp_json_encode( $config ) );
 		}
 
-		ewm_log_info(
-			'Modal config saved',
-			array(
-				'modal_id'     => $modal_id,
-				'storage_type' => $use_serialized ? 'serialized' : 'json',
-				'config_size'  => strlen( wp_json_encode( $config ) ),
-			)
-		);
 	}
 }

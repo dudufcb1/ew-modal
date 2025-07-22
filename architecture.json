@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "project_name": "EWM Modal CTA",
   "created_on": "2025-07-19T12:20:00Z",
-  "last_updated": "2025-07-19T18:44:01.803853Z",
+  "last_updated": "2025-07-21T05:16:11.640631Z",
   "history": [
     {
       "timestamp": "2025-07-19T06:21:05.050295Z",
@@ -27,6 +27,12 @@
       "author": "augment_agent",
       "event_type": "DEVELOPMENT_GUIDELINE_ADDED",
       "summary": "Agregada consideración crítica sobre caché del navegador en desarrollo WordPress"
+    },
+    {
+      "timestamp": "2025-07-21T05:16:11.640598Z",
+      "author": "augment_agent",
+      "event_type": "UPDATE",
+      "summary": "Reinicio del proyecto - Eliminación de Gutenberg y enfoque en versión JS"
     }
   ],
   "purpose": "Plugin moderno para WordPress que permite crear modales interactivos de captura de leads con formularios multi-paso. Sistema unificado con bloques Gutenberg y shortcodes clásicos que comparten el mismo motor de renderizado universal.",
@@ -150,5 +156,77 @@
         "Cuando los cambios no se aplican"
       ]
     }
+  },
+  "project_overview": {
+    "name": "EWM Modal CTA",
+    "type": "WordPress Plugin",
+    "description": "Plugin de WordPress para crear y gestionar modales de Call-to-Action",
+    "current_focus": "Versión JavaScript - Gutenberg eliminado del proyecto"
+  },
+  "technology_stack": {
+    "backend": [
+      "PHP",
+      "WordPress API",
+      "REST API"
+    ],
+    "frontend": [
+      "JavaScript",
+      "CSS",
+      "HTML"
+    ],
+    "database": [
+      "WordPress Database",
+      "Custom Tables"
+    ],
+    "removed_technologies": [
+      "Gutenberg Blocks",
+      "React Components"
+    ]
+  },
+  "architecture_decisions": {
+    "gutenberg_removal": {
+      "decision": "Eliminación completa de Gutenberg del proyecto",
+      "reason": "Enfoque simplificado en versión JavaScript pura",
+      "impact": "Reducción de complejidad y mejor mantenimiento",
+      "date": "2025-07-21"
+    },
+    "js_focus": {
+      "decision": "Concentración en implementación JavaScript",
+      "reason": "Mayor compatibilidad y simplicidad",
+      "technologies": [
+        "Vanilla JavaScript",
+        "jQuery si es necesario"
+      ]
+    }
+  },
+  "development_practices": {
+    "testing": {
+      "preferred_tool": "WP CLI",
+      "description": "Preferencia por usar WP CLI para testing y verificaciones",
+      "usage": "Testing de funcionalidades, verificación de datos, debugging"
+    },
+    "logging": {
+      "location": "logs/ folder",
+      "description": "Siempre revisar logs en la carpeta logs/ cuando estén disponibles",
+      "importance": "Primera fuente de información para debugging"
+    },
+    "debugging": {
+      "primary_sources": [
+        "logs/ folder",
+        "WP CLI commands",
+        "Browser DevTools"
+      ],
+      "workflow": "1. Revisar logs, 2. Usar WP CLI, 3. Verificar en browser"
+    }
+  },
+  "project_constraints": {
+    "no_gutenberg": "No usar ni implementar funcionalidades de Gutenberg",
+    "js_only": "Enfoque exclusivo en JavaScript para el frontend",
+    "wp_compatibility": "Mantener compatibilidad con WordPress estándar"
+  },
+  "current_status": {
+    "phase": "Reinicio del proyecto",
+    "focus": "Implementación JavaScript pura",
+    "eliminated": "Todas las dependencias de Gutenberg"
   }
 }

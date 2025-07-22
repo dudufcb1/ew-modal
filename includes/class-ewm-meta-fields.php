@@ -114,13 +114,7 @@ class EWM_Meta_Fields {
 			);
 		}
 
-		ewm_log_debug(
-			'Flexible meta fields registered',
-			array(
-				'fields_count' => count( $this->field_schemas ),
-				'fields'       => array_keys( $this->field_schemas ),
-			)
-		);
+	
 	}
 
 	/**
@@ -186,14 +180,7 @@ class EWM_Meta_Fields {
 		if ( is_string( $value ) ) {
 			$decoded = json_decode( $value, true );
 			if ( json_last_error() !== JSON_ERROR_NONE ) {
-				ewm_log_warning(
-					'Invalid JSON in meta field',
-					array(
-						'meta_key'   => $meta_key,
-						'json_error' => json_last_error_msg(),
-					)
-				);
-				return wp_json_encode( array() );
+							return wp_json_encode( array() );
 			}
 			$value = $decoded;
 		}
@@ -468,6 +455,11 @@ class EWM_Meta_Fields {
 				'enabled'  => ! empty( $config['manual']['enabled'] ),
 				'selector' => sanitize_text_field( $config['manual']['selector'] ?? '' ),
 			),
+			'frequency'         => array(
+				'type'  => in_array( $config['frequency']['type'] ?? 'session', array( 'always', 'session', 'daily', 'weekly' ) ) ?
+						$config['frequency']['type'] : 'session',
+				'limit' => intval( $config['frequency']['limit'] ?? 1 ),
+			),
 		);
 	}
 
@@ -504,11 +496,6 @@ class EWM_Meta_Fields {
 				'desktop' => ! empty( $config['devices']['desktop'] ),
 				'tablet'  => ! empty( $config['devices']['tablet'] ),
 				'mobile'  => ! empty( $config['devices']['mobile'] ),
-			),
-			'frequency'  => array(
-				'type'  => in_array( $config['frequency']['type'] ?? 'session', array( 'session', 'daily', 'weekly' ) ) ?
-						$config['frequency']['type'] : 'session',
-				'limit' => intval( $config['frequency']['limit'] ?? 1 ),
 			),
 		);
 	}

@@ -22,7 +22,7 @@ class EWM_Testing_Page {
 	public function __construct() {
 		add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
 		add_action( 'admin_init', array( $this, 'handle_test_execution' ) );
-		add_action( 'admin_notices', array( $this, 'show_block_sync_notices' ) );
+		// GUTENBERG ELIMINADO: Notificaciones de sincronización removidas
 	}
 
 	/**
@@ -81,8 +81,8 @@ class EWM_Testing_Page {
 			
 			<div class="notice notice-info">
 				<p>
-					<strong><?php _e( '¿Qué es el testing de paridad?', 'ewm-modal-cta' ); ?></strong><br>
-					<?php _e( 'Estos tests verifican que los bloques Gutenberg y los shortcodes produzcan resultados idénticos, asegurando que ambos sistemas funcionen de manera unificada.', 'ewm-modal-cta' ); ?>
+					<strong><?php _e( '¿Qué es el testing del sistema?', 'ewm-modal-cta' ); ?></strong><br>
+					<?php _e( 'Estos tests verifican que los shortcodes funcionen correctamente y que el sistema de modales opere de manera estable.', 'ewm-modal-cta' ); ?>
 				</p>
 			</div>
 
@@ -93,8 +93,8 @@ class EWM_Testing_Page {
 			<?php endif; ?>
 
 			<div class="card">
-				<h2><?php _e( 'Ejecutar Tests de Paridad', 'ewm-modal-cta' ); ?></h2>
-				<p><?php _e( 'Los siguientes tests verificarán la paridad funcional entre shortcodes y bloques:', 'ewm-modal-cta' ); ?></p>
+				<h2><?php _e( 'Ejecutar Tests del Sistema', 'ewm-modal-cta' ); ?></h2>
+				<p><?php _e( 'Los siguientes tests verificarán el funcionamiento correcto de los shortcodes:', 'ewm-modal-cta' ); ?></p>
 				
 				<ul>
 					<li>📋 <strong><?php _e( 'Renderizado Básico:', 'ewm-modal-cta' ); ?></strong> <?php _e( 'Verifica que ambos sistemas generen HTML idéntico', 'ewm-modal-cta' ); ?></li>
@@ -219,7 +219,7 @@ class EWM_Testing_Page {
 				</p>
 
 				<?php if ( $success_rate >= 100 ) : ?>
-					<p>🎉 <strong><?php _e( '¡PERFECTO!', 'ewm-modal-cta' ); ?></strong> <?php _e( 'Paridad funcional completa entre shortcodes y bloques.', 'ewm-modal-cta' ); ?></p>
+					<p>🎉 <strong><?php _e( '¡PERFECTO!', 'ewm-modal-cta' ); ?></strong> <?php _e( 'Sistema de shortcodes funcionando correctamente.', 'ewm-modal-cta' ); ?></p>
 				<?php elseif ( $success_rate >= 80 ) : ?>
 					<p>✅ <strong><?php _e( 'BUENO:', 'ewm-modal-cta' ); ?></strong> <?php _e( 'Alta compatibilidad, revisar tests fallidos.', 'ewm-modal-cta' ); ?></p>
 				<?php else : ?>
@@ -239,41 +239,7 @@ class EWM_Testing_Page {
 		<?php
 	}
 
-	/**
-	 * Mostrar notificaciones de sincronización de bloques
-	 */
-	public function show_block_sync_notices() {
-		$screen = get_current_screen();
-
-		// Solo mostrar en páginas relevantes
-		if ( ! $screen || ! in_array( $screen->id, array( 'edit-ew_modal', 'ew_modal' ) ) ) {
-			return;
-		}
-
-		// Verificar si hay modales nuevos creados
-		global $post;
-		if ( $post ) {
-			$new_modal_id = get_transient( "ewm_new_modal_created_{$post->ID}" );
-			if ( $new_modal_id ) {
-				?>
-				<div class="notice notice-success is-dismissible">
-					<p>
-						<strong><?php _e( '¡Modal creado automáticamente!', 'ewm-modal-cta' ); ?></strong><br>
-						<?php printf(
-							__( 'Se ha creado automáticamente el modal ID %d desde tu bloque Gutenberg. ', 'ewm-modal-cta' ),
-							$new_modal_id
-						); ?>
-						<a href="<?php echo admin_url( "post.php?post={$new_modal_id}&action=edit" ); ?>">
-							<?php _e( 'Ver modal', 'ewm-modal-cta' ); ?>
-						</a>
-					</p>
-				</div>
-				<?php
-				// Limpiar transient después de mostrar
-				delete_transient( "ewm_new_modal_created_{$post->ID}" );
-			}
-		}
-	}
+	// GUTENBERG ELIMINADO: Método de notificaciones de bloques removido
 }
 
 // Inicializar la página de testing

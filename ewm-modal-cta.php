@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name:       Especialista en WP Modal
- * Description:       Plugin moderno para WordPress que permite crear modales interactivos de captura de leads con formularios multi-paso. Sistema unificado con bloques Gutenberg y shortcodes clásicos.
+ * Description:       Plugin moderno para WordPress que permite crear modales interactivos de captura de leads con formularios multi-paso. Sistema basado en shortcodes clásicos.
  * Version:           1.0.0
  * Requires at least: 5.0
  * Requires PHP:      7.4
@@ -25,11 +25,7 @@ define( 'EWM_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'EWM_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'EWM_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
 
-/**
- * Initialize the logging system first
- */
-require_once EWM_PLUGIN_DIR . 'includes/logging/class-ewm-logger-init.php';
-EWM_Logger_Init::get_instance();
+
 
 /**
  * Load core classes
@@ -40,8 +36,6 @@ require_once EWM_PLUGIN_DIR . 'includes/class-ewm-modal-cpt.php';
 require_once EWM_PLUGIN_DIR . 'includes/class-ewm-submission-cpt.php';
 require_once EWM_PLUGIN_DIR . 'includes/class-ewm-render-core.php';
 require_once EWM_PLUGIN_DIR . 'includes/class-ewm-shortcodes.php';
-require_once EWM_PLUGIN_DIR . 'includes/class-ewm-block-processor.php';
-require_once EWM_PLUGIN_DIR . 'includes/class-ewm-block-sync.php';
 require_once EWM_PLUGIN_DIR . 'includes/class-ewm-admin-page.php';
 require_once EWM_PLUGIN_DIR . 'includes/class-ewm-woocommerce.php';
 require_once EWM_PLUGIN_DIR . 'includes/class-ewm-performance.php';
@@ -49,7 +43,6 @@ require_once EWM_PLUGIN_DIR . 'includes/class-ewm-performance.php';
 // Incluir página de testing (solo en admin)
 if ( is_admin() ) {
 	require_once EWM_PLUGIN_DIR . 'admin/class-ewm-testing-page.php';
-	require_once EWM_PLUGIN_DIR . 'admin/test-gutenberg-fix.php';
 }
 
 /**
@@ -62,112 +55,15 @@ function ewm_init_core_components() {
 	EWM_Submission_CPT::get_instance();
 	EWM_Render_Core::get_instance();
 	EWM_Shortcodes::get_instance();
-	EWM_Block_Processor::get_instance();
 
-	// Inicializar admin solo en admin.
-	if ( is_admin() ) {
-		ewm_log_debug( 'Initializing admin interface' );
-		EWM_Admin_Page::get_instance();
-	}
-
-	// Inicializar WooCommerce si está disponible.
-	ewm_log_debug( 'Initializing WooCommerce integration' );
-	EWM_WooCommerce::get_instance();
-
-	// Inicializar optimizaciones de performance.
-	ewm_log_debug( 'Initializing performance optimizations' );
-	EWM_Performance::get_instance();
-
-	ewm_log_info(
-		'EWM Modal CTA plugin fully initialized',
-		array(
-			'version'        => EWM_VERSION,
-			'is_admin'       => is_admin(),
-			'user_id'        => get_current_user_id(),
-			'current_screen' => function_exists( 'get_current_screen' ) ? get_current_screen() : null,
-		)
-	);
-
-	ewm_log_info( 'Core components initialized' );
+	
 }
 add_action( 'init', 'ewm_init_core_components', 5 );
-
-/**
- * Registers the block using a `blocks-manifest.php` file, which improves
- * the performance of block type registration.
- * Behind the scenes, it also registers all assets so they can be enqueued
- * through the block editor in the corresponding context.
- *
- * @see https://make.wordpress.org/core/2025/03/13/more-efficient-block-type-registration-in-6-8/
- * @see https://make.wordpress.org/core/2024/10/17/new-block-type-registration-apis-to-improve-performance-in-wordpress-6-7/
- */
-function create_block_ewm_modal_cta_block_init() {
-	// Log block initialization.
-	ewm_log_info( 'EWM Modal CTA block initialization started' );
-
-	/**
-	 * Registers the block(s) metadata from the `blocks-manifest.php` and registers the block type(s)
-	 * based on the registered block metadata.
-	 * Added in WordPress 6.8 to simplify the block metadata registration process added in WordPress 6.7.
-	 *
-	 * @see https://make.wordpress.org/core/2025/03/13/more-efficient-block-type-registration-in-6-8/
-	 */
-	if ( function_exists( 'wp_register_block_types_from_metadata_collection' ) ) {
-		wp_register_block_types_from_metadata_collection( __DIR__ . '/build', __DIR__ . '/build/blocks-manifest.php' );
-		ewm_log_info( 'Blocks registered using wp_register_block_types_from_metadata_collection' );
-		return;
-	}
-
-	/**
-	 * Registers the block(s) metadata from the `blocks-manifest.php` file.
-	 * Added to WordPress 6.7 to improve the performance of block type registration.
-	 *
-	 * @see https://make.wordpress.org/core/2024/10/17/new-block-type-registration-apis-to-improve-performance-in-wordpress-6-7/
-	 */
-	if ( function_exists( 'wp_register_block_metadata_collection' ) ) {
-		wp_register_block_metadata_collection( __DIR__ . '/build', __DIR__ . '/build/blocks-manifest.php' );
-		ewm_log_debug( 'Block metadata collection registered' );
-	}
-
-	/**
-	 * Registers the block type(s) in the `blocks-manifest.php` file.
-	 *
-	 * Note: Renderizado dinámico se maneja vía block.json "render" property.
-	 * No necesitamos render_callback aquí ya que block.json tiene prioridad.
-	 *
-	 * @see https://developer.wordpress.org/reference/functions/register_block_type/
-	 */
-	$manifest_file = __DIR__ . '/build/blocks-manifest.php';
-	if ( file_exists( $manifest_file ) ) {
-		$manifest_data = require $manifest_file;
-		foreach ( array_keys( $manifest_data ) as $block_type ) {
-			// NO incluir archivo de renderizado desde src/ porque ya está en build/
-			// El archivo build/ewm-modal-cta/render.php ya contiene la función actualizada
-			// Evitar redeclaración de ewm_render_modal_block()
-
-			// Simplemente registrar el bloque - block.json maneja el renderizado
-			register_block_type( __DIR__ . "/build/{$block_type}" );
-			ewm_log_debug( "Block type registered: {$block_type}" );
-		}
-		ewm_log_info( 'All block types registered successfully', array( 'count' => count( $manifest_data ) ) );
-	} else {
-		ewm_log_warning( 'Blocks manifest file not found', array( 'file' => $manifest_file ) );
-	}
-}
-add_action( 'init', 'create_block_ewm_modal_cta_block_init' );
 
 /**
  * Initialize REST API endpoints
  */
 function ewm_init_rest_api() {
-	ewm_log_debug(
-		'ewm_init_rest_api called',
-		array(
-			'hook'         => current_action(),
-			'file_exists'  => file_exists( EWM_PLUGIN_DIR . 'includes/class-ewm-rest-api.php' ),
-			'class_exists' => class_exists( 'EWM_REST_API' ),
-		)
-	);
 
 	if ( file_exists( EWM_PLUGIN_DIR . 'includes/class-ewm-rest-api.php' ) ) {
 		require_once EWM_PLUGIN_DIR . 'includes/class-ewm-rest-api.php';
@@ -176,25 +72,12 @@ function ewm_init_rest_api() {
 			$rest_api = EWM_REST_API::get_instance();
 
 			// Registrar rutas directamente para evitar problemas de timing de hooks.
-			$rest_api->register_routes();
-
-			ewm_log_info(
-				'REST API endpoints initialized successfully',
-				array(
-					'instance_created'  => ! empty( $rest_api ),
-					'routes_registered' => true,
-				)
-			);
+			$rest_api->register_routes();			
 		} else {
-			ewm_log_error( 'EWM_REST_API class not found after require' );
+			
 		}
 	} else {
-		ewm_log_error(
-			'REST API file not found',
-			array(
-				'expected_path' => EWM_PLUGIN_DIR . 'includes/class-ewm-rest-api.php',
-			)
-		);
+		
 	}
 }
 add_action( 'rest_api_init', 'ewm_init_rest_api' );
@@ -203,14 +86,6 @@ add_action( 'rest_api_init', 'ewm_init_rest_api' );
  * Plugin activation hook
  */
 function ewm_modal_cta_activate() {
-	ewm_log_info(
-		'EWM Modal CTA plugin activated',
-		array(
-			'version'     => EWM_VERSION,
-			'wp_version'  => get_bloginfo( 'version' ),
-			'php_version' => PHP_VERSION,
-		)
-	);
 
 	// Create default logging configuration if it doesn't exist.
 	if ( ! get_option( 'ewm_logging_config' ) ) {
@@ -225,7 +100,6 @@ function ewm_modal_cta_activate() {
 			'retention_days'      => 30,
 		);
 		update_option( 'ewm_logging_config', $default_config );
-		ewm_log_info( 'Default logging configuration created' );
 	}
 
 	// Flush rewrite rules.
@@ -237,7 +111,6 @@ register_activation_hook( __FILE__, 'ewm_modal_cta_activate' );
  * Plugin deactivation hook
  */
 function ewm_modal_cta_deactivate() {
-	ewm_log_info( 'EWM Modal CTA plugin deactivated' );
 
 	// Flush rewrite rules.
 	flush_rewrite_rules();
@@ -260,13 +133,15 @@ add_action( 'plugins_loaded', 'ewm_modal_cta_load_textdomain' );
  * Enqueue frontend assets
  */
 function ewm_modal_cta_enqueue_frontend_assets() {
-	// Cargar en frontend si hay modales en la página
-	$should_load_frontend = has_block( 'ewm/modal-cta' ) || ewm_has_modal_shortcode();
+	// DEBUG: Log para frontend
+	global $post;
+	error_log( '🌐 FRONTEND DEBUG: ewm_modal_cta_enqueue_frontend_assets called' );
+	error_log( '🌐 FRONTEND DEBUG: Post ID = ' . ( $post ? $post->ID : 'NULL' ) );
+	error_log( '🌐 FRONTEND DEBUG: Post title = ' . ( $post ? $post->post_title : 'NULL' ) );
 
-	// También cargar en el editor de Gutenberg para preview
-	$should_load_editor = is_admin() && function_exists( 'get_current_screen' ) &&
-						  get_current_screen() &&
-						  get_current_screen()->is_block_editor();
+	// Cargar en frontend si hay modales en la página (solo shortcodes)
+	$should_load_frontend = ewm_has_modal_shortcode();
+	error_log( '🌐 FRONTEND DEBUG: should_load_frontend = ' . ( $should_load_frontend ? 'TRUE' : 'FALSE' ) );
 
 	// Cargar DevPipe para logging en desarrollo
 	if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
@@ -278,23 +153,31 @@ function ewm_modal_cta_enqueue_frontend_assets() {
 			false // Cargar en head para capturar todos los logs
 		);
 
-		ewm_log_debug( 'DevPipe script enqueued for development logging' );
 	}
 
-	if ( $should_load_frontend || $should_load_editor ) {
+	if ( $should_load_frontend ) {
 		wp_enqueue_style(
 			'ewm-modal-frontend',
 			EWM_PLUGIN_URL . 'assets/css/modal-frontend.css',
 			array(),
-			EWM_VERSION
+			EWM_VERSION . '-styled-' . time() // Forzar recarga para styling fix
 		);
 
 		// Solo cargar JS en frontend, no en editor
 		if ( $should_load_frontend ) {
+			// Encolar nuevo sistema JavaScript
+			wp_enqueue_script(
+				'ewm-form-validator',
+				EWM_PLUGIN_URL . 'assets/js/form-validator.js',
+				array(),
+				EWM_VERSION,
+				true
+			);
+
 			wp_enqueue_script(
 				'ewm-modal-frontend',
 				EWM_PLUGIN_URL . 'assets/js/modal-frontend.js',
-				array(),
+				array( 'ewm-form-validator' ),
 				EWM_VERSION,
 				true
 			);
@@ -305,20 +188,16 @@ function ewm_modal_cta_enqueue_frontend_assets() {
 				array(
 					'ajaxUrl' => admin_url( 'admin-ajax.php' ),
 					'restUrl' => rest_url( 'ewm/v1/' ),
-					'nonce'   => wp_create_nonce( 'wp_rest' ),
+					'nonce'   => wp_create_nonce( 'ewm_modal_nonce' ), // Nonce para transients
 					'debug'   => defined( 'WP_DEBUG' ) && WP_DEBUG,
 				)
 			);
 		}
 
-		ewm_log_debug( 'Frontend assets enqueued', array(
-			'frontend' => $should_load_frontend,
-			'editor' => $should_load_editor
-		) );
+
 	}
 }
 add_action( 'wp_enqueue_scripts', 'ewm_modal_cta_enqueue_frontend_assets' );
-add_action( 'admin_enqueue_scripts', 'ewm_modal_cta_enqueue_frontend_assets' ); // Para el editor de Gutenberg
 
 /**
  * Enqueue DevPipe for admin development logging
@@ -334,18 +213,60 @@ function ewm_modal_cta_enqueue_admin_devpipe() {
 			false // Cargar en head para capturar todos los logs
 		);
 
-		ewm_log_debug( 'DevPipe script enqueued for admin development logging' );
 	}
 }
 add_action( 'admin_enqueue_scripts', 'ewm_modal_cta_enqueue_admin_devpipe' );
 
 /**
  * Check if page has modal shortcode
+ * CORREGIDO: Detecta shortcodes en contenido raw y procesado
  */
 function ewm_has_modal_shortcode() {
 	global $post;
-	if ( $post && EWM_Shortcodes::has_modal_shortcode( $post->post_content ) ) {
+
+	// DEBUG: Log para detección
+	error_log( '🔍 DETECTION DEBUG: ewm_has_modal_shortcode called' );
+	error_log( '🔍 DETECTION DEBUG: Post = ' . ( $post ? 'EXISTS (ID: ' . $post->ID . ')' : 'NULL' ) );
+
+	// Si no hay post, no hay shortcode
+	if ( ! $post ) {
+		error_log( '🔍 DETECTION DEBUG: No post, returning FALSE' );
+		return false;
+	}
+
+	error_log( '🔍 DETECTION DEBUG: Post content length = ' . strlen( $post->post_content ) );
+
+	// Verificar en contenido raw
+	$raw_check = EWM_Shortcodes::has_modal_shortcode( $post->post_content );
+	error_log( '🔍 DETECTION DEBUG: Raw content check = ' . ( $raw_check ? 'TRUE' : 'FALSE' ) );
+	if ( $raw_check ) {
+		error_log( '🔍 DETECTION DEBUG: Found via raw content, returning TRUE' );
 		return true;
 	}
+
+	// Verificar en contenido procesado (para bloques de Gutenberg)
+	$has_ew = has_shortcode( $post->post_content, 'ew_modal' );
+	$has_ewm = has_shortcode( $post->post_content, 'ewm_modal' );
+	error_log( '🔍 DETECTION DEBUG: has_shortcode(ew_modal) = ' . ( $has_ew ? 'TRUE' : 'FALSE' ) );
+	error_log( '🔍 DETECTION DEBUG: has_shortcode(ewm_modal) = ' . ( $has_ewm ? 'TRUE' : 'FALSE' ) );
+	if ( $has_ew || $has_ewm ) {
+		error_log( '🔍 DETECTION DEBUG: Found via has_shortcode, returning TRUE' );
+		return true;
+	}
+
+	// Verificar patrones dentro de bloques wp:shortcode
+	$has_wp_shortcode = strpos( $post->post_content, '<!-- wp:shortcode -->' ) !== false;
+	error_log( '🔍 DETECTION DEBUG: Has wp:shortcode blocks = ' . ( $has_wp_shortcode ? 'TRUE' : 'FALSE' ) );
+	if ( $has_wp_shortcode ) {
+		// Extraer contenido de bloques shortcode
+		preg_match_all( '/<!-- wp:shortcode -->\s*\[(?:ew_modal|ewm_modal)[^\]]*\]\s*<!-- \/wp:shortcode -->/', $post->post_content, $matches );
+		error_log( '🔍 DETECTION DEBUG: Regex matches = ' . count( $matches[0] ) );
+		if ( ! empty( $matches[0] ) ) {
+			error_log( '🔍 DETECTION DEBUG: Found via regex, returning TRUE' );
+			return true;
+		}
+	}
+
+	error_log( '🔍 DETECTION DEBUG: No shortcode found, returning FALSE' );
 	return false;
 }

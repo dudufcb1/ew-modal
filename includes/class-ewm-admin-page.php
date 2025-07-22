@@ -25,8 +25,7 @@ class EWM_Admin_Page {
 	 * Constructor privado para singleton
 	 */
 	private function __construct() {
-		ewm_log_debug( 'EWM_Admin_Page constructor called' );
-		$this->init();
+			$this->init();
 	}
 
 	/**
@@ -43,15 +42,15 @@ class EWM_Admin_Page {
 	 * Inicializar la clase
 	 */
 	private function init() {
-		ewm_log_debug( 'EWM_Admin_Page initializing hooks' );
 
 		add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_scripts' ) );
 		add_action( 'wp_ajax_ewm_save_modal_builder', array( $this, 'save_modal_builder' ) );
 		add_action( 'wp_ajax_ewm_load_modal_builder', array( $this, 'load_modal_builder' ) );
 		add_action( 'wp_ajax_ewm_preview_modal', array( $this, 'preview_modal' ) );
+		// Nuevo: manejador para guardar las configuraciones globales (incl. modo debug frecuencia)
+		add_action( 'admin_post_ewm_save_settings', array( $this, 'save_global_settings' ) );
 
-		ewm_log_info( 'EWM_Admin_Page initialized successfully' );
 	}
 
 	/**
@@ -103,9 +102,6 @@ class EWM_Admin_Page {
 		wp_enqueue_script( 'jquery-ui-draggable' );
 		wp_enqueue_script( 'jquery-ui-droppable' );
 
-		// El script modal-admin.js ya maneja toda la funcionalidad del builder
-		ewm_log_debug( 'Modal builder script removed - using modal-admin.js instead' );
-
 		// Color picker de WordPress
 		wp_enqueue_style( 'wp-color-picker' );
 
@@ -117,14 +113,25 @@ class EWM_Admin_Page {
 			EWM_VERSION
 		);
 
-		// JavaScript del admin
+		// JavaScript del admin - NUEVO SISTEMA
 		wp_enqueue_script(
 			'ewm-admin-scripts',
 			EWM_PLUGIN_URL . 'assets/js/modal-admin.js',
 			array( 'jquery', 'wp-color-picker' ),
-			EWM_VERSION,
+			EWM_VERSION . '-debug-' . time(), // Forzar recarga para debugging
 			true
 		);
+
+		// Encolar builder_v2.js SOLO en la página del builder avanzado
+		if ( isset($_GET['page']) && $_GET['page'] === 'ewm-modal-builder' ) {
+			wp_enqueue_script(
+				'ewm-builder-v2',
+				EWM_PLUGIN_URL . 'assets/js/builder_v2.js',
+				array( 'jquery', 'ewm-admin-scripts' ),
+				EWM_VERSION . '-debug-' . time(), // Forzar recarga para debugging
+				true
+			);
+		}
 
 		// Variables para JavaScript
 		wp_localize_script(
@@ -145,14 +152,6 @@ class EWM_Admin_Page {
 			)
 		);
 
-		ewm_log_debug(
-			'Admin scripts enqueued',
-			array(
-				'modal_id' => isset( $_GET['modal_id'] ) ? intval( $_GET['modal_id'] ) : null,
-				'rest_url' => rest_url(),
-				'user_id'  => get_current_user_id(),
-			)
-		);
 	}
 
 	/**
@@ -413,17 +412,17 @@ class EWM_Admin_Page {
 
 							<div class="ewm-form-group">
 								<label for="display-frequency"><?php _e( 'Frecuencia de Visualización', 'ewm-modal-cta' ); ?></label>
-								<select id="display-frequency" name="display_frequency" class="ewm-form-control">
-									<option value="always" <?php selected( $modal_data['display_rules']['frequency']['type'] ?? 'always', 'always' ); ?>>
+								<select id="display-frequency" name="triggers[frequency_type]" class="ewm-form-control">
+									<option value="always" <?php selected( $modal_data['config']['triggers']['frequency_type'] ?? 'always', 'always' ); ?>>
 										<?php _e( 'Siempre', 'ewm-modal-cta' ); ?>
 									</option>
-									<option value="once_per_session" <?php selected( $modal_data['display_rules']['frequency']['type'] ?? 'always', 'once_per_session' ); ?>>
+									<option value="session" <?php selected( $modal_data['config']['triggers']['frequency_type'] ?? 'always', 'session' ); ?>>
 										<?php _e( 'Una vez por sesión', 'ewm-modal-cta' ); ?>
 									</option>
-									<option value="once_per_day" <?php selected( $modal_data['display_rules']['frequency']['type'] ?? 'always', 'once_per_day' ); ?>>
+									<option value="daily" <?php selected( $modal_data['config']['triggers']['frequency_type'] ?? 'always', 'daily' ); ?>>
 										<?php _e( 'Una vez por día', 'ewm-modal-cta' ); ?>
 									</option>
-									<option value="once_per_week" <?php selected( $modal_data['display_rules']['frequency']['type'] ?? 'always', 'once_per_week' ); ?>>
+									<option value="weekly" <?php selected( $modal_data['config']['triggers']['frequency_type'] ?? 'always', 'weekly' ); ?>>
 										<?php _e( 'Una vez por semana', 'ewm-modal-cta' ); ?>
 									</option>
 								</select>
@@ -489,10 +488,28 @@ class EWM_Admin_Page {
 			wp_die( __( 'No tienes permisos para acceder a esta página.', 'ewm-modal-cta' ) );
 		}
 
+		$debug_frequency_enabled = get_option( 'ewm_debug_frequency_enabled', '0' );
+
 		?>
 		<div class="wrap">
 			<h1><?php _e( 'Configuraciones EWM Modal CTA', 'ewm-modal-cta' ); ?></h1>
-			<p><?php _e( 'Configuraciones globales del plugin (próximamente)', 'ewm-modal-cta' ); ?></p>
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+				<?php wp_nonce_field( 'ewm_save_settings', 'ewm_settings_nonce' ); ?>
+				<input type="hidden" name="action" value="ewm_save_settings">
+
+				<div class="ewm-form-group">
+					<div class="ewm-checkbox">
+						<input type="checkbox" id="debug-frequency-enabled" name="ewm_debug_frequency_enabled" value="1"
+								<?php checked( $debug_frequency_enabled, '1' ); ?>>
+						<label for="debug-frequency-enabled"><?php _e( 'Habilitar Modo de Depuración de Frecuencia', 'ewm-modal-cta' ); ?></label>
+					</div>
+					<p class="description"><?php _e( 'Cuando está habilitado, el modal se mostrará con mayor frecuencia para el usuario actual.', 'ewm-modal-cta' ); ?></p>
+				</div>
+
+				<div class="ewm-form-group ewm-text-center ewm-mt-20">
+					<button type="submit" class="ewm-btn large"><?php _e( 'Guardar Configuraciones', 'ewm-modal-cta' ); ?></button>
+				</div>
+			</form>
 		</div>
 		<?php
 	}
@@ -546,13 +563,6 @@ class EWM_Admin_Page {
 				$modal_id = $result;
 			}
 
-			ewm_log_info(
-				'Modal saved via builder',
-				array(
-					'modal_id' => $modal_id,
-					'action'   => $modal_id ? 'update' : 'create',
-				)
-			);
 
 			wp_send_json_success(
 				array(
@@ -562,55 +572,51 @@ class EWM_Admin_Page {
 			);
 
 		} catch ( Exception $e ) {
-			ewm_log_error(
-				'Error saving modal via builder',
-				array(
-					'error'    => $e->getMessage(),
-					'modal_id' => $modal_id,
-				)
-			);
+
 
 			wp_send_json_error( $e->getMessage() );
 		}
 	}
 
 	/**
+	 * Guardar configuraciones globales (modo de depuración de frecuencia)
+	 */
+	public function save_global_settings() {
+		check_admin_referer( 'ewm_save_settings', 'ewm_settings_nonce' );
+
+		if ( ! EWM_Capabilities::current_user_can_manage_settings() ) {
+			wp_die( __( 'No tienes permisos para realizar esta acción.', 'ewm-modal-cta' ) );
+		}
+
+		$debug_frequency_enabled = isset( $_POST['ewm_debug_frequency_enabled'] ) ? '1' : '0';
+		update_option( 'ewm_debug_frequency_enabled', $debug_frequency_enabled );
+
+
+
+		wp_redirect( admin_url( 'admin.php?page=ewm-settings' ) );
+		exit;
+	}
+
+	/**
 	 * Cargar configuración del modal builder
 	 */
 	public function load_modal_builder() {
-		ewm_log_info(
-			'AJAX load_modal_builder called',
-			array(
-				'user_id'  => get_current_user_id(),
-				'modal_id' => $_POST['modal_id'] ?? 'not_set',
-				'nonce'    => $_POST['nonce'] ?? 'not_set',
-			)
-		);
-
+	
 		check_ajax_referer( 'ewm_admin_nonce', 'nonce' );
 
 		if ( ! EWM_Capabilities::current_user_can_manage_modals() ) {
-			ewm_log_warning( 'Permission denied for load_modal_builder' );
 			wp_send_json_error( __( 'No tienes permisos para realizar esta acción.', 'ewm-modal-cta' ) );
 		}
 
 		$modal_id = intval( $_POST['modal_id'] ?? 0 );
 
 		if ( ! $modal_id ) {
-			ewm_log_warning( 'Invalid modal ID provided', array( 'modal_id' => $modal_id ) );
 			wp_send_json_error( __( 'ID de modal inválido.', 'ewm-modal-cta' ) );
 		}
 
 		$modal_post = get_post( $modal_id );
 		if ( ! $modal_post || $modal_post->post_type !== 'ew_modal' ) {
-			ewm_log_warning(
-				'Modal not found or wrong post type',
-				array(
-					'modal_id'    => $modal_id,
-					'post_exists' => ! empty( $modal_post ),
-					'post_type'   => $modal_post->post_type ?? 'null',
-				)
-			);
+			
 			wp_send_json_error( __( 'Modal no encontrado.', 'ewm-modal-cta' ) );
 		}
 
@@ -634,24 +640,12 @@ class EWM_Admin_Page {
 				'custom_css'     => get_post_meta( $modal_id, 'ewm_custom_css', true ) ?: '',
 			);
 
-			ewm_log_info(
-				'Modal data loaded successfully via AJAX',
-				array(
-					'modal_id' => $modal_id,
-					'title'    => $modal_data['title'],
-				)
-			);
+
 
 			wp_send_json_success( $modal_data );
 
 		} catch ( Exception $e ) {
-			ewm_log_error(
-				'Error loading modal data via AJAX',
-				array(
-					'modal_id' => $modal_id,
-					'error'    => $e->getMessage(),
-				)
-			);
+
 			wp_send_json_error( __( 'Error al cargar los datos del modal.', 'ewm-modal-cta' ) );
 		}
 	}

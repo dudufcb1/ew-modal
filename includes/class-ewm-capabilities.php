@@ -170,13 +170,7 @@ class EWM_Capabilities {
 			$this->add_capabilities_to_roles();
 			update_option( 'ewm_capabilities_setup', EWM_VERSION );
 
-			ewm_log_info(
-				'Capabilities setup completed',
-				array(
-					'version'            => EWM_VERSION,
-					'capabilities_count' => count( $this->capabilities ),
-				)
-			);
+
 		}
 	}
 
@@ -192,13 +186,7 @@ class EWM_Capabilities {
 					$role->add_cap( $capability );
 				}
 
-				ewm_log_debug(
-					'Capabilities added to role',
-					array(
-						'role'               => $role_name,
-						'capabilities_count' => count( $capabilities ),
-					)
-				);
+			
 			}
 		}
 	}
@@ -215,13 +203,7 @@ class EWM_Capabilities {
 					$role->remove_cap( $capability );
 				}
 
-				ewm_log_debug(
-					'Capabilities removed from role',
-					array(
-						'role'               => $role_name,
-						'capabilities_count' => count( $capabilities ),
-					)
-				);
+		
 			}
 		}
 
@@ -433,13 +415,7 @@ class EWM_Capabilities {
 				}
 			}
 
-			ewm_log_info(
-				'Custom capability added',
-				array(
-					'capability' => $capability,
-					'roles'      => $roles,
-				)
-			);
+			
 		}
 	}
 
@@ -459,12 +435,7 @@ class EWM_Capabilities {
 				}
 			}
 
-			ewm_log_info(
-				'Custom capability removed',
-				array(
-					'capability' => $capability,
-				)
-			);
+		
 		}
 	}
 

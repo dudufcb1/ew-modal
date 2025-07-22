@@ -1,0 +1,99 @@
+{
+  "schema_version": "2.0.0",
+  "meta": {
+    "date": "2025-07-21T19:45:00Z",
+    "project": "EWM Modal CTA",
+    "author": "augment_agent",
+    "task_id": "RECREAR_MODAL_ADMIN_JS_20250721",
+    "status": "doing",
+    "revision": 2,
+    "snapshot_id": "dc89fa13-b633-43e6-a71a-d19c33d764b6",
+    "group_id": "investigacion_ewm_modal_builder",
+    "timestamp": "2025-07-21T22:35:58.320636Z",
+    "can_agent_set_done": true,
+    "rolled_back": false,
+    "group_md": "groups/investigacion_ewm_modal_builder/group.md"
+  },
+  "scope": {
+    "files": [
+      "assets/js/modal-admin.js",
+      "assets/js/builder_v2.js",
+      "assets/js/modal-frontend.js"
+    ],
+    "components": [
+      "EWMModalAdmin",
+      "EWMBuilderV2",
+      "EWMModalFrontend",
+      "TabSystem",
+      "AjaxHandler",
+      "FormManager"
+    ]
+  },
+  "problem": {
+    "user_request": "Recrear archivo modal-admin.js con funcionalidad completa de tabs, AJAX, formularios y gestión del builder",
+    "business_goal": "Restaurar la funcionalidad del modal builder después de que el líder eliminó todo el JavaScript",
+    "constraints": [
+      "Usar jQuery solo en admin",
+      "Mantener compatibilidad con PHP existente",
+      "Respetar endpoints REST API"
+    ]
+  },
+  "implementation_plan": {
+    "steps": [
+      {
+        "step": "Crear estructura base de modal-admin.js",
+        "status": "done"
+      },
+      {
+        "step": "Implementar sistema de tabs",
+        "status": "done"
+      },
+      {
+        "step": "Agregar funcionalidad AJAX",
+        "status": "done"
+      },
+      {
+        "step": "Implementar gestión de formularios",
+        "status": "done"
+      },
+      {
+        "step": "Agregar color picker integration",
+        "status": "done"
+      },
+      {
+        "step": "Implementar preview functionality",
+        "status": "done"
+      },
+      {
+        "step": "Crear builder_v2.js para builder avanzado",
+        "status": "done"
+      },
+      {
+        "step": "Crear modal-frontend.js para renderizado frontend",
+        "status": "done"
+      }
+    ]
+  },
+  "next_actions": [
+    "Crear form-validator.js para validación",
+    "Probar funcionalidad completa",
+    "Verificar integración con PHP"
+  ],
+  "experiments": [
+    {
+      "test_case": "Creación de modal-admin.js con funcionalidad completa",
+      "result": "Archivo creado exitosamente con 490 líneas, incluye tabs, AJAX, formularios, color picker",
+      "logs_link": "assets/js/modal-admin.js"
+    },
+    {
+      "test_case": "Creación de builder_v2.js para builder avanzado",
+      "result": "Archivo creado exitosamente con 350 líneas, incluye drag&drop, gestión de pasos y campos",
+      "logs_link": "assets/js/builder_v2.js"
+    },
+    {
+      "test_case": "Creación de modal-frontend.js para frontend",
+      "result": "Archivo creado exitosamente con 300 líneas, incluye renderizado, triggers, navegación",
+      "logs_link": "assets/js/modal-frontend.js"
+    }
+  ]
+}

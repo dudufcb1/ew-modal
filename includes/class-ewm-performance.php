@@ -107,8 +107,9 @@ class EWM_Performance {
 
 		if ( ! $should_load ) {
 			// No cargar assets si no son necesarios
-			wp_dequeue_style( 'ewm-modal-styles' );
-			wp_dequeue_script( 'ewm-modal-scripts' );
+			wp_dequeue_style( 'ewm-modal-frontend' );
+			wp_dequeue_script( 'ewm-modal-frontend' );
+			wp_dequeue_script( 'ewm-form-validator' );
 
 			ewm_log_debug( 'Assets not loaded - no modals detected on page' );
 			return;
@@ -138,12 +139,7 @@ class EWM_Performance {
 			return false;
 		}
 
-		// Verificar bloques de Gutenberg
-		if ( has_blocks( $post->post_content ) ) {
-			return EWM_Block_Processor::post_has_modal_blocks( $post->ID );
-		}
-
-		// Verificar shortcodes
+		// GUTENBERG ELIMINADO: Solo verificar shortcodes
 		return EWM_Shortcodes::has_modal_shortcode( $post->post_content );
 	}
 
@@ -310,7 +306,7 @@ class EWM_Performance {
 	 */
 	public function add_async_defer_attributes( $tag, $handle ) {
 		// Scripts que pueden cargarse de forma asíncrona
-		$async_scripts = array( 'ewm-modal-scripts', 'ewm-woocommerce' );
+		$async_scripts = array( 'ewm-modal-frontend', 'ewm-form-validator' );
 
 		if ( in_array( $handle, $async_scripts ) ) {
 			return str_replace( ' src', ' async src', $tag );

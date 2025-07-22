@@ -1,0 +1,56 @@
+{
+  "schema_version": "2.0.0",
+  "meta": {
+    "task_id": "BRAINSTORMING_TEORIAS_PERSISTENCIA_20250721",
+    "status": "done",
+    "revision": 3,
+    "snapshot_id": "7d1ac5d1-1d70-4ff6-b8f6-e68cfbc2bc41",
+    "date": "2025-07-21T11:30:00Z",
+    "project": "ewm-modal-cta",
+    "author": "augment_agent",
+    "group_id": "investigacion_ewm_modal_builder",
+    "can_agent_set_done": true,
+    "rolled_back": false,
+    "timestamp": "2025-07-21T17:28:28.661352Z",
+    "group_md": "groups/investigacion_ewm_modal_builder/group.md"
+  },
+  "scope": {
+    "files": [
+      "includes/class-ewm-modal-cpt.php",
+      "includes/class-ewm-render-core.php",
+      "includes/class-ewm-rest-api.php",
+      "includes/class-ewm-shortcodes.php"
+    ],
+    "components": [
+      "Modal CPT",
+      "Render Core",
+      "REST API",
+      "Shortcodes"
+    ],
+    "affected_files": [
+      "includes/class-ewm-modal-cpt.php",
+      "includes/class-ewm-render-core.php",
+      "includes/class-ewm-rest-api.php"
+    ]
+  },
+  "problem": {
+    "user_request": "Brainstorming e investigación profunda de teorías sobre por qué los cambios del modal no persisten",
+    "description": "Los cambios en la configuración del modal no persisten correctamente",
+    "root_cause": "Coexisten 3 sistemas de almacenamiento diferentes que no están sincronizados",
+    "evidence": [
+      "Sistema Legacy usa campos separados (ewm_steps_config, ewm_design_config, etc.)",
+      "Sistema Unificado lee solo de 'ewm_modal_config'",
+      "REST API mezcla ambos enfoques inconsistentemente"
+    ]
+  },
+  "solution": {
+    "approach": "Migración automática de datos legacy a sistema unificado",
+    "steps": [
+      "Crear función de migración de datos legacy a ewm_modal_config",
+      "Asegurar que todas las operaciones usen sistema unificado",
+      "Eliminar fallbacks legacy",
+      "Testing de persistencia"
+    ],
+    "expected_outcome": "Persistencia consistente de datos"
+  }
+}

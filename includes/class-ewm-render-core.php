@@ -57,7 +57,7 @@ class EWM_Render_Core {
 	}
 
 	/**
-	 * Función principal de renderizado (usada por bloques y shortcodes)
+	 * Función principal de renderizado (usada por shortcodes)
 	 */
 	public function render_modal( $modal_id, $config = array() ) {
 		$start_time = microtime( true );
@@ -114,10 +114,9 @@ class EWM_Render_Core {
 			)
 		);
 
-		// Evitar renderizado duplicado SOLO para shortcodes, NO para bloques de Gutenberg
-		$source = $config['source'] ?? 'unknown';
-		if ( in_array( $modal_id, $this->rendered_modals ) && $source !== 'gutenberg_block' ) {
-			ewm_log_debug( 'Modal already rendered, skipping', array( 'modal_id' => $modal_id, 'source' => $source ) );
+		// Evitar renderizado duplicado (solo shortcodes ahora)
+		if ( in_array( $modal_id, $this->rendered_modals ) ) {
+			ewm_log_debug( 'Modal already rendered, skipping', array( 'modal_id' => $modal_id ) );
 			return '';
 		}
 
@@ -245,18 +244,49 @@ class EWM_Render_Core {
 			return array();
 		}
 
-		// Obtener TODOS los meta fields usando el ID explícito
+		// ARQUITECTURA CONSISTENTE: Leer de campos separados (igual que admin)
+		$steps_json = get_post_meta( $modal_id, 'ewm_steps_config', true );
+		$design_json = get_post_meta( $modal_id, 'ewm_design_config', true );
+		$triggers_json = get_post_meta( $modal_id, 'ewm_trigger_config', true );
+		$wc_json = get_post_meta( $modal_id, 'ewm_wc_integration', true );
+		$rules_json = get_post_meta( $modal_id, 'ewm_display_rules', true );
+
+		error_log( 'EWM FRONTEND DEBUG: Reading from separate fields' );
+		error_log( 'EWM FRONTEND DEBUG: steps_json length: ' . strlen( $steps_json ) );
+		error_log( 'EWM FRONTEND DEBUG: design_json length: ' . strlen( $design_json ) );
+
+		// Unificar datos en memoria para el frontend
 		$config = array(
-			'modal_id'       => $modal_id,
-			'title'          => get_the_title( $modal_id ),
-			'mode'           => get_post_meta( $modal_id, 'ewm_modal_mode', true ) ?: 'formulario',
-			'steps'          => EWM_Meta_Fields::get_meta( $modal_id, 'ewm_steps_config', array() ),
-			'design'         => EWM_Meta_Fields::get_meta( $modal_id, 'ewm_design_config', array() ),
-			'triggers'       => EWM_Meta_Fields::get_meta( $modal_id, 'ewm_trigger_config', array() ),
-			'wc_integration' => EWM_Meta_Fields::get_meta( $modal_id, 'ewm_wc_integration', array() ),
-			'display_rules'  => EWM_Meta_Fields::get_meta( $modal_id, 'ewm_display_rules', array() ),
-			'field_mapping'  => EWM_Meta_Fields::get_meta( $modal_id, 'ewm_field_mapping', array() ),
+			'steps' => json_decode( $steps_json, true ) ?: array(),
+			'design' => json_decode( $design_json, true ) ?: array(),
+			'triggers' => json_decode( $triggers_json, true ) ?: array(),
+			'wc_integration' => json_decode( $wc_json, true ) ?: array(),
+			'display_rules' => json_decode( $rules_json, true ) ?: array(),
 		);
+
+		error_log( 'EWM FRONTEND DEBUG: Unified config created' );
+		error_log( 'EWM FRONTEND DEBUG: steps count: ' . count( $config['steps']['steps'] ?? array() ) );
+
+		// Agregar datos básicos del modal
+		$config['modal_id'] = $modal_id;
+		$config['title'] = get_the_title( $modal_id );
+
+		// Mantener compatibilidad con mode por separado
+		if ( empty( $config['mode'] ) ) {
+			$config['mode'] = get_post_meta( $modal_id, 'ewm_modal_mode', true ) ?: 'formulario';
+		}
+
+		// Mantener compatibilidad con custom_css por separado
+		if ( empty( $config['custom_css'] ) ) {
+			$config['custom_css'] = get_post_meta( $modal_id, 'ewm_custom_css', true ) ?: '';
+		}
+
+		error_log( 'EWM ARQUITECTURA UNIFICADA: Configuración cargada' );
+		error_log( 'EWM CONFIG KEYS: ' . implode( ', ', array_keys( $config ) ) );
+
+		// DEBUGGING: Log de configuración RAW antes de apply_default_config
+		error_log( 'EWM CONFIG RAW - Modal ' . $modal_id . ' triggers: ' . json_encode( $config['triggers'] ) );
+		error_log( 'EWM CONFIG RAW - Modal ' . $modal_id . ' display_rules: ' . json_encode( $config['display_rules'] ) );
 
 		// Log de la configuración obtenida ANTES de devolverla (según consultor)
 		error_log( 'EWM CORE DEBUG: Config loaded. Steps empty? ' . ( empty( $config['steps'] ) ? 'YES' : 'NO' ) );
@@ -277,14 +307,22 @@ class EWM_Render_Core {
 		// Aplicar valores por defecto
 		$config = $this->apply_default_config( $config );
 
-		return apply_filters( 'ewm_modal_configuration', $config, $modal_id );
+		// BYPASS TEMPORAL: Deshabilitar filtro que corrompe configuración
+		// return apply_filters( 'ewm_modal_configuration', $config, $modal_id );
+		return $config;
 	}
 
 	/**
 	 * Aplicar configuración por defecto
 	 */
 	private function apply_default_config( $config ) {
+		// DEBUGGING CRÍTICO: Log antes y después
+		error_log( 'EWM APPLY_DEFAULT_CONFIG - ANTES triggers: ' . json_encode( $config['triggers'] ?? 'MISSING' ) );
+		error_log( 'EWM APPLY_DEFAULT_CONFIG - ANTES display_rules: ' . json_encode( $config['display_rules'] ?? 'MISSING' ) );
 		// Configuración de diseño por defecto
+		if ( ! is_array( $config['design'] ?? null ) ) {
+			$config['design'] = array();
+		}
 		$config['design'] = array_merge(
 			array(
 				'theme'      => 'default',
@@ -303,9 +341,10 @@ class EWM_Render_Core {
 			$config['design']
 		);
 
-		// Configuración de triggers por defecto
-		$config['triggers'] = array_merge(
-			array(
+		// BYPASS COMPLETO: Si ya hay configuración de triggers, NO aplicar defaults
+		if ( empty( $config['triggers'] ) ) {
+			// Solo aplicar defaults si NO hay configuración
+			$config['triggers'] = array(
 				'exit_intent'       => array(
 					'enabled'     => false,
 					'sensitivity' => 20,
@@ -322,9 +361,35 @@ class EWM_Render_Core {
 					'enabled'  => true,
 					'selector' => '',
 				),
-			),
-			$config['triggers']
-		);
+			);
+		}
+		// Si ya hay configuración, mantenerla intacta
+
+		// BYPASS COMPLETO: Si ya hay configuración de display_rules, NO aplicar defaults
+		if ( empty( $config['display_rules'] ) ) {
+			// Solo aplicar defaults si NO hay configuración
+			$config['display_rules'] = array(
+				'pages' => array(
+					'include' => array(),
+					'exclude' => array(),
+				),
+				'user_roles' => array(),
+				'devices' => array(
+					'desktop' => true,
+					'tablet'  => true,
+					'mobile'  => true,
+				),
+				'frequency' => array(
+					'type'  => 'always',
+					'limit' => 0,
+				),
+			);
+		}
+		// Si ya hay configuración, mantenerla intacta
+
+		// DEBUGGING CRÍTICO: Log después
+		error_log( 'EWM APPLY_DEFAULT_CONFIG - DESPUÉS triggers: ' . json_encode( $config['triggers'] ?? 'MISSING' ) );
+		error_log( 'EWM APPLY_DEFAULT_CONFIG - DESPUÉS display_rules: ' . json_encode( $config['display_rules'] ?? 'MISSING' ) );
 
 		return $config;
 	}
@@ -347,10 +412,11 @@ class EWM_Render_Core {
 
 		ob_start();
 		?>
-		<div id="ewm-modal-<?php echo $modal_id; ?>" 
+		<div id="ewm-modal-<?php echo $modal_id; ?>"
 			class="<?php echo esc_attr( $modal_class ); ?>"
 			<?php echo $modal_data; ?>
 			style="display: none;">
+			<?php error_log( 'EWM HTML MODAL GENERADO - ID: ewm-modal-' . $modal_id . ', Class: ' . $modal_class ); ?>
 			
 			<div class="ewm-modal-backdrop"></div>
 			
@@ -376,6 +442,35 @@ class EWM_Render_Core {
 		<?php
 
 		$html_output = ob_get_clean();
+
+		// CONFIGURACIÓN DEL MODAL PARA AUTO-INICIALIZACIÓN
+		$html_output .= "
+		<div style='position: fixed; top: 10px; right: 10px; z-index: 9999; background: #007cba; color: white; padding: 10px; border-radius: 5px;'>
+			<button onclick='testModal{$modal_id}()' style='background: white; color: #007cba; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;'>
+				🧪 Test Modal {$modal_id}
+			</button>
+		</div>
+		<script>
+		// Auto-inicializar modal {$modal_id}
+		if (typeof window.ewm_modal_configs === 'undefined') {
+			window.ewm_modal_configs = [];
+		}
+
+		window.ewm_modal_configs.push(" . wp_json_encode( $config ) . ");
+
+		function testModal{$modal_id}() {
+			console.log('🧪 TESTING modal {$modal_id}');
+			const modalElement = document.getElementById('ewm-modal-{$modal_id}');
+			if (modalElement) {
+				console.log('✅ Modal element found:', modalElement);
+				modalElement.style.display = 'flex';
+				modalElement.classList.add('ewm-modal-visible');
+			} else {
+				console.error('❌ Modal element not found: ewm-modal-{$modal_id}');
+			}
+		}
+		</script>";
+
 		ewm_log_info(
 			'RENDER DEBUG - generate_modal_html completed',
 			array(
@@ -751,6 +846,10 @@ class EWM_Render_Core {
 	 * Obtener atributos data del modal
 	 */
 	private function get_modal_data_attributes( $modal_id, $config ) {
+		// DEBUGGING: Log de configuración antes de generar data-config
+		error_log( 'EWM DATA-CONFIG FINAL - Modal ' . $modal_id . ' triggers: ' . json_encode( $config['triggers'] ?? 'MISSING' ) );
+		error_log( 'EWM DATA-CONFIG FINAL - Modal ' . $modal_id . ' display_rules: ' . json_encode( $config['display_rules'] ?? 'MISSING' ) );
+
 		$data_attrs = array(
 			'data-modal-id' => $modal_id,
 			'data-trigger'  => $config['trigger'] ?? 'manual',
@@ -787,17 +886,25 @@ class EWM_Render_Core {
 		}
 
 		wp_enqueue_style(
-			'ewm-modal-styles',
+			'ewm-modal-frontend',
 			EWM_PLUGIN_URL . 'assets/css/modal-frontend.css',
 			array(),
-			EWM_VERSION
+			EWM_VERSION . '-styled-' . time() // Forzar recarga para styling fix
 		);
 
 		wp_enqueue_script(
-			'ewm-modal-scripts',
-			EWM_PLUGIN_URL . 'assets/js/modal-frontend.js',
+			'ewm-form-validator',
+			EWM_PLUGIN_URL . 'assets/js/form-validator.js',
 			array(),
 			EWM_VERSION,
+			true
+		);
+
+		wp_enqueue_script(
+			'ewm-modal-frontend',
+			EWM_PLUGIN_URL . 'assets/js/modal-frontend.js',
+			array( 'ewm-form-validator' ),
+			EWM_VERSION . '-styled-' . time(), // Forzar recarga para styling fix
 			true
 		);
 
@@ -805,14 +912,15 @@ class EWM_Render_Core {
 		$logger_settings = EWM_Logger_Settings::get_instance();
 
 		wp_localize_script(
-			'ewm-modal-scripts',
+			'ewm-modal-frontend',
 			'ewmModal',
 			array(
 				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
 				'restUrl' => rest_url( 'ewm/v1/' ),
-				'nonce'   => wp_create_nonce( 'wp_rest' ),
+				// Generar nonce específico para las peticiones AJAX del modal (debe coincidir con check_ajax_referer en el handler)
+				'nonce'   => wp_create_nonce( 'ewm_modal_nonce' ),
 				'debug'   => defined( 'WP_DEBUG' ) && WP_DEBUG,
-				'frequencyDebug' => $logger_settings->is_frequency_debug_enabled(),
+				'frequencyDebug' => ( $logger_settings->is_frequency_debug_enabled() || get_option( 'ewm_debug_frequency_enabled', '0' ) === '1' ),
 				'strings' => array(
 					'loading'                => __( 'Cargando...', 'ewm-modal-cta' ),
 					'error'                  => __( 'Ha ocurrido un error. Por favor, inténtalo de nuevo.', 'ewm-modal-cta' ),
@@ -846,9 +954,10 @@ class EWM_Render_Core {
 		?>
 		<script type="text/javascript">
 		document.addEventListener('DOMContentLoaded', function() {
-			if (typeof EWMModal !== 'undefined') {
+			if (typeof EWMModalFrontend !== 'undefined') {
 				<?php foreach ( $this->rendered_modals as $modal_id ) : ?>
-				EWMModal.init(<?php echo $modal_id; ?>);
+				// Los modales se auto-inicializan con la nueva arquitectura
+				console.log('Modal <?php echo $modal_id; ?> ready for auto-initialization');
 				<?php endforeach; ?>
 			}
 		});

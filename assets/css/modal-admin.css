@@ -440,6 +440,15 @@ select.ewm-form-control {
     justify-content: space-between;
     align-items: center;
     cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.ewm-step-header:hover {
+    background: #f0f0f0;
+}
+
+.ewm-step-config.active .ewm-step-header {
+    background: #e9e9e9;
 }
 
 .ewm-step-title {
@@ -457,7 +466,7 @@ select.ewm-form-control {
     display: none;
 }
 
-.ewm-step-item.active .ewm-step-content {
+.ewm-step-config.active .ewm-step-content {
     display: block;
 }
 
@@ -636,66 +645,182 @@ select.ewm-form-control {
     border-bottom: 1px solid #eee;
 }
 
+/* Configuración de campos - Layout mejorado */
 .ewm-field-config {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 15px;
+    position: relative;
 }
 
-.ewm-field-config label {
+.ewm-field-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f0f0f1;
+}
+
+.ewm-field-title {
+    font-weight: 600;
+    color: #1d2327;
+    margin: 0;
+}
+
+.ewm-field-content {
+    display: block;
+}
+
+/* Usar clases nativas de WordPress para formularios */
+.ewm-form-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.ewm-form-row .ewm-form-group {
+    flex: 1;
+}
+
+.ewm-form-group {
+    margin-bottom: 15px;
+}
+
+.ewm-form-group label {
     display: block;
     margin-bottom: 5px;
     font-weight: 600;
-    color: #333;
+    color: #1d2327;
+    font-size: 14px;
 }
 
-.ewm-field-config input,
-.ewm-field-config select {
+/* Usar estilos nativos de WordPress para inputs */
+.ewm-form-control {
     width: 100%;
-    padding: 8px 12px;
-    border: 1px solid #ccc;
+    padding: 6px 8px;
+    border: 1px solid #8c8f94;
     border-radius: 4px;
     font-size: 14px;
+    line-height: 1.4;
+    color: #2c3338;
+    background-color: #fff;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,.07);
 }
 
-.ewm-field-config input:focus,
-.ewm-field-config select:focus {
-    outline: none;
-    border-color: #0073aa;
-    box-shadow: 0 0 0 1px #0073aa;
+.ewm-form-control:focus {
+    border-color: #2271b1;
+    box-shadow: 0 0 0 1px #2271b1;
+    outline: 2px solid transparent;
 }
 
+.ewm-form-control.small {
+    max-width: 200px;
+}
+
+/* Botones usando estilos nativos de WordPress */
 .ewm-add-field {
-    background: #0073aa;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    margin: 10px 0;
+    background: #2271b1;
+    color: #fff;
+    border: 1px solid #2271b1;
+    border-radius: 3px;
     cursor: pointer;
-    font-size: 14px;
-    font-weight: 500;
+    font-size: 13px;
+    line-height: 1.4;
+    text-decoration: none;
+    transition: all 0.1s ease-in-out;
 }
 
-.ewm-add-field:hover {
-    background: #005a87;
+.ewm-add-field:hover,
+.ewm-add-field:focus {
+    background: #135e96;
+    border-color: #135e96;
+    color: #fff;
 }
 
 .ewm-remove-field {
-    background: #dc3545;
-    color: white;
-    border: none;
-    padding: 5px 10px;
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    background: #d63638;
+    color: #fff;
+    border: 1px solid #d63638;
     border-radius: 3px;
     cursor: pointer;
     font-size: 12px;
+    line-height: 1.4;
+    text-decoration: none;
+    transition: all 0.1s ease-in-out;
 }
 
-.ewm-remove-field:hover {
-    background: #c82333;
+.ewm-remove-field:hover,
+.ewm-remove-field:focus {
+    background: #b32d2e;
+    border-color: #b32d2e;
+    color: #fff;
 }
 
+/* Estilos adicionales para el builder */
+.ewm-form-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.ewm-form-row .ewm-form-group {
+    flex: 1;
+}
+
+.ewm-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ewm-checkbox input[type="checkbox"] {
+    margin: 0;
+}
+
+.ewm-field-handle {
+    cursor: move;
+    color: #8c8f94;
+    font-size: 16px;
+    user-select: none;
+}
+
+.ewm-fields-section {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #f0f0f1;
+}
+
+.ewm-fields-section h5 {
+    margin: 0 0 15px 0;
+    color: #1d2327;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.ewm-fields-container {
+    margin-bottom: 15px;
+}
+
+/* Responsive */
 @media (max-width: 768px) {
-    .ewm-field-config {
-        grid-template-columns: 1fr;
+    .ewm-form-row {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .ewm-field-header {
+        flex-wrap: wrap;
+        gap: 10px;
     }
 }

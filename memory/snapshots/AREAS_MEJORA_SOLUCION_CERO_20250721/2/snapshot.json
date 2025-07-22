@@ -1,0 +1,116 @@
+{
+  "schema_version": "2.0.0",
+  "meta": {
+    "task_id": "AREAS_MEJORA_SOLUCION_CERO_20250721",
+    "status": "done",
+    "revision": 2,
+    "snapshot_id": "01a522c8-64e6-4967-90b6-f7fd49cb07f9",
+    "date": "2025-07-21T18:45:00Z",
+    "project": "ewm-modal-cta",
+    "author": "augment_agent",
+    "group_id": "investigacion_ewm_modal_builder",
+    "can_agent_set_done": true,
+    "rolled_back": false,
+    "timestamp": "2025-07-21T18:49:57.383705Z",
+    "group_md": "groups/investigacion_ewm_modal_builder/group.md"
+  },
+  "scope": {
+    "files": [
+      "includes/class-ewm-rest-api.php",
+      "assets/js/modal-admin.js",
+      "includes/class-ewm-render-core.php",
+      "includes/class-ewm-admin-page.php"
+    ],
+    "components": [
+      "REST API",
+      "Frontend JavaScript",
+      "Data Schema",
+      "Database Structure"
+    ],
+    "affected_files": [
+      "includes/class-ewm-rest-api.php",
+      "assets/js/modal-admin.js",
+      "includes/class-ewm-render-core.php"
+    ]
+  },
+  "problem": {
+    "user_request": "Identificar áreas de mejora y diseñar cómo haría la implementación desde cero para una posible solución alternativa",
+    "description": "Necesidad de refactorización completa para eliminar inconsistencias y crear arquitectura sólida",
+    "root_cause": "Coexistencia de sistemas legacy y unificado, inconsistencia de nombres, falta de congruencia",
+    "evidence": [
+      "Sistema legacy usa campos separados",
+      "Sistema unificado usa ewm_modal_config",
+      "Nombres inconsistentes (frequency vs frecuencia)",
+      "Múltiples puntos de falla",
+      "Debugging complejo"
+    ]
+  },
+  "solution": {
+    "approach": "Refactorización completa API-only sin retrocompatibilidad",
+    "principles": [
+      "API-Only: Un solo método de guardado y consumo",
+      "Congruencia Total: Mismos nombres en todo el flujo",
+      "Sin Retrocompatibilidad: Producto sólido desde cero",
+      "Happy Path: Flujo directo y claro"
+    ],
+    "data_schema": {
+      "schema_version": "2.0.0",
+      "structure": {
+        "mode": "string",
+        "steps": {
+          "steps": "array",
+          "final_step": "object",
+          "progress_bar": "object"
+        },
+        "design": {
+          "primary_color": "string",
+          "background_color": "string",
+          "font_family": "string",
+          "border_radius": "string"
+        },
+        "triggers": {
+          "frequency_type": "string",
+          "delay_seconds": "number",
+          "exit_intent": "boolean",
+          "scroll_percentage": "number"
+        },
+        "woocommerce": {
+          "enabled": "boolean",
+          "product_ids": "array",
+          "discount_code": "string"
+        },
+        "display_rules": {
+          "pages": "array",
+          "user_roles": "array",
+          "devices": "array"
+        },
+        "custom_css": "string"
+      }
+    },
+    "api_endpoints": {
+      "single_endpoint": "/ewm/v1/modal/{id}",
+      "methods": {
+        "GET": "Solo lee de ewm_modal_config",
+        "PUT": "Solo guarda en ewm_modal_config"
+      },
+      "no_fallbacks": true
+    },
+    "frontend_changes": {
+      "consistent_variables": "frequency_type siempre frequency_type",
+      "simplified_flow": "Lo que se envía es lo que se recibe",
+      "no_transformations": "Sin conversiones de datos"
+    },
+    "migration_plan": {
+      "delete_legacy_fields": [
+        "ewm_steps_config",
+        "ewm_design_config",
+        "ewm_trigger_config",
+        "ewm_wc_integration",
+        "ewm_display_rules"
+      ],
+      "single_source": "Solo ewm_modal_config",
+      "no_compatibility": "Sin retrocompatibilidad"
+    }
+  },
+  "expected_outcome": "Sistema unificado, congruente y mantenible"
+}
