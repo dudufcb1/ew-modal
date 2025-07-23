@@ -60,6 +60,11 @@ function ewm_init_core_components() {
 }
 add_action( 'init', 'ewm_init_core_components', 5 );
 
+// FIX: Inicializar EWM_Admin_Page antes de admin_menu
+add_action( 'plugins_loaded', function() {
+    EWM_Admin_Page::get_instance();
+}, 1 );
+
 /**
  * Initialize REST API endpoints
  */
@@ -163,38 +168,33 @@ function ewm_modal_cta_enqueue_frontend_assets() {
 			EWM_VERSION . '-styled-' . time() // Forzar recarga para styling fix
 		);
 
-		// Solo cargar JS en frontend, no en editor
-		if ( $should_load_frontend ) {
-			// Encolar nuevo sistema JavaScript
-			wp_enqueue_script(
-				'ewm-form-validator',
-				EWM_PLUGIN_URL . 'assets/js/form-validator.js',
-				array(),
-				EWM_VERSION,
-				true
-			);
+		// Encolar nuevo sistema JavaScript
+		wp_enqueue_script(
+			'ewm-form-validator',
+			EWM_PLUGIN_URL . 'assets/js/form-validator.js',
+			array(),
+			EWM_VERSION,
+			true
+		);
 
-			wp_enqueue_script(
-				'ewm-modal-frontend',
-				EWM_PLUGIN_URL . 'assets/js/modal-frontend.js',
-				array( 'ewm-form-validator' ),
-				EWM_VERSION,
-				true
-			);
+		wp_enqueue_script(
+			'ewm-modal-frontend',
+			EWM_PLUGIN_URL . 'assets/js/modal-frontend.js',
+			array( 'ewm-form-validator' ),
+			EWM_VERSION . '-fix-' . time(), // Forzar recarga para fix de frecuencia
+			true
+		);
 
-			wp_localize_script(
-				'ewm-modal-frontend',
-				'ewmModal',
-				array(
-					'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-					'restUrl' => rest_url( 'ewm/v1/' ),
-					'nonce'   => wp_create_nonce( 'ewm_modal_nonce' ), // Nonce para transients
-					'debug'   => defined( 'WP_DEBUG' ) && WP_DEBUG,
-				)
-			);
-		}
-
-
+		wp_localize_script(
+			'ewm-modal-frontend',
+			'ewmModal',
+			array(
+				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+				'restUrl' => rest_url( 'ewm/v1/' ),
+				'nonce'   => wp_create_nonce( 'ewm_modal_nonce' ), // Nonce para transients
+				'debug'   => defined( 'WP_DEBUG' ) && WP_DEBUG,
+			)
+		);
 	}
 }
 add_action( 'wp_enqueue_scripts', 'ewm_modal_cta_enqueue_frontend_assets' );

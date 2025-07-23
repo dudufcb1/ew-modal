@@ -48,6 +48,11 @@ class EWM_Admin_Page {
 		add_action( 'wp_ajax_ewm_save_modal_builder', array( $this, 'save_modal_builder' ) );
 		add_action( 'wp_ajax_ewm_load_modal_builder', array( $this, 'load_modal_builder' ) );
 		add_action( 'wp_ajax_ewm_preview_modal', array( $this, 'preview_modal' ) );
+
+		// LOG: admin_menu hook
+		add_action( 'admin_menu', function() {
+			error_log('[EWM DEBUG] admin_menu hook triggered');
+		}, 1 );
 		// Nuevo: manejador para guardar las configuraciones globales (incl. modo debug frecuencia)
 		add_action( 'admin_post_ewm_save_settings', array( $this, 'save_global_settings' ) );
 
@@ -58,6 +63,7 @@ class EWM_Admin_Page {
 	 */
 	public function add_admin_menu() {
 		// Página principal bajo el menú de modales
+		error_log('[EWM DEBUG] Antes de add_submenu_page Modal Builder');
 		add_submenu_page(
 			'edit.php?post_type=ew_modal',
 			__( 'Modal Builder', 'ewm-modal-cta' ),
@@ -66,6 +72,7 @@ class EWM_Admin_Page {
 			'ewm-modal-builder',
 			array( $this, 'render_modal_builder_page' )
 		);
+		error_log('[EWM DEBUG] Después de add_submenu_page Modal Builder');
 
 		// Página de configuraciones
 		add_submenu_page(
@@ -157,11 +164,29 @@ class EWM_Admin_Page {
 	/**
 	 * Renderizar página del Modal Builder
 	 */
-	public function render_modal_builder_page() {
-		// Verificar permisos
-		if ( ! EWM_Capabilities::current_user_can_manage_modals() ) {
-			wp_die( __( 'No tienes permisos para acceder a esta página.', 'ewm-modal-cta' ) );
-		}
+public function render_modal_builder_page() {
+    $current_user = wp_get_current_user();
+    error_log('[EWM DEBUG] INTENTO ACCESO render_modal_builder_page: Usuario=' . $current_user->user_login . ' Roles=' . implode(',', $current_user->roles) . ' ID=' . $current_user->ID);
+
+    // LOG: Capabilities for debugging
+    error_log('[EWM DEBUG] Capabilities: can_manage_modals=' . (EWM_Capabilities::current_user_can_manage_modals() ? 'SI' : 'NO') .
+        ' can_edit_posts=' . (current_user_can('edit_posts') ? 'SI' : 'NO') .
+        ' can_edit_ew_modals=' . (current_user_can('edit_ew_modals') ? 'SI' : 'NO'));
+
+    $can_manage = EWM_Capabilities::current_user_can_manage_modals();
+    $can_edit_posts = current_user_can( 'edit_posts' );
+    $can_edit_ew_modals = current_user_can( 'edit_ew_modals' );
+error_log( "EWM DEBUG PERMISOS - Usuario: " . $current_user->user_login . " (ID: " . $current_user->ID . ")" );
+error_log( "EWM DEBUG PERMISOS - Roles: " . implode( ', ', $current_user->roles ) );
+error_log( "EWM DEBUG PERMISOS - can_manage_modals: " . ( $can_manage ? 'SÍ' : 'NO' ) );
+error_log( "EWM DEBUG PERMISOS - can_edit_posts: " . ( $can_edit_posts ? 'SÍ' : 'NO' ) );
+error_log( "EWM DEBUG PERMISOS - can_edit_ew_modals: " . ( $can_edit_ew_modals ? 'SÍ' : 'NO' ) );
+
+		// Verificar permisos - usar fallback temporal
+error_log('[EWM DEBUG] ACCESO DENEGADO render_modal_builder_page: Usuario=' . $current_user->user_login . ' Roles=' . implode(',', $current_user->roles) . ' can_manage_modals=' . ($can_manage ? 'SI' : 'NO') . ' can_edit_posts=' . ($can_edit_posts ? 'SI' : 'NO'));
+if ( ! $can_manage && ! $can_edit_posts ) {
+wp_die( __( 'No tienes permisos para acceder a esta página.', 'ewm-modal-cta' ) );
+}
 
 		$modal_id   = isset( $_GET['modal_id'] ) ? intval( $_GET['modal_id'] ) : 0;
 		$modal_data = null;
@@ -210,7 +235,7 @@ class EWM_Admin_Page {
 
 				<form id="ewm-modal-form" method="post">
 					<?php wp_nonce_field( 'ewm_save_modal', 'ewm_nonce' ); ?>
-					<input type="hidden" name="modal_id" value="<?php echo esc_attr( $modal_id ); ?>">
+					<input type="hidden" name="modal_id" value="<?php echo esc_attr( (string) $modal_id ); ?>">
 
 					<div class="ewm-tab-content">
 						<!-- Pestaña General -->
@@ -250,7 +275,7 @@ class EWM_Admin_Page {
 							<div class="ewm-form-group">
 								<div class="ewm-checkbox">
 									<input type="checkbox" id="modal-enabled" name="enabled" value="1"
-											<?php checked( $modal_data['enabled'] ?? true ); ?>>
+											<?php checked( isset( $modal_data['enabled'] ) ? $modal_data['enabled'] : true ); ?>>
 									<label for="modal-enabled"><?php _e( 'Modal Activo', 'ewm-modal-cta' ); ?></label>
 								</div>
 								<p class="description"><?php _e( 'Desactiva temporalmente el modal sin eliminarlo.', 'ewm-modal-cta' ); ?></p>
@@ -406,23 +431,26 @@ class EWM_Admin_Page {
 							<div class="ewm-form-group">
 								<label for="custom-css"><?php _e( 'CSS Personalizado', 'ewm-modal-cta' ); ?></label>
 								<textarea id="custom-css" name="custom_css" class="ewm-form-control large" rows="10"
-											placeholder="/* CSS personalizado aquí */"><?php echo esc_textarea( $modal_data['custom_css'] ?? '' ); ?></textarea>
+											placeholder="/* CSS personalizado aquí */"><?php echo esc_textarea( isset( $modal_data['custom_css'] ) ? $modal_data['custom_css'] : '' ); ?></textarea>
 								<p class="description"><?php _e( 'Agrega CSS personalizado que se aplicará solo a este modal', 'ewm-modal-cta' ); ?></p>
 							</div>
 
 							<div class="ewm-form-group">
 								<label for="display-frequency"><?php _e( 'Frecuencia de Visualización', 'ewm-modal-cta' ); ?></label>
 								<select id="display-frequency" name="triggers[frequency_type]" class="ewm-form-control">
-									<option value="always" <?php selected( $modal_data['config']['triggers']['frequency_type'] ?? 'always', 'always' ); ?>>
+									<?php
+									$frequency_type = isset( $modal_data['config']['triggers']['frequency_type'] ) ? $modal_data['config']['triggers']['frequency_type'] : 'always';
+									?>
+									<option value="always" <?php selected( $frequency_type, 'always' ); ?>>
 										<?php _e( 'Siempre', 'ewm-modal-cta' ); ?>
 									</option>
-									<option value="session" <?php selected( $modal_data['config']['triggers']['frequency_type'] ?? 'always', 'session' ); ?>>
+									<option value="session" <?php selected( $frequency_type, 'session' ); ?>>
 										<?php _e( 'Una vez por sesión', 'ewm-modal-cta' ); ?>
 									</option>
-									<option value="daily" <?php selected( $modal_data['config']['triggers']['frequency_type'] ?? 'always', 'daily' ); ?>>
+									<option value="daily" <?php selected( $frequency_type, 'daily' ); ?>>
 										<?php _e( 'Una vez por día', 'ewm-modal-cta' ); ?>
 									</option>
-									<option value="weekly" <?php selected( $modal_data['config']['triggers']['frequency_type'] ?? 'always', 'weekly' ); ?>>
+									<option value="weekly" <?php selected( $frequency_type, 'weekly' ); ?>>
 										<?php _e( 'Una vez por semana', 'ewm-modal-cta' ); ?>
 									</option>
 								</select>
@@ -536,9 +564,10 @@ class EWM_Admin_Page {
 	public function save_modal_builder() {
 		check_ajax_referer( 'ewm_admin_nonce', 'nonce' );
 
-		if ( ! EWM_Capabilities::current_user_can_manage_modals() ) {
-			wp_send_json_error( __( 'No tienes permisos para realizar esta acción.', 'ewm-modal-cta' ) );
-		}
+error_log('[EWM DEBUG] ACCESO DENEGADO save_modal_builder: Usuario=' . wp_get_current_user()->user_login . ' Roles=' . implode(',', wp_get_current_user()->roles));
+if ( ! EWM_Capabilities::current_user_can_manage_modals() ) {
+wp_send_json_error( __( 'No tienes permisos para realizar esta acción.', 'ewm-modal-cta' ) );
+}
 
 		$modal_id   = intval( $_POST['modal_id'] ?? 0 );
 		$modal_data = json_decode( stripslashes( $_POST['modal_data'] ?? '{}' ), true );
@@ -604,9 +633,10 @@ class EWM_Admin_Page {
 	
 		check_ajax_referer( 'ewm_admin_nonce', 'nonce' );
 
-		if ( ! EWM_Capabilities::current_user_can_manage_modals() ) {
-			wp_send_json_error( __( 'No tienes permisos para realizar esta acción.', 'ewm-modal-cta' ) );
-		}
+error_log('[EWM DEBUG] ACCESO DENEGADO load_modal_builder: Usuario=' . wp_get_current_user()->user_login . ' Roles=' . implode(',', wp_get_current_user()->roles));
+if ( ! EWM_Capabilities::current_user_can_manage_modals() ) {
+wp_send_json_error( __( 'No tienes permisos para realizar esta acción.', 'ewm-modal-cta' ) );
+}
 
 		$modal_id = intval( $_POST['modal_id'] ?? 0 );
 
@@ -656,9 +686,10 @@ class EWM_Admin_Page {
 	public function preview_modal() {
 		check_ajax_referer( 'ewm_admin_nonce', 'nonce' );
 
-		if ( ! EWM_Capabilities::current_user_can_manage_modals() ) {
-			wp_send_json_error( __( 'No tienes permisos para realizar esta acción.', 'ewm-modal-cta' ) );
-		}
+error_log('[EWM DEBUG] ACCESO DENEGADO preview_modal: Usuario=' . wp_get_current_user()->user_login . ' Roles=' . implode(',', wp_get_current_user()->roles));
+if ( ! EWM_Capabilities::current_user_can_manage_modals() ) {
+wp_send_json_error( __( 'No tienes permisos para realizar esta acción.', 'ewm-modal-cta' ) );
+}
 
 		$modal_data = json_decode( stripslashes( $_POST['modal_data'] ?? '{}' ), true );
 
@@ -818,3 +849,12 @@ class EWM_Admin_Page {
 		return ob_get_clean();
 	}
 }
+
+// TEMPORARY: Add admin tool to re-run capability assignment
+add_action('admin_init', function() {
+    if (isset($_GET['ewm_force_caps']) && current_user_can('manage_options')) {
+        EWM_Capabilities::get_instance()->setup_capabilities();
+        error_log('[EWM DEBUG] Capabilities re-assigned via ewm_force_caps');
+        wp_die('Capabilities re-assigned. Remove ?ewm_force_caps=1 from URL.');
+    }
+});

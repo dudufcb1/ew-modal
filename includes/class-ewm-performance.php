@@ -22,11 +22,6 @@ class EWM_Performance {
 	private static $instance = null;
 
 	/**
-	 * Cache de configuraciones
-	 */
-	private $config_cache = array();
-
-	/**
 	 * Assets cargados
 	 */
 	private $assets_loaded = false;
@@ -73,8 +68,6 @@ class EWM_Performance {
 	public function setup_caching() {
 		// Configurar transients para cache de configuraciones
 		add_filter( 'ewm_modal_configuration', array( $this, 'cache_modal_config' ), 10, 2 );
-
-		ewm_log_debug( 'Performance optimization initialized' );
 	}
 
 	/**
@@ -111,7 +104,6 @@ class EWM_Performance {
 			wp_dequeue_script( 'ewm-modal-frontend' );
 			wp_dequeue_script( 'ewm-form-validator' );
 
-			ewm_log_debug( 'Assets not loaded - no modals detected on page' );
 			return;
 		}
 
@@ -119,14 +111,6 @@ class EWM_Performance {
 
 		// Optimizar carga de assets
 		$this->optimize_asset_loading();
-
-		ewm_log_debug(
-			'Assets loaded conditionally',
-			array(
-				'page_id'        => get_queried_object_id(),
-				'has_shortcodes' => $post ? EWM_Shortcodes::has_modal_shortcode( $post->post_content ) : false,
-			)
-		);
 	}
 
 	/**
@@ -361,8 +345,6 @@ class EWM_Performance {
 
 		// Limpiar cache relacionado
 		$this->clear_related_cache( $post_id );
-
-		ewm_log_debug( 'Modal cache cleared', array( 'modal_id' => $post_id ) );
 	}
 
 	/**
@@ -407,8 +389,6 @@ class EWM_Performance {
 					// Crear índices para meta queries frecuentes
 					$wpdb->query( "ALTER TABLE {$wpdb->postmeta} ADD INDEX ewm_modal_mode (meta_key(20), meta_value(10))" );
 					$wpdb->query( "ALTER TABLE {$wpdb->postmeta} ADD INDEX ewm_wc_integration (meta_key(20), meta_value(20))" );
-
-					ewm_log_info( 'Database indexes created for EWM queries' );
 				}
 			}
 		);
@@ -463,8 +443,6 @@ class EWM_Performance {
 
 		// Limpiar cache de objetos
 		wp_cache_flush();
-
-		ewm_log_info( 'All EWM cache cleared' );
 	}
 
 	/**

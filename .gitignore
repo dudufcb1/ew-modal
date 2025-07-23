@@ -3,6 +3,8 @@
 # =============================================================================
 .augment
 .augment/
+vendor/
+var/
 
 # WordPress Core Files (si se desarrolla dentro de WordPress)
 wp-config.php

@@ -546,6 +546,7 @@ class EWM_Meta_Fields {
 	 * Actualizar meta field con validación
 	 */
 	public static function update_meta( $post_id, $meta_key, $value ) {
+		/** @var EWM_Meta_Fields $instance */
 		$instance = self::get_instance();
 
 		// Validar estructura si está definida

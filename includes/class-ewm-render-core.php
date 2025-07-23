@@ -60,19 +60,8 @@ class EWM_Render_Core {
 	 * Función principal de renderizado (usada por shortcodes)
 	 */
 	public function render_modal( $modal_id, $config = array() ) {
-		$start_time = microtime( true );
 
-		// LOGGING CRÍTICO: Inicio del renderizado
-		ewm_log_info(
-			'RENDER DEBUG - render_modal STARTED',
-			array(
-				'modal_id'     => $modal_id,
-				'config_keys'  => array_keys( $config ),
-				'source'       => $config['source'] ?? 'unknown',
-				'is_admin'     => is_admin(),
-				'current_user' => get_current_user_id(),
-			)
-		);
+
 
 		// Validar modal
 		$is_valid = $this->validate_modal( $modal_id );
@@ -84,56 +73,23 @@ class EWM_Render_Core {
 			error_log( 'EWM RENDER DEBUG - post does NOT exist for modal_id=' . $modal_id );
 		}
 
-		ewm_log_info(
-			'RENDER DEBUG - validate_modal result',
-			array(
-				'modal_id'    => $modal_id,
-				'valid'       => $is_valid,
-				'post_exists' => get_post( $modal_id ) ? true : false,
-				'post_type'   => get_post( $modal_id ) ? get_post( $modal_id )->post_type : 'none',
-				'post_status' => get_post( $modal_id ) ? get_post( $modal_id )->post_status : 'none',
-			)
-		);
-
 		if ( ! $is_valid ) {
-			ewm_log_warning(
-				'RENDER DEBUG - Modal validation FAILED',
-				array(
-					'modal_id' => $modal_id,
-					'source'   => $config['source'] ?? 'unknown',
-				)
-			);
 			return '';
 		}
 
-		ewm_log_info(
-			'RENDER DEBUG - Modal validation SUCCESS',
-			array(
-				'modal_id' => $modal_id,
-				'source'   => $config['source'] ?? 'unknown',
-			)
-		);
-
 		// Evitar renderizado duplicado (solo shortcodes ahora)
 		if ( in_array( $modal_id, $this->rendered_modals ) ) {
-			ewm_log_debug( 'Modal already rendered, skipping', array( 'modal_id' => $modal_id ) );
 			return '';
 		}
 
 		// Obtener configuración del modal
 		$modal_config = $this->get_modal_configuration( $modal_id );
-		ewm_log_info(
-			'RENDER DEBUG - modal_config',
-			array(
-				'modal_id'     => $modal_id,
-				'config_empty' => empty( $modal_config ),
-				'config_keys'  => is_array( $modal_config ) ? array_keys( $modal_config ) : 'not_array',
-				'steps_empty'  => empty( $modal_config['steps'] ),
-				'mode'         => $modal_config['mode'] ?? 'none',
-			)
-		);
+
+		error_log( "[EWM RENDER DEBUG] Modal {$modal_id} - Config empty: " . ( empty( $modal_config ) ? 'YES' : 'NO' ) );
+		error_log( "[EWM RENDER DEBUG] Modal {$modal_id} - Config keys: " . implode( ', ', array_keys( $modal_config ) ) );
 
 		if ( empty( $modal_config ) ) {
+			error_log( "[EWM RENDER DEBUG] Modal {$modal_id} - ABORTING: Empty config" );
 			return '';
 		}
 
@@ -143,42 +99,11 @@ class EWM_Render_Core {
 		// Encolar assets si es necesario
 		$this->enqueue_modal_assets();
 
-		// LOGGING CRÍTICO: Antes de generar HTML
-		ewm_log_info(
-			'RENDER DEBUG - About to generate modal HTML',
-			array(
-				'modal_id'           => $modal_id,
-				'render_config_keys' => array_keys( $render_config ),
-				'modal_config_mode'  => $render_config['mode'] ?? 'none',
-			)
-		);
-
 		// Generar HTML del modal
 		$html = $this->generate_modal_html( $modal_id, $render_config );
 
-		ewm_log_info(
-			'RENDER DEBUG - Modal HTML generated',
-			array(
-				'modal_id'     => $modal_id,
-				'html_length'  => strlen( $html ),
-				'html_empty'   => empty( $html ),
-				'html_preview' => substr( $html, 0, 100 ) . '...',
-			)
-		);
-
 		// Registrar modal como renderizado
 		$this->rendered_modals[] = $modal_id;
-
-		$execution_time = microtime( true ) - $start_time;
-
-		ewm_log_debug(
-			'Modal rendered successfully',
-			array(
-				'modal_id'       => $modal_id,
-				'source'         => $config['source'] ?? 'unknown',
-				'execution_time' => round( $execution_time * 1000, 2 ) . 'ms',
-			)
-		);
 
 		return $html;
 	}
@@ -187,47 +112,16 @@ class EWM_Render_Core {
 	 * Validar modal
 	 */
 	private function validate_modal( $modal_id ) {
-		ewm_log_info(
-			'VALIDATE DEBUG - validate_modal detailed check',
-			array(
-				'modal_id'     => $modal_id,
-				'is_numeric'   => is_numeric( $modal_id ),
-				'greater_zero' => $modal_id > 0,
-			)
-		);
-
 		if ( ! is_numeric( $modal_id ) || $modal_id <= 0 ) {
-			ewm_log_warning( 'Invalid modal ID', array( 'modal_id' => $modal_id ) );
 			return false;
 		}
 
 		$post = get_post( $modal_id );
 
-		ewm_log_info(
-			'VALIDATE DEBUG - post retrieval detailed',
-			array(
-				'modal_id'           => $modal_id,
-				'post_exists'        => ! empty( $post ),
-				'post_type'          => $post ? $post->post_type : 'none',
-				'post_status'        => $post ? $post->post_status : 'none',
-				'post_title'         => $post ? $post->post_title : 'none',
-				'condition_1'        => ! $post,
-				'condition_2'        => $post ? ( $post->post_type !== 'ew_modal' ) : 'n/a',
-				'condition_3'        => $post ? ( $post->post_status !== 'publish' ) : 'n/a',
-				'overall_condition'  => ( ! $post || $post->post_type !== 'ew_modal' || $post->post_status !== 'publish' ),
-			)
-		);
-
 		if ( ! $post || $post->post_type !== 'ew_modal' || $post->post_status !== 'publish' ) {
-			ewm_log_warning( 'Modal not found or not published', array(
-				'modal_id' => $modal_id,
-				'post_type' => $post ? $post->post_type : 'none',
-				'post_status' => $post ? $post->post_status : 'none'
-			) );
 			return false;
 		}
 
-		ewm_log_info( 'VALIDATE DEBUG - validation SUCCESS', array( 'modal_id' => $modal_id ) );
 		return true;
 	}
 
@@ -272,12 +166,12 @@ class EWM_Render_Core {
 		$config['title'] = get_the_title( $modal_id );
 
 		// Mantener compatibilidad con mode por separado
-		if ( empty( $config['mode'] ) ) {
+		if ( ! isset( $config['mode'] ) || empty( $config['mode'] ) ) {
 			$config['mode'] = get_post_meta( $modal_id, 'ewm_modal_mode', true ) ?: 'formulario';
 		}
 
 		// Mantener compatibilidad con custom_css por separado
-		if ( empty( $config['custom_css'] ) ) {
+		if ( ! isset( $config['custom_css'] ) || empty( $config['custom_css'] ) ) {
 			$config['custom_css'] = get_post_meta( $modal_id, 'ewm_custom_css', true ) ?: '';
 		}
 
@@ -398,15 +292,6 @@ class EWM_Render_Core {
 	 * Generar HTML del modal
 	 */
 	private function generate_modal_html( $modal_id, $config ) {
-		ewm_log_info(
-			'RENDER DEBUG - generate_modal_html started',
-			array(
-				'modal_id'    => $modal_id,
-				'config_keys' => array_keys( $config ),
-				'mode'        => $config['mode'] ?? 'none',
-			)
-		);
-
 		$modal_class = $this->get_modal_css_classes( $config );
 		$modal_data  = $this->get_modal_data_attributes( $modal_id, $config );
 
@@ -470,15 +355,6 @@ class EWM_Render_Core {
 			}
 		}
 		</script>";
-
-		ewm_log_info(
-			'RENDER DEBUG - generate_modal_html completed',
-			array(
-				'modal_id'    => $modal_id,
-				'html_length' => strlen( $html_output ),
-				'html_empty'  => empty( $html_output ),
-			)
-		);
 
 		return $html_output;
 	}
@@ -791,8 +667,8 @@ class EWM_Render_Core {
 				// Renderizar con opciones múltiples
 				$inputs = '';
 
-				// Determinar si es un campo con múltiples opciones
-				$is_multi_option = ! empty( $options );
+				// Determinar si es un campo con múltiples opciones (siempre true aquí porque ya verificamos empty arriba)
+				$is_multi_option = count( $options ) > 1;
 
 				foreach ( $options as $option ) {
 					$option_id = $field_id . '_' . sanitize_key( $option['value'] );
@@ -908,9 +784,6 @@ class EWM_Render_Core {
 			true
 		);
 
-		// Obtener configuración del logger para el bypass de frecuencia
-		$logger_settings = EWM_Logger_Settings::get_instance();
-
 		wp_localize_script(
 			'ewm-modal-frontend',
 			'ewmModal',
@@ -920,7 +793,7 @@ class EWM_Render_Core {
 				// Generar nonce específico para las peticiones AJAX del modal (debe coincidir con check_ajax_referer en el handler)
 				'nonce'   => wp_create_nonce( 'ewm_modal_nonce' ),
 				'debug'   => defined( 'WP_DEBUG' ) && WP_DEBUG,
-				'frequencyDebug' => ( $logger_settings->is_frequency_debug_enabled() || get_option( 'ewm_debug_frequency_enabled', '0' ) === '1' ),
+				'frequencyDebug' => ( get_option( 'ewm_debug_frequency_enabled', '0' ) === '1' ),
 				'strings' => array(
 					'loading'                => __( 'Cargando...', 'ewm-modal-cta' ),
 					'error'                  => __( 'Ha ocurrido un error. Por favor, inténtalo de nuevo.', 'ewm-modal-cta' ),
@@ -939,8 +812,6 @@ class EWM_Render_Core {
 		);
 
 		$this->assets_enqueued = true;
-
-		ewm_log_debug( 'Modal assets enqueued' );
 	}
 
 	/**

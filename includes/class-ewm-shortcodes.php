@@ -60,6 +60,8 @@ class EWM_Shortcodes {
 		add_action( 'wp_ajax_ewm_register_modal_view', array( $this, 'register_modal_view' ) );
 		add_action( 'wp_ajax_nopriv_ewm_register_modal_view', array( $this, 'register_modal_view' ) );
 		add_action( 'wp_ajax_ewm_clear_modal_transients', array( $this, 'clear_modal_transients' ) );
+		add_action( 'wp_ajax_ewm_check_modal_frequency', array( $this, 'check_modal_frequency' ) );
+		add_action( 'wp_ajax_nopriv_ewm_check_modal_frequency', array( $this, 'check_modal_frequency' ) );
 	}
 
 	/**
@@ -77,6 +79,7 @@ class EWM_Shortcodes {
 	 * Renderizar shortcode principal [ew_modal]
 	 */
 	public function render_modal_shortcode( $atts, $content = null ) {
+		error_log( "[EWM SHORTCODE DEBUG] render_modal_shortcode called with atts: " . wp_json_encode( $atts ) );
 		$start_time = microtime( true );
 
 		
@@ -101,10 +104,10 @@ class EWM_Shortcodes {
 		// Validar ID del modal
 		$modal_id = $this->validate_modal_id( $atts['id'] );
 
-		
+		error_log( "[EWM SHORTCODE DEBUG] validate_modal_id result: " . ( $modal_id ?: 'FALSE' ) );
 
 		if ( ! $modal_id ) {
-			
+			error_log( "[EWM SHORTCODE DEBUG] ABORTING: Invalid modal ID" );
 
 			// TEMPORAL: Forzar mensaje de error para debug
 			return '<div class="ewm-error">Error: Modal ID inválido o modal no encontrado. ID proporcionado: ' . esc_html( $atts['id'] ) . '</div>';
@@ -113,8 +116,12 @@ class EWM_Shortcodes {
 		
 
 		// Verificar permisos de visualización
-		if ( ! $this->can_display_modal( $modal_id ) ) {
-			
+		error_log( "[EWM SHORTCODE DEBUG] Checking can_display_modal for modal {$modal_id}" );
+		$can_display = $this->can_display_modal( $modal_id );
+		error_log( "[EWM SHORTCODE DEBUG] can_display_modal result: " . ( $can_display ? 'TRUE' : 'FALSE' ) );
+
+		if ( ! $can_display ) {
+			error_log( "[EWM SHORTCODE DEBUG] ABORTING: Cannot display modal" );
 			// TEMPORAL: Forzar mensaje de error para debug
 			return '<div class="ewm-error">Error: Permisos insuficientes para mostrar el modal.</div>';
 		}
@@ -273,11 +280,13 @@ class EWM_Shortcodes {
 	 * Verificar si se puede mostrar el modal
 	 */
 	private function can_display_modal( $modal_id ) {
-		
+		error_log( "[EWM CAN_DISPLAY DEBUG] Checking modal {$modal_id}" );
 
-		// ARQUITECTURA UNIFICADA: Obtener reglas de visualización desde configuración unificada
-		$modal_config = $this->get_unified_modal_config( $modal_id );
-		$display_rules = $modal_config['display_rules'] ?? array();
+		// USAR CAMPOS SEPARADOS ACTUALES: Obtener configuración completa
+		$modal_config = $this->get_current_modal_config( $modal_id );
+		$display_rules = $modal_config['display_rules'];
+
+		error_log( "[EWM CAN_DISPLAY DEBUG] Display rules: " . wp_json_encode( $display_rules ) );
 		
 
 		// Si no hay reglas, permitir siempre.
@@ -322,20 +331,45 @@ class EWM_Shortcodes {
 		// --- 3. VALIDACIÓN DE DISPOSITIVOS ---
 		if ( ! empty( $display_rules['devices'] ) ) {
 			$device = $this->detect_device();
-			
-			
+			$devices_config = $display_rules['devices'];
 
-			if ( isset( $display_rules['devices'][ $device ] ) && $display_rules['devices'][ $device ] === false ) {
-				
-				return false;
+			error_log( "[EWM DEVICE DEBUG] Current device: {$device}, Config: " . wp_json_encode( $devices_config ) );
+
+			// Si hay configuración específica para el dispositivo y está explícitamente en false, bloquear
+			if ( isset( $devices_config[ $device ] ) && $devices_config[ $device ] === false ) {
+				// PERO: Si TODOS los dispositivos están en false, permitir (configuración por defecto)
+				$all_devices_false = ( $devices_config['desktop'] === false &&
+									   $devices_config['tablet'] === false &&
+									   $devices_config['mobile'] === false );
+
+				if ( ! $all_devices_false ) {
+					error_log( "[EWM DEVICE DEBUG] Device {$device} blocked by specific config" );
+					return false;
+				} else {
+					error_log( "[EWM DEVICE DEBUG] All devices false, allowing by default" );
+				}
 			}
-			
+
 		}
 
 		// --- 4. VALIDACIÓN DE FRECUENCIA CON TRANSIENTS ---
-		
-
 		$frequency_config = $this->get_modal_frequency_config( $modal_id );
+		
+		// Si es tipo 'always', permitir siempre
+		if ( $frequency_config['type'] === 'always' ) {
+			return true;
+		}
+		
+		// Validar límite de frecuencia usando transients
+		$transient_key = $this->get_modal_transient_key( $modal_id );
+		$view_count = intval( get_transient( $transient_key ) ?: 0 );
+		$limit = intval( $frequency_config['limit'] ?? 1 );
+		
+		// Si ya se alcanzó el límite, no mostrar
+		if ( $view_count >= $limit ) {
+			return false;
+		}
+		
 		return true;
 	}
 
@@ -381,7 +415,7 @@ class EWM_Shortcodes {
 		// Incrementar contador
 		$expiry = $this->get_frequency_expiry( $type );
 		$new_count = $current_count + 1;
-		setcookie( $cookie_name, $new_count, $expiry, '/' );
+		setcookie( $cookie_name, (string) $new_count, $expiry, '/' );
 		
 
 		return true;
@@ -543,20 +577,7 @@ class EWM_Shortcodes {
 		);
 	}
 
-	/**
-	 * ARQUITECTURA UNIFICADA: Obtener configuración del modal desde campo unificado
-	 */
-	private function get_unified_modal_config( $modal_id ) {
-		// Leer del campo unificado
-		$config_json = get_post_meta( $modal_id, 'ewm_modal_config', true );
-		$config = json_decode( $config_json, true ) ?: array();
 
-		// COMPATIBILIDAD HACIA ATRÁS: Si no existe el campo unificado, usar método legacy
-		if ( empty( $config ) ) {
-			return EWM_Modal_CPT::get_modal_config( $modal_id );
-		}
-		return $config;
-	}
 
 	/**
 	 * AJAX: Registrar visualización del modal
@@ -631,14 +652,102 @@ class EWM_Shortcodes {
 	}
 
 	/**
+	 * NUEVO MÉTODO: Obtener configuración completa del modal desde campos separados actuales
+	 */
+	private function get_current_modal_config( $modal_id ) {
+		error_log( "[EWM CONFIG DEBUG] Getting config for modal {$modal_id}" );
+
+		// Leer todos los campos separados que usa el sistema actual
+		$triggers_json = get_post_meta( $modal_id, 'ewm_trigger_config', true );
+		$display_rules_json = get_post_meta( $modal_id, 'ewm_display_rules', true );
+		$content_json = get_post_meta( $modal_id, 'ewm_content_config', true );
+		$design_json = get_post_meta( $modal_id, 'ewm_design_config', true );
+
+		error_log( "[EWM CONFIG DEBUG] Raw JSON lengths - triggers: " . strlen( $triggers_json ) . ", display_rules: " . strlen( $display_rules_json ) );
+
+		// Decodificar cada configuración
+		$triggers = json_decode( $triggers_json, true ) ?: array();
+		$display_rules = json_decode( $display_rules_json, true ) ?: array();
+		$content = json_decode( $content_json, true ) ?: array();
+		$design = json_decode( $design_json, true ) ?: array();
+
+		// Construir configuración completa
+		return array(
+			'triggers' => $triggers,
+			'display_rules' => $display_rules,
+			'content' => $content,
+			'design' => $design
+		);
+	}
+
+	/**
 	 * Obtener configuración de frecuencia del modal
 	 */
 	private function get_modal_frequency_config( $modal_id ) {
-		// ARQUITECTURA UNIFICADA: Usar el mismo método que can_display_modal para consistencia
-		$config = $this->get_unified_modal_config( $modal_id );
+		// USAR CAMPOS SEPARADOS ACTUALES
+		$config = $this->get_current_modal_config( $modal_id );
+		$frequency = $config['triggers']['frequency'] ?? array( 'type' => 'always', 'limit' => 0 );
 
-		// La configuración de frecuencia está en display_rules.frequency
-		return $config['display_rules']['frequency'] ?? array( 'type' => 'always', 'limit' => 0 );
+		error_log( "[EWM FREQUENCY DEBUG] Modal {$modal_id} - Frequency: " . wp_json_encode( $frequency ) );
+
+		return $frequency;
+	}
+
+	/**
+	 * AJAX: Verificar si el modal puede mostrarse según la configuración de frecuencia
+	 */
+	public function check_modal_frequency() {
+		// Verificar nonce
+		if ( ! check_ajax_referer( 'ewm_modal_nonce', 'nonce', false ) ) {
+			wp_send_json_error( 'Invalid nonce' );
+		}
+
+		$modal_id = intval( $_POST['modal_id'] ?? 0 );
+		if ( ! $modal_id ) {
+			wp_send_json_error( 'Invalid modal ID' );
+		}
+
+		// Obtener configuración de frecuencia
+		$frequency_config = $this->get_modal_frequency_config( $modal_id );
+		$frequency_type = $frequency_config['type'] ?? 'always';
+
+		error_log( "[EWM FREQUENCY CHECK] Modal {$modal_id} - Type: {$frequency_type}, Config: " . wp_json_encode( $frequency_config ) );
+
+		// Si es tipo 'always', permitir siempre
+		if ( $frequency_type === 'always' ) {
+			wp_send_json_success( array(
+				'can_show' => true,
+				'reason' => 'always_type',
+				'frequency_config' => $frequency_config
+			) );
+		}
+
+		// Validar límite de frecuencia usando transients
+		$transient_key = $this->get_modal_transient_key( $modal_id );
+		$view_count = intval( get_transient( $transient_key ) ?: 0 );
+		$limit = intval( $frequency_config['limit'] ?? 1 );
+
+		error_log( "[EWM FREQUENCY CHECK] Modal {$modal_id} - Current count: {$view_count}, Limit: {$limit}" );
+
+		// Si ya se alcanzó el límite, no mostrar
+		if ( $view_count >= $limit ) {
+			wp_send_json_success( array(
+				'can_show' => false,
+				'reason' => 'limit_reached',
+				'current_count' => $view_count,
+				'limit' => $limit,
+				'frequency_config' => $frequency_config
+			) );
+		}
+
+		// Puede mostrarse
+		wp_send_json_success( array(
+			'can_show' => true,
+			'reason' => 'within_limit',
+			'current_count' => $view_count,
+			'limit' => $limit,
+			'frequency_config' => $frequency_config
+		) );
 	}
 
 	/**

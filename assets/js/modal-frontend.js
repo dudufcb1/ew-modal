@@ -333,9 +333,61 @@
         }
 
         /**
+         * Verificar si el modal puede mostrarse según la configuración de frecuencia
+         */
+        async checkFrequencyLimit() {
+            const frequencyConfig = this.triggers.frequency || {};
+            const frequencyType = frequencyConfig.type || 'always';
+
+            console.log('EWM Modal Frontend: Checking frequency limit:', {
+                type: frequencyType,
+                limit: frequencyConfig.limit,
+                modalId: this.config.modal_id
+            });
+
+            // Si es tipo 'always', permitir siempre
+            if (frequencyType === 'always') {
+                console.log('EWM Modal Frontend: Frequency type is always, showing modal');
+                return true;
+            }
+
+            // Para otros tipos, verificar con el servidor
+            if (typeof ewmModal === 'undefined' || !ewmModal.ajaxUrl) {
+                console.log('EWM Modal Frontend: AJAX not available, defaulting to show');
+                return true;
+            }
+
+            try {
+                const formData = new FormData();
+                formData.append('action', 'ewm_check_modal_frequency');
+                formData.append('modal_id', this.config.modal_id);
+                formData.append('nonce', ewmModal.nonce);
+
+                const response = await fetch(ewmModal.ajaxUrl, {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'same-origin'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    console.log('EWM Modal Frontend: Frequency check result:', data.data);
+                    return data.data.can_show || false;
+                } else {
+                    console.log('EWM Modal Frontend: Frequency check failed:', data.data);
+                    return false;
+                }
+            } catch (error) {
+                console.log('EWM Modal Frontend: Error checking frequency:', error);
+                return false; // En caso de error, no mostrar por seguridad
+            }
+        }
+
+        /**
          * Mostrar modal (con validación de frecuencia)
          */
-        show() {
+        async show() {
             console.log('EWM Modal Frontend: show() called');
             console.log('EWM Modal Frontend: this.modal exists:', !!this.modal);
             console.log('EWM Modal Frontend: this.isVisible:', this.isVisible);
@@ -346,7 +398,12 @@
                 return;
             }
 
-            // La validación de frecuencia ahora se hace en el backend con transients
+            // Validar frecuencia antes de mostrar
+            const canShow = await this.checkFrequencyLimit();
+            if (!canShow) {
+                console.log('EWM Modal Frontend: Modal blocked by frequency limit');
+                return;
+            }
 
             this.modal.style.display = 'flex';
             this.isVisible = true;

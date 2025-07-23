@@ -114,7 +114,7 @@ class EWM_Submission_CPT {
 			'map_meta_cap'       => true,
 			'has_archive'        => false,
 			'hierarchical'       => false,
-			'menu_position'      => null,
+			'menu_position'      => 21,
 			'supports'           => array( 'title' ),
 			'show_in_rest'       => false, // No exponer en REST API por privacidad
 		);
@@ -549,9 +549,14 @@ class EWM_Submission_CPT {
 	 */
 	public function enqueue_admin_styles( $hook ) {
 		$screen = get_current_screen();
-		
-		// Solo cargar en páginas de envíos
+
+		// Solo cargar en páginas de envíos y hooks específicos
 		if ( ! $screen || $screen->post_type !== self::POST_TYPE ) {
+			return;
+		}
+
+		// Verificar que estamos en una página de administración relevante
+		if ( ! in_array( $hook, array( 'edit.php', 'post.php', 'post-new.php' ), true ) ) {
 			return;
 		}
 
@@ -752,6 +757,11 @@ class EWM_Submission_CPT {
 			return __( 'Tienda', 'ewm-modal-cta' );
 		}
 
+		// Verificar parámetros de query para páginas específicas
+		if ( ! empty( $query ) && strpos( $query, 'product_cat=' ) !== false ) {
+			return __( 'Categoría de Productos', 'ewm-modal-cta' );
+		}
+
 		// Cart page
 		if ( $path === 'cart' || $path === 'carrito' ) {
 			return __( 'Carrito', 'ewm-modal-cta' );
@@ -810,7 +820,9 @@ class EWM_Submission_CPT {
 			return false;
 		}
 
-		$post_types_in = "'" . implode( "', '", array_map( 'esc_sql', $post_types ) ) . "'";
+		$escaped_post_types = array_map( 'esc_sql', $post_types );
+		$string_post_types = array_map( 'strval', $escaped_post_types );
+		$post_types_in = "'" . implode( "', '", $string_post_types ) . "'";
 
 		$sql = $wpdb->prepare(
 			"SELECT ID FROM {$wpdb->posts} 
@@ -873,7 +885,7 @@ class EWM_Submission_CPT {
 			$year = $path_parts[0];
 			if ( isset( $path_parts[1] ) && is_numeric( $path_parts[1] ) ) {
 				$month = $path_parts[1];
-				$month_name = date_i18n( 'F', mktime( 0, 0, 0, $month, 1 ) );
+				$month_name = date_i18n( 'F', mktime( 0, 0, 0, (int) $month, 1 ) );
 				return sprintf( __( 'Archivo: %s %s', 'ewm-modal-cta' ), $month_name, $year );
 			}
 			return sprintf( __( 'Archivo: %s', 'ewm-modal-cta' ), $year );
@@ -887,9 +899,6 @@ class EWM_Submission_CPT {
 	 * Función utilitaria para migrar envíos antiguos al nuevo formato
 	 */
 	public static function update_existing_submission_titles() {
-		global $wpdb;
-
-
 		// Buscar envíos sin título o con título genérico
 		$submissions = get_posts(
 			array(

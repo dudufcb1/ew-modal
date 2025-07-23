@@ -1,0 +1,45 @@
+includes:
+    - phpstan-baseline.neon
+
+parameters:
+    level: 5
+    paths:
+        - includes/
+        - admin/
+        - ewm-modal-cta.php
+        - add-caps.php
+        - fix-capabilities.php
+
+    # Excluir directorios que no necesitan análisis
+    excludePaths:
+        - assets/
+        - logs/
+        - docs/
+        - memory/
+        - team_memory/
+        - tools/
+        - automation/
+        - memo/
+
+    # Incluir stubs de WordPress
+    bootstrapFiles:
+        - vendor/php-stubs/wordpress-stubs/wordpress-stubs.php
+
+    # Configuración de cache para mejor rendimiento
+    tmpDir: var/cache/phpstan
+
+    # Tratar tipos de PHPDoc como inciertos para evitar falsos positivos
+    treatPhpDocTypesAsCertain: false
+
+    # Ignorar errores de WooCommerce y constantes de WordPress
+    ignoreErrors:
+        # Constantes de WordPress que no están en los stubs
+        - '#Constant DAY_IN_SECONDS not found#'
+        - '#Constant WEEK_IN_SECONDS not found#'
+        - '#Constant MINUTE_IN_SECONDS not found#'
+        - '#Constant HOUR_IN_SECONDS not found#'
+        - '#Constant OBJECT not found#'
+
+        # Constantes del plugin
+        - '#Constant EWM_PLUGIN_DIR not found#'
+        - '#Constant EWM_PLUGIN_URL not found#'

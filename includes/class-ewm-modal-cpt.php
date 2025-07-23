@@ -112,7 +112,7 @@ class EWM_Modal_CPT {
 			'capability_type'       => 'post',
 			'has_archive'           => false,
 			'hierarchical'          => false,
-			'menu_position'         => null,
+			'menu_position'         => 20,
 			'menu_icon'             => 'dashicons-admin-page',
 			'supports'              => array( 'title' ),
 			'show_in_rest'          => true,

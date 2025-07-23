@@ -1,0 +1,186 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Call to static method run_all_tests\\(\\) on an unknown class EWM_Parity_Test\\.$#"
+			count: 1
+			path: admin/class-ewm-testing-page.php
+
+		-
+			message: "#^Function WC not found\\.$#"
+			count: 1
+			path: admin/class-ewm-testing-page.php
+
+		-
+			message: "#^Offset 'config' on array\\{id\\: int\\<min, \\-1\\>\\|int\\<1, max\\>, title\\: mixed, mode\\: mixed, steps\\: mixed, design\\: mixed, triggers\\: mixed, wc_integration\\: mixed, display_rules\\: mixed\\}\\|null in isset\\(\\) does not exist\\.$#"
+			count: 1
+			path: includes/class-ewm-admin-page.php
+
+		-
+			message: "#^Offset 'custom_css' on array\\{id\\: int\\<min, \\-1\\>\\|int\\<1, max\\>, title\\: mixed, mode\\: mixed, steps\\: mixed, design\\: mixed, triggers\\: mixed, wc_integration\\: mixed, display_rules\\: mixed\\}\\|null in isset\\(\\) does not exist\\.$#"
+			count: 1
+			path: includes/class-ewm-admin-page.php
+
+		-
+			message: "#^Offset 'enabled' on array\\{id\\: int\\<min, \\-1\\>\\|int\\<1, max\\>, title\\: mixed, mode\\: mixed, steps\\: mixed, design\\: mixed, triggers\\: mixed, wc_integration\\: mixed, display_rules\\: mixed\\}\\|null in isset\\(\\) does not exist\\.$#"
+			count: 1
+			path: includes/class-ewm-admin-page.php
+
+		-
+			message: "#^Function is_cart not found\\.$#"
+			count: 1
+			path: includes/class-ewm-performance.php
+
+		-
+			message: "#^Function is_checkout not found\\.$#"
+			count: 1
+			path: includes/class-ewm-performance.php
+
+		-
+			message: "#^Offset 'custom_css' on array\\{steps\\: mixed, design\\: mixed, triggers\\: mixed, wc_integration\\: mixed, display_rules\\: mixed, modal_id\\: float\\|int\\<1, max\\>\\|numeric\\-string, title\\: mixed, mode\\: mixed\\} in isset\\(\\) does not exist\\.$#"
+			count: 1
+			path: includes/class-ewm-render-core.php
+
+		-
+			message: "#^Offset 'mode' on array\\{steps\\: mixed, design\\: mixed, triggers\\: mixed, wc_integration\\: mixed, display_rules\\: mixed, modal_id\\: float\\|int\\<1, max\\>\\|numeric\\-string, title\\: mixed\\} in isset\\(\\) does not exist\\.$#"
+			count: 1
+			path: includes/class-ewm-render-core.php
+
+		-
+			message: "#^Result of \\|\\| is always true\\.$#"
+			count: 2
+			path: includes/class-ewm-render-core.php
+
+		-
+			message: "#^Call to method get_amount\\(\\) on an unknown class WC_Coupon\\.$#"
+			count: 1
+			path: includes/class-ewm-rest-api.php
+
+		-
+			message: "#^Call to method get_discount_type\\(\\) on an unknown class WC_Coupon\\.$#"
+			count: 1
+			path: includes/class-ewm-rest-api.php
+
+		-
+			message: "#^Call to method get_usage_count\\(\\) on an unknown class WC_Coupon\\.$#"
+			count: 1
+			path: includes/class-ewm-rest-api.php
+
+		-
+			message: "#^Call to method get_usage_limit\\(\\) on an unknown class WC_Coupon\\.$#"
+			count: 1
+			path: includes/class-ewm-rest-api.php
+
+		-
+			message: "#^Instantiated class WC_Coupon not found\\.$#"
+			count: 1
+			path: includes/class-ewm-rest-api.php
+
+		-
+			message: "#^Method EWM_REST_API\\:\\:get_form_submission_schema\\(\\) is unused\\.$#"
+			count: 1
+			path: includes/class-ewm-rest-api.php
+
+		-
+			message: "#^Method EWM_REST_API\\:\\:get_modal_schema\\(\\) is unused\\.$#"
+			count: 1
+			path: includes/class-ewm-rest-api.php
+
+		-
+			message: "#^Method EWM_REST_API\\:\\:is_valid_design_config\\(\\) is unused\\.$#"
+			count: 1
+			path: includes/class-ewm-rest-api.php
+
+		-
+			message: "#^Method EWM_REST_API\\:\\:is_valid_display_rules_config\\(\\) is unused\\.$#"
+			count: 1
+			path: includes/class-ewm-rest-api.php
+
+		-
+			message: "#^Method EWM_REST_API\\:\\:is_valid_triggers_config\\(\\) is unused\\.$#"
+			count: 1
+			path: includes/class-ewm-rest-api.php
+
+		-
+			message: "#^Method EWM_REST_API\\:\\:is_valid_wc_integration_config\\(\\) is unused\\.$#"
+			count: 1
+			path: includes/class-ewm-rest-api.php
+
+		-
+			message: "#^Variable \\$config in empty\\(\\) always exists and is not falsy\\.$#"
+			count: 2
+			path: includes/class-ewm-rest-api.php
+
+		-
+			message: "#^Method EWM_Shortcodes\\:\\:check_frequency_limit\\(\\) is unused\\.$#"
+			count: 1
+			path: includes/class-ewm-shortcodes.php
+
+		-
+			message: "#^Call to method get_amount\\(\\) on an unknown class WC_Coupon\\.$#"
+			count: 1
+			path: includes/class-ewm-woocommerce.php
+
+		-
+			message: "#^Call to method get_code\\(\\) on an unknown class WC_Coupon\\.$#"
+			count: 1
+			path: includes/class-ewm-woocommerce.php
+
+		-
+			message: "#^Call to method get_description\\(\\) on an unknown class WC_Coupon\\.$#"
+			count: 1
+			path: includes/class-ewm-woocommerce.php
+
+		-
+			message: "#^Call to method get_discount_type\\(\\) on an unknown class WC_Coupon\\.$#"
+			count: 1
+			path: includes/class-ewm-woocommerce.php
+
+		-
+			message: "#^Call to method get_usage_count\\(\\) on an unknown class WC_Coupon\\.$#"
+			count: 1
+			path: includes/class-ewm-woocommerce.php
+
+		-
+			message: "#^Call to method get_usage_limit\\(\\) on an unknown class WC_Coupon\\.$#"
+			count: 1
+			path: includes/class-ewm-woocommerce.php
+
+		-
+			message: "#^Function WC not found\\.$#"
+			count: 14
+			path: includes/class-ewm-woocommerce.php
+
+		-
+			message: "#^Function is_cart not found\\.$#"
+			count: 2
+			path: includes/class-ewm-woocommerce.php
+
+		-
+			message: "#^Function is_checkout not found\\.$#"
+			count: 2
+			path: includes/class-ewm-woocommerce.php
+
+		-
+			message: "#^Function is_woocommerce not found\\.$#"
+			count: 1
+			path: includes/class-ewm-woocommerce.php
+
+		-
+			message: "#^Function wc_get_cart_url not found\\.$#"
+			count: 1
+			path: includes/class-ewm-woocommerce.php
+
+		-
+			message: "#^Function wc_get_checkout_url not found\\.$#"
+			count: 1
+			path: includes/class-ewm-woocommerce.php
+
+		-
+			message: "#^Function wc_get_product not found\\.$#"
+			count: 1
+			path: includes/class-ewm-woocommerce.php
+
+		-
+			message: "#^Instantiated class WC_Coupon not found\\.$#"
+			count: 1
+			path: includes/class-ewm-woocommerce.php
