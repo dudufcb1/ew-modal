@@ -172,7 +172,12 @@
             this.showLoading('Guardando modal...');
 
             const formData = this.collectFormData();
-
+            
+            // LOG TEMPORAL: Payload enviado al servidor al guardar (modal-enabled y enable-manual-trigger)
+            console.log('[EWM TEST LOG] JS → Servidor: formData.display_rules.enabled =', formData.display_rules?.enabled);
+            console.log('[EWM TEST LOG] JS → Servidor: formData.triggers.manual.enabled =', formData.triggers?.manual?.enabled);
+            console.log('[EWM TEST LOG] JS → Servidor: formData =', JSON.stringify(formData, null, 2));
+            
             $.ajax({
                 url: ewm_admin_vars.ajax_url,
                 type: 'POST',
@@ -415,24 +420,29 @@
          */
         populateForm: function(data) {
             if (!data) return;
-
+        
+            // LOG TEMPORAL: Interpretación JS de los datos recibidos (modal-enabled y enable-manual-trigger)
+            console.log('[EWM TEST LOG] Interpretación JS: data.display_rules.enabled =', data.display_rules?.enabled);
+            console.log('[EWM TEST LOG] Interpretación JS: data.triggers.manual.enabled =', data.triggers?.manual?.enabled);
+            console.log('[EWM TEST LOG] Interpretación JS: data =', JSON.stringify(data, null, 2));
+        
             // Datos generales
             $('#modal-title').val(data.title || '');
             $('#modal-mode').val(data.mode || 'formulario');
             $('#custom-css').val(data.custom_css || '');
-
+        
             // Diseño
             if (data.design) {
                 $('#modal-size').val(data.design.modal_size || 'medium');
                 $('#modal-animation').val(data.design.animation || 'fade');
-
+        
                 if (data.design.colors) {
                     $('#primary-color').val(data.design.colors.primary || '#ff6b35').trigger('change');
                     $('#secondary-color').val(data.design.colors.secondary || '#333333').trigger('change');
                     $('#background-color').val(data.design.colors.background || '#ffffff').trigger('change');
                 }
             }
-
+        
             // Triggers
             if (data.triggers) {
                 $('#enable-exit-intent').prop('checked', data.triggers.exit_intent?.enabled || false);
@@ -441,11 +451,11 @@
                 $('#enable-scroll-trigger').prop('checked', data.triggers.scroll_percentage?.enabled || false);
                 $('#scroll-percentage').val(data.triggers.scroll_percentage?.percentage || 50);
                 $('#enable-manual-trigger').prop('checked', data.triggers.manual?.enabled || true);
-
+        
                 // 🔍 LOG ESPECÍFICO: Poblando campo de frecuencia (NUEVA ESTRUCTURA)
                 const frequencyFromData = data.triggers.frequency?.type || 'always';
                 const frequencyLimit = data.triggers.frequency?.limit || 1;
-
+        
                 console.log('🔍 FREQUENCY LOG - Poblando frecuencia (NUEVA ESTRUCTURA):', {
                     frequency_object_from_backend: data.triggers.frequency,
                     type_from_backend: frequencyFromData,
@@ -453,9 +463,9 @@
                     element_before_set: $('#display-frequency').val(),
                     timestamp: new Date().toISOString()
                 });
-
+        
                 $('#display-frequency').val(frequencyFromData);
-
+        
                 // Verificar si se estableció correctamente
                 console.log('🔍 FREQUENCY LOG - Después de establecer (NUEVA ESTRUCTURA):', {
                     element_after_set: $('#display-frequency').val(),
@@ -463,22 +473,22 @@
                     full_structure_available: !!data.triggers.frequency
                 });
             }
-
+        
             // WooCommerce
             if (data.wc_integration) {
                 $('#enable-woocommerce').prop('checked', data.wc_integration.enabled || false);
             }
-
+        
             // Reglas de visualización
             if (data.display_rules) {
                 $('#modal-enabled').prop('checked', data.display_rules.enabled !== false);
             }
-
+        
             // Barra de progreso
             if (data.steps && data.steps.progressBar) {
                 $('#show-progress-bar').prop('checked', data.steps.progressBar.enabled !== false);
             }
-
+        
             console.log('EWM Modal Admin: Form populated with data');
         },
 

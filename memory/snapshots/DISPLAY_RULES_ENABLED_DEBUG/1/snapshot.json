@@ -1,0 +1,63 @@
+{
+  "schema_version": "2.0.0",
+  "meta": {
+    "date": "2025-07-23T05:00:52Z",
+    "project": "ewm-modal-cta",
+    "author": "augment_agent",
+    "task_id": "DISPLAY_RULES_ENABLED_DEBUG",
+    "status": "info",
+    "revision": 1,
+    "snapshot_id": "e32743f5-7eb3-4981-9211-eaaaf1fca549",
+    "group_id": "builder_modal_issues",
+    "group_md": "groups/builder_modal_issues/group.md",
+    "can_agent_set_done": true,
+    "rolled_back": false,
+    "rollback_from": null,
+    "timestamp": "2025-07-23T05:01:01.657130Z"
+  },
+  "scope": {
+    "files": [
+      "assets/js/modal-admin.js",
+      "includes/class-ewm-admin-page.php"
+    ],
+    "components": [
+      "collectDisplayRules",
+      "save_modal_builder",
+      "save_modal_meta",
+      "load_modal_builder"
+    ]
+  },
+  "problem": {
+    "user_request": "Documentar hallazgos sobre la persistencia y recuperación del campo display_rules.enabled.",
+    "business_goal": "Asegurar la consistencia y trazabilidad del estado 'Modal Activo' en el builder.",
+    "constraints": [
+      "Mantener compatibilidad con la estructura actual de datos.",
+      "Evitar pérdida de claves booleanas en el backend."
+    ]
+  },
+  "analysis": {
+    "root_cause": "El backend omite la clave enabled si su valor es false, por cómo PHP trata los valores booleanos en arrays.",
+    "hypotheses": [
+      "El frontend envía correctamente el valor.",
+      "El backend no guarda la clave enabled si es false.",
+      "Un contrato de datos evitaría la omisión y facilitaría el debug."
+    ]
+  },
+  "implementation_plan": {
+    "steps": [
+      {
+        "step": "Verificar el valor guardado en la base de datos tras update_post_meta.",
+        "status": "done"
+      },
+      {
+        "step": "Ajustar el guardado para incluir siempre la clave enabled.",
+        "status": "todo"
+      },
+      {
+        "step": "Validar la estructura recibida y lanzar advertencias si faltan o sobran claves.",
+        "status": "todo"
+      }
+    ],
+    "md_reference": ""
+  }
+}

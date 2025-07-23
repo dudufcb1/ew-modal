@@ -154,5 +154,44 @@
     "rollback_from": null,
     "last_modified_by": "augment_agent",
     "title": "Arreglar inconsistencia de lectura: Admin guarda en campos separados (ewm_steps_..."
+  },
+  "INVESTIGATE_BUILDER_20250723_001500": {
+    "snapshot_id": "801c4626-3721-41af-9845-2723382b7f4c",
+    "task_id": "INVESTIGATE_BUILDER_20250723_001500",
+    "revision": 2,
+    "status": "done",
+    "group_id": "builder_modal_issues",
+    "can_agent_set_done": true,
+    "timestamp": "2025-07-23T03:44:37.695504Z",
+    "rolled_back": false,
+    "rollback_from": null,
+    "last_modified_by": "augment_agent",
+    "title": "Investigar y corregir problemas en el builder del modal: 1) Modal Activo (modal-..."
+  },
+  "TESTING_LOGGING_BUILDER_20250723_002000": {
+    "snapshot_id": "fc09c5c5-8dc3-4195-8dd2-d057a264f983",
+    "task_id": "TESTING_LOGGING_BUILDER_20250723_002000",
+    "revision": 1,
+    "status": "doing",
+    "group_id": "builder_modal_issues",
+    "can_agent_set_done": true,
+    "timestamp": "2025-07-23T03:45:03.314111Z",
+    "rolled_back": false,
+    "rollback_from": null,
+    "last_modified_by": "augment_agent",
+    "title": "Crear logs temporales para verificar el flujo completo de datos entre servidor y..."
+  },
+  "DISPLAY_RULES_ENABLED_DEBUG": {
+    "snapshot_id": "e32743f5-7eb3-4981-9211-eaaaf1fca549",
+    "task_id": "DISPLAY_RULES_ENABLED_DEBUG",
+    "revision": 1,
+    "status": "info",
+    "group_id": "builder_modal_issues",
+    "can_agent_set_done": true,
+    "timestamp": "2025-07-23T05:01:01.657130Z",
+    "rolled_back": false,
+    "rollback_from": null,
+    "last_modified_by": "augment_agent",
+    "title": "Documentar hallazgos sobre la persistencia y recuperación del campo display_rule..."
   }
 }

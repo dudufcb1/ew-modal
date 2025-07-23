@@ -1,0 +1,67 @@
+{
+  "schema_version": "2.0.0",
+  "meta": {
+    "date": "2025-07-23T00:20:00Z",
+    "project": "ewm-modal-cta",
+    "author": "augment_agent",
+    "task_id": "TESTING_LOGGING_BUILDER_20250723_002000",
+    "status": "doing",
+    "revision": 1,
+    "snapshot_id": "fc09c5c5-8dc3-4195-8dd2-d057a264f983",
+    "group_id": "builder_modal_issues",
+    "can_agent_set_done": true,
+    "rolled_back": false,
+    "timestamp": "2025-07-23T03:45:03.314111Z",
+    "group_md": "groups/builder_modal_issues/group.md"
+  },
+  "scope": {
+    "files": [
+      "assets/js/modal-admin.js",
+      "includes/class-ewm-admin-page.php"
+    ],
+    "components": [
+      "AdminLogging",
+      "FrontendLogging",
+      "DataFlowVerification"
+    ]
+  },
+  "problem": {
+    "user_request": "Crear logs temporales para verificar el flujo completo de datos entre servidor y frontend en el builder del modal: 1) Log de datos enviados del servidor al frontend al cargar la página, 2) Log de datos enviados del frontend al servidor al guardar, 3) Log de interpretación JS al popular los campos del formulario. Estos logs deben ser eliminados cuando hayamos terminado el testing.",
+    "business_goal": "Verificar en tiempo real si existen los problemas reportados de modal-enabled y enable-manual-trigger",
+    "constraints": [
+      "Logs temporales que deben ser eliminados después",
+      "No afectar funcionalidad existente",
+      "Logs claros y fáciles de interpretar"
+    ]
+  },
+  "implementation_plan": {
+    "steps": [
+      {
+        "step": "Agregar log en load_modal_builder() - datos enviados servidor → frontend",
+        "status": "todo",
+        "estimated_time": "10min"
+      },
+      {
+        "step": "Agregar log en save_modal_builder() - datos recibidos frontend → servidor",
+        "status": "todo",
+        "estimated_time": "10min"
+      },
+      {
+        "step": "Agregar log en populateForm() - interpretación JS de datos recibidos",
+        "status": "todo",
+        "estimated_time": "10min"
+      },
+      {
+        "step": "Probar flujo completo en admin y analizar logs",
+        "status": "todo",
+        "estimated_time": "15min"
+      },
+      {
+        "step": "Eliminar logs temporales",
+        "status": "todo",
+        "estimated_time": "5min"
+      }
+    ],
+    "md_reference": "memory/snapshots/TESTING_LOGGING_BUILDER_20250723_002000/1/memory.md"
+  }
+}

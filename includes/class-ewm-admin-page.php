@@ -563,49 +563,54 @@ wp_die( __( 'No tienes permisos para acceder a esta página.', 'ewm-modal-cta' )
 	 */
 	public function save_modal_builder() {
 		check_ajax_referer( 'ewm_admin_nonce', 'nonce' );
-
-error_log('[EWM DEBUG] ACCESO DENEGADO save_modal_builder: Usuario=' . wp_get_current_user()->user_login . ' Roles=' . implode(',', wp_get_current_user()->roles));
-if ( ! EWM_Capabilities::current_user_can_manage_modals() ) {
-wp_send_json_error( __( 'No tienes permisos para realizar esta acción.', 'ewm-modal-cta' ) );
-}
-
-		$modal_id   = intval( $_POST['modal_id'] ?? 0 );
-		$modal_data = json_decode( stripslashes( $_POST['modal_data'] ?? '{}' ), true );
-
-		if ( json_last_error() !== JSON_ERROR_NONE ) {
-			wp_send_json_error( __( 'Datos inválidos.', 'ewm-modal-cta' ) );
-		}
-
-		// 📋 CAPTURAR ESTRUCTURA EXACTA DEL SHORTCODE (FORMATO QUE FUNCIONA)
-		error_log( '📋 SHORTCODE FORMAT - Modal data structure: ' . wp_json_encode( $modal_data ) );
-		if ( isset( $modal_data['steps'] ) ) {
-			error_log( '📋 SHORTCODE FORMAT - Steps structure: ' . wp_json_encode( $modal_data['steps'] ) );
-		}
-
-		try {
-			if ( $modal_id ) {
-				// Actualizar modal existente
-				$result = $this->update_modal( $modal_id, $modal_data );
-			} else {
-				// Crear nuevo modal
-				$result   = $this->create_modal( $modal_data );
-				$modal_id = $result;
-			}
-
-
-			wp_send_json_success(
-				array(
-					'modal_id' => $modal_id,
-					'message'  => __( 'Modal guardado correctamente.', 'ewm-modal-cta' ),
-				)
-			);
-
-		} catch ( Exception $e ) {
-
-
-			wp_send_json_error( $e->getMessage() );
-		}
+	
+	error_log('[EWM DEBUG] ACCESO DENEGADO save_modal_builder: Usuario=' . wp_get_current_user()->user_login . ' Roles=' . implode(',', wp_get_current_user()->roles));
+	if ( ! EWM_Capabilities::current_user_can_manage_modals() ) {
+	wp_send_json_error( __( 'No tienes permisos para realizar esta acción.', 'ewm-modal-cta' ) );
 	}
+	
+			$modal_id   = intval( $_POST['modal_id'] ?? 0 );
+			$modal_data = json_decode( stripslashes( $_POST['modal_data'] ?? '{}' ), true );
+	
+			if ( json_last_error() !== JSON_ERROR_NONE ) {
+				wp_send_json_error( __( 'Datos inválidos.', 'ewm-modal-cta' ) );
+			}
+	
+			// LOG TEMPORAL: Datos recibidos del frontend al guardar (modal-enabled y enable-manual-trigger)
+			error_log('[EWM TEST LOG] Frontend → Servidor: modal_data.display_rules.enabled=' . (isset($modal_data['display_rules']['enabled']) ? var_export($modal_data['display_rules']['enabled'], true) : 'NO DEFINIDO'));
+			error_log('[EWM TEST LOG] Frontend → Servidor: modal_data.triggers.manual.enabled=' . (isset($modal_data['triggers']['manual']['enabled']) ? var_export($modal_data['triggers']['manual']['enabled'], true) : 'NO DEFINIDO'));
+			error_log('[EWM TEST LOG] Frontend → Servidor: modal_data=' . wp_json_encode($modal_data));
+	
+			// 📋 CAPTURAR ESTRUCTURA EXACTA DEL SHORTCODE (FORMATO QUE FUNCIONA)
+			error_log( '📋 SHORTCODE FORMAT - Modal data structure: ' . wp_json_encode( $modal_data ) );
+			if ( isset( $modal_data['steps'] ) ) {
+				error_log( '📋 SHORTCODE FORMAT - Steps structure: ' . wp_json_encode( $modal_data['steps'] ) );
+			}
+	
+			try {
+				if ( $modal_id ) {
+					// Actualizar modal existente
+					$result = $this->update_modal( $modal_id, $modal_data );
+				} else {
+					// Crear nuevo modal
+					$result   = $this->create_modal( $modal_data );
+					$modal_id = $result;
+				}
+	
+	
+				wp_send_json_success(
+					array(
+						'modal_id' => $modal_id,
+						'message'  => __( 'Modal guardado correctamente.', 'ewm-modal-cta' ),
+					)
+				);
+	
+			} catch ( Exception $e ) {
+	
+	
+				wp_send_json_error( $e->getMessage() );
+			}
+		}
 
 	/**
 	 * Guardar configuraciones globales (modo de depuración de frecuencia)
@@ -630,56 +635,58 @@ wp_send_json_error( __( 'No tienes permisos para realizar esta acción.', 'ewm-m
 	 * Cargar configuración del modal builder
 	 */
 	public function load_modal_builder() {
-	
+		
 		check_ajax_referer( 'ewm_admin_nonce', 'nonce' );
-
-error_log('[EWM DEBUG] ACCESO DENEGADO load_modal_builder: Usuario=' . wp_get_current_user()->user_login . ' Roles=' . implode(',', wp_get_current_user()->roles));
-if ( ! EWM_Capabilities::current_user_can_manage_modals() ) {
-wp_send_json_error( __( 'No tienes permisos para realizar esta acción.', 'ewm-modal-cta' ) );
-}
-
-		$modal_id = intval( $_POST['modal_id'] ?? 0 );
-
-		if ( ! $modal_id ) {
-			wp_send_json_error( __( 'ID de modal inválido.', 'ewm-modal-cta' ) );
-		}
-
-		$modal_post = get_post( $modal_id );
-		if ( ! $modal_post || $modal_post->post_type !== 'ew_modal' ) {
-			
-			wp_send_json_error( __( 'Modal no encontrado.', 'ewm-modal-cta' ) );
-		}
-
-		try {
-			// CORREGIR: Leer directamente desde post_meta para evitar warnings
-			$steps_json    = get_post_meta( $modal_id, 'ewm_steps_config', true );
-			$design_json   = get_post_meta( $modal_id, 'ewm_design_config', true );
-			$triggers_json = get_post_meta( $modal_id, 'ewm_trigger_config', true );
-			$wc_json       = get_post_meta( $modal_id, 'ewm_wc_integration', true );
-			$rules_json    = get_post_meta( $modal_id, 'ewm_display_rules', true );
-
-			$modal_data = array(
-				'id'             => $modal_id,
-				'title'          => $modal_post->post_title,
-				'mode'           => get_post_meta( $modal_id, 'ewm_modal_mode', true ) ?: 'formulario',
-				'steps'          => $steps_json ? json_decode( $steps_json, true ) : array(),
-				'design'         => $design_json ? json_decode( $design_json, true ) : array(),
-				'triggers'       => $triggers_json ? json_decode( $triggers_json, true ) : array(),
-				'wc_integration' => $wc_json ? json_decode( $wc_json, true ) : array(),
-				'display_rules'  => $rules_json ? json_decode( $rules_json, true ) : array(),
-				'custom_css'     => get_post_meta( $modal_id, 'ewm_custom_css', true ) ?: '',
-			);
-
-
-
-			wp_send_json_success( $modal_data );
-
-		} catch ( Exception $e ) {
-
-			wp_send_json_error( __( 'Error al cargar los datos del modal.', 'ewm-modal-cta' ) );
-		}
+	
+	error_log('[EWM DEBUG] ACCESO DENEGADO load_modal_builder: Usuario=' . wp_get_current_user()->user_login . ' Roles=' . implode(',', wp_get_current_user()->roles));
+	if ( ! EWM_Capabilities::current_user_can_manage_modals() ) {
+	wp_send_json_error( __( 'No tienes permisos para realizar esta acción.', 'ewm-modal-cta' ) );
 	}
-
+	
+			$modal_id = intval( $_POST['modal_id'] ?? 0 );
+	
+			if ( ! $modal_id ) {
+				wp_send_json_error( __( 'ID de modal inválido.', 'ewm-modal-cta' ) );
+			}
+	
+			$modal_post = get_post( $modal_id );
+			if ( ! $modal_post || $modal_post->post_type !== 'ew_modal' ) {
+				
+				wp_send_json_error( __( 'Modal no encontrado.', 'ewm-modal-cta' ) );
+			}
+	
+			try {
+				// CORREGIR: Leer directamente desde post_meta para evitar warnings
+				$steps_json    = get_post_meta( $modal_id, 'ewm_steps_config', true );
+				$design_json   = get_post_meta( $modal_id, 'ewm_design_config', true );
+				$triggers_json = get_post_meta( $modal_id, 'ewm_trigger_config', true );
+				$wc_json       = get_post_meta( $modal_id, 'ewm_wc_integration', true );
+				$rules_json    = get_post_meta( $modal_id, 'ewm_display_rules', true );
+	
+				$modal_data = array(
+					'id'             => $modal_id,
+					'title'          => $modal_post->post_title,
+					'mode'           => get_post_meta( $modal_id, 'ewm_modal_mode', true ) ?: 'formulario',
+					'steps'          => $steps_json ? json_decode( $steps_json, true ) : array(),
+					'design'         => $design_json ? json_decode( $design_json, true ) : array(),
+					'triggers'       => $triggers_json ? json_decode( $triggers_json, true ) : array(),
+					'wc_integration' => $wc_json ? json_decode( $wc_json, true ) : array(),
+					'display_rules'  => $rules_json ? json_decode( $rules_json, true ) : array(),
+					'custom_css'     => get_post_meta( $modal_id, 'ewm_custom_css', true ) ?: '',
+				);
+	
+				// LOG TEMPORAL: Datos enviados del servidor al frontend (modal-enabled y enable-manual-trigger)
+				error_log('[EWM TEST LOG] Servidor → Frontend: modal_data.display_rules.enabled=' . (isset($modal_data['display_rules']['enabled']) ? var_export($modal_data['display_rules']['enabled'], true) : 'NO DEFINIDO'));
+				error_log('[EWM TEST LOG] Servidor → Frontend: modal_data.triggers.manual.enabled=' . (isset($modal_data['triggers']['manual']['enabled']) ? var_export($modal_data['triggers']['manual']['enabled'], true) : 'NO DEFINIDO'));
+				error_log('[EWM TEST LOG] Servidor → Frontend: modal_data=' . wp_json_encode($modal_data));
+	
+				wp_send_json_success( $modal_data );
+	
+			} catch ( Exception $e ) {
+	
+				wp_send_json_error( __( 'Error al cargar los datos del modal.', 'ewm-modal-cta' ) );
+			}
+		}
 	/**
 	 * Generar vista previa del modal
 	 */
