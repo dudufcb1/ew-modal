@@ -1,3 +1,7 @@
+/* Fix para el footer de WordPress en el builder: quitar position absolute */
+#wpfooter {
+    position: static !important;
+}
 /**
  * EWM Modal CTA - Admin Styles
  * Estilos para el Modal Builder y páginas de administración
@@ -77,13 +81,19 @@
 }
 
 /* Contenedor principal del Modal Builder */
+/* Contenedor principal del Modal Builder */
 .ewm-modal-builder {
+    /* min-height eliminado para que el área de pestañas controle el alto */
     max-width: 1200px;
     margin: 20px auto;
     background: #fff;
     border: 1px solid var(--ewm-border);
     border-radius: var(--ewm-border-radius);
     box-shadow: var(--ewm-shadow);
+    padding-bottom: 60px; /* Espacio para el footer de WordPress */
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - 32px);
 }
 
 /* Header del builder */
@@ -144,15 +154,21 @@
 /* Contenido de las pestañas */
 .ewm-tab-content {
     padding: 30px;
-    min-height: 500px;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    min-height: 0;
 }
 
 .ewm-tab-pane {
     display: none;
+    padding-left: 40px;
 }
 
 .ewm-tab-pane.active {
     display: block;
+    padding-left: 40px;
 }
 
 /* Formularios */
@@ -468,6 +484,7 @@ select.ewm-form-control {
 
 .ewm-step-config.active .ewm-step-content {
     display: block;
+    padding-left: 40px;
 }
 
 /* Configuración de diseño */

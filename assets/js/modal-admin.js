@@ -411,7 +411,17 @@
          */
         collectDisplayRules: function() {
             return {
-                enabled: $('#modal-enabled').is(':checked')
+                enabled: $('#modal-enabled').is(':checked'),
+                devices: {
+                    desktop: $('#device-desktop').is(':checked'),
+                    tablet: $('#device-tablet').is(':checked'),
+                    mobile: $('#device-mobile').is(':checked')
+                },
+                pages: {
+                    include: $('#pages-include').val() || [],
+                    exclude: $('#pages-exclude').val() || []
+                },
+                user_roles: $('#user-roles').val() || []
             };
         },
 
@@ -482,6 +492,28 @@
             // Reglas de visualización
             if (data.display_rules) {
                 $('#modal-enabled').prop('checked', data.display_rules.enabled !== false);
+
+                // Devices
+                if (data.display_rules.devices) {
+                    $('#device-desktop').prop('checked', data.display_rules.devices.desktop !== false);
+                    $('#device-tablet').prop('checked', data.display_rules.devices.tablet !== false);
+                    $('#device-mobile').prop('checked', data.display_rules.devices.mobile !== false);
+                }
+
+                // Pages
+                if (data.display_rules.pages) {
+                    if (data.display_rules.pages.include) {
+                        $('#pages-include').val(data.display_rules.pages.include);
+                    }
+                    if (data.display_rules.pages.exclude) {
+                        $('#pages-exclude').val(data.display_rules.pages.exclude);
+                    }
+                }
+
+                // User roles
+                if (data.display_rules.user_roles) {
+                    $('#user-roles').val(data.display_rules.user_roles);
+                }
             }
         
             // Barra de progreso

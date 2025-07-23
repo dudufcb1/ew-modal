@@ -1,0 +1,74 @@
+{
+  "schema_version": "2.0.0",
+  "meta": {
+    "date": "2025-07-23T06:45:00Z",
+    "project": "ewm-modal-cta",
+    "author": "augment_agent",
+    "task_id": "ADD_MISSING_DISPLAY_RULES_FIELDS",
+    "status": "done",
+    "revision": 2,
+    "snapshot_id": "fc54f15d-7d4a-4064-b4c4-8b9577194813",
+    "group_id": "gui_improvements_reorganization",
+    "can_agent_set_done": true,
+    "rolled_back": false,
+    "timestamp": "2025-07-23T05:52:40.030590Z",
+    "group_md": "groups/gui_improvements_reorganization/group.md"
+  },
+  "scope": {
+    "files": [
+      "includes/class-ewm-admin-page.php",
+      "assets/js/modal-admin.js"
+    ],
+    "components": [
+      "Modal Builder UI",
+      "Display Rules",
+      "Devices Controls",
+      "Pages Controls",
+      "User Roles Controls"
+    ]
+  },
+  "problem": {
+    "user_request": "Agregar campos faltantes en la UI para display_rules: devices (desktop/tablet/mobile), pages (include/exclude), y user_roles que existen en el contrato y BD pero no en la interfaz.",
+    "business_goal": "Completar la funcionalidad de display_rules permitiendo a los usuarios configurar en qué dispositivos, páginas y roles de usuario mostrar los modales."
+  },
+  "analysis": {
+    "root_cause": "La UI solo manejaba el campo 'enabled' de display_rules, pero el contrato y BD esperan estructura completa con devices, pages y user_roles"
+  },
+  "implementation_plan": {
+    "steps": [
+      {
+        "step": "Analizar estructura actual de display_rules",
+        "status": "done"
+      },
+      {
+        "step": "Diseñar UI para campos devices",
+        "status": "done"
+      },
+      {
+        "step": "Diseñar UI para campos pages",
+        "status": "done"
+      },
+      {
+        "step": "Diseñar UI para campos user_roles",
+        "status": "done"
+      },
+      {
+        "step": "Actualizar collectDisplayRules() en JavaScript",
+        "status": "done"
+      },
+      {
+        "step": "Actualizar populateForm() en JavaScript",
+        "status": "done"
+      },
+      {
+        "step": "Probar funcionalidad completa",
+        "status": "todo"
+      }
+    ]
+  },
+  "next_actions": [
+    "Probar que los nuevos campos se guardan correctamente",
+    "Verificar que los datos se cargan correctamente",
+    "Confirmar que la UI funciona como esperado"
+  ]
+}

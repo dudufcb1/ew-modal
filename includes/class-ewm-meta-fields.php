@@ -487,6 +487,7 @@ class EWM_Meta_Fields {
 	 */
 	private function validate_display_rules( $config ) {
 		return array(
+			'enabled'    => ! empty( $config['enabled'] ), // CONTRATO: Siempre incluir clave enabled con valor booleano explícito
 			'pages'      => array(
 				'include' => array_map( 'intval', $config['pages']['include'] ?? array() ),
 				'exclude' => array_map( 'intval', $config['pages']['exclude'] ?? array() ),
