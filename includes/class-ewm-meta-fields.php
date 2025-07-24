@@ -1,3 +1,4 @@
+
 <?php
 /**
  * EWM Meta Fields Manager
@@ -15,6 +16,35 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Clase para manejar meta fields flexibles con soporte JSON y serializado
  */
 class EWM_Meta_Fields {
+	/**
+	 * Mapea slugs especiales ('home', 'blog', 'none', 'all') a su ID o valor lógico.
+	 * Si es numérico, lo retorna como int. Si es un slug, busca el ID de la página.
+	 * Si no encuentra nada, retorna null.
+	 */
+	public static function map_special_page_value_to_id($value) {
+		if (is_numeric($value)) {
+			return (int)$value;
+		}
+		switch ($value) {
+			case 'home':
+				$id = (int) get_option('page_on_front');
+				return $id > 0 ? $id : null;
+			case 'blog':
+				$id = (int) get_option('page_for_posts');
+				return $id > 0 ? $id : null;
+			case 'none':
+				return 0;
+			case 'all':
+				return -1;
+			default:
+				$page = get_page_by_path($value);
+				if ($page) {
+					return (int)$page->ID;
+				}
+				// Si quieres soportar categorías, puedes agregar aquí get_category_by_slug
+				return null;
+		}
+	}
 
 	/**
 	 * Instancia singleton
@@ -247,8 +277,6 @@ class EWM_Meta_Fields {
 	 * Validar configuración de pasos
 	 */
 	private function validate_steps_config( $config ) {
-		error_log( 'EWM DEBUG: validate_steps_config - config recibido: ' . var_export( $config, true ) );
-
 		// CONTRACTOR FIX: Siempre esperamos estructura completa, eliminada condición problemática
 		$validated = array(
 			'steps'       => array(), // Inicializar vacío
@@ -260,9 +288,6 @@ class EWM_Meta_Fields {
 			),
 		);
 
-		error_log( 'EWM DEBUG: validate_steps_config - Validated config initialized: ' . var_export( $validated, true ) );
-
-		error_log( 'EWM DEBUG: validate_steps_config - Usando estructura completa' );
 
 		// Validar pasos
 		if ( isset( $config['steps'] ) && is_array( $config['steps'] ) ) {
@@ -279,11 +304,9 @@ class EWM_Meta_Fields {
 						'description' => sanitize_text_field( $step['description'] ?? '' ),
 					);
 
-					error_log( '🔧 EWM DEBUG: validate_steps_config - processing step ' . $index . ': id="' . ($step['id'] ?? 'none') . '", title="' . ( $step['title'] ?? 'none' ) . '", content="' . ( $step['content'] ?? 'none' ) . '"' );
 
 					// Validar campos del paso - CORREGIR para manejar strings simples
 					if ( isset( $step['fields'] ) && is_array( $step['fields'] ) ) {
-						error_log( 'EWM DEBUG: validate_steps_config - validating fields: ' . var_export( $step['fields'], true ) );
 						foreach ( $step['fields'] as $field ) {
 							if ( is_array( $field ) ) {
 								// Solo procesar campos complejos (objetos) del builder
@@ -292,16 +315,13 @@ class EWM_Meta_Fields {
 							// ELIMINADO: Conversión automática de strings a campos
 							// Los campos deben venir del builder como objetos completos
 						}
-						error_log( 'EWM DEBUG: validate_steps_config - validated fields: ' . var_export( $validated_step['fields'], true ) );
 					}
 
 					$validated['steps'][] = $validated_step;
-					error_log( '✅ EWM DEBUG: validate_steps_config - step added to validated array. Total steps now: ' . count($validated['steps']) );
 				}
 			}
 		}
 
-		error_log( '🔍 EWM DEBUG: validate_steps_config - Final steps count: ' . count($validated['steps']) );
 
 		// Validar paso final
 		if ( isset( $config['final_step'] ) && is_array( $config['final_step'] ) ) {
@@ -332,7 +352,6 @@ class EWM_Meta_Fields {
 			);
 		}
 
-		error_log( 'EWM DEBUG: validate_steps_config - FINAL validated config: ' . var_export( $validated, true ) );
 		return $validated;
 	}
 
@@ -487,10 +506,10 @@ class EWM_Meta_Fields {
 	 */
 	private function validate_display_rules( $config ) {
 		return array(
-			'enabled'    => ! empty( $config['enabled'] ), // CONTRATO: Siempre incluir clave enabled con valor booleano explícito
+			'enabled'    => ! empty( $config['enabled'] ),
 			'pages'      => array(
-				'include' => array_map( 'intval', $config['pages']['include'] ?? array() ),
-				'exclude' => array_map( 'intval', $config['pages']['exclude'] ?? array() ),
+				'include' => array_filter(array_map( [self::class, 'map_special_page_value_to_id'], $config['pages']['include'] ?? array() ), function($v){return $v !== null;}),
+				'exclude' => array_filter(array_map( [self::class, 'map_special_page_value_to_id'], $config['pages']['exclude'] ?? array() ), function($v){return $v !== null;}),
 			),
 			'user_roles' => array_map( 'sanitize_text_field', $config['user_roles'] ?? array() ),
 			'devices'    => array(

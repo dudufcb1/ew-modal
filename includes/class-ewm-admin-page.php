@@ -15,8 +15,81 @@ if (! defined('ABSPATH')) {
 /**
  * Clase para la página de administración del Modal Builder
  */
-class EWM_Admin_Page
-{
+class EWM_Admin_Page {
+	/**
+	 * Mapea slugs especiales ('home', 'blog', 'none', 'all') a su ID o valor lógico.
+	 * Si es numérico, lo retorna como int. Si no es especial, retorna null.
+	 */
+	public static function map_special_page_value_to_id($value) {
+		if (is_numeric($value)) {
+			return (int)$value;
+		}
+		switch ($value) {
+			case 'home':
+				return (int) get_option('page_on_front');
+			case 'blog':
+				return (int) get_option('page_for_posts');
+			case 'none':
+				return 0;
+			case 'all':
+				return -1;
+			default:
+				return null;
+		}
+	}
+	/**
+	 * Resuelve cualquier valor (ID numérico, slug de página, slug de categoría, lógicos) a un ID numérico.
+	 */
+	   private function resolve_to_id($value) {
+		   if (is_numeric($value)) {
+			   return (int)$value;
+		   }
+		   // Casos lógicos especiales
+		   if ($value === 'none') return 0;
+		   if ($value === 'all') return -1;
+		   if ($value === 'home') {
+			   $id = (int) get_option('page_on_front');
+			   error_log('[EWM LOG] resolve_to_id("home"): get_option("page_on_front")=' . $id);
+			   if ($id <= 0) {
+				   error_log('[EWM LOG] ¡No hay página de inicio configurada en Ajustes > Lectura!');
+			   }
+			   return $id > 0 ? $id : null;
+		   }
+		   if ($value === 'blog') {
+			   $id = (int) get_option('page_for_posts');
+			   error_log('[EWM LOG] resolve_to_id("blog"): get_option("page_for_posts")=' . $id);
+			   if ($id <= 0) {
+				   error_log('[EWM LOG] ¡No hay página de blog configurada en Ajustes > Lectura!');
+			   }
+			   return $id > 0 ? $id : null;
+		   }
+		   // Página por slug
+		   $page = get_page_by_path($value);
+		   if ($page) return (int)$page->ID;
+		   // Categoría por slug
+		   $cat = function_exists('get_category_by_slug') ? get_category_by_slug($value) : null;
+		   if ($cat) return (int)$cat->term_id;
+		   // Puedes agregar aquí más resolvers para custom post types o taxonomías
+		   return null;
+	   }
+	/**
+	 * Mapea slugs especiales ('home', 'blog', 'none', 'all') a su ID o valor lógico.
+	 * Devuelve null si no es especial.
+	 */
+	private function get_special_page_id($slug) {
+		switch ($slug) {
+			case 'home':
+				return (int) get_option('page_on_front');
+			case 'blog':
+				return (int) get_option('page_for_posts');
+			case 'none':
+				return 0;
+			case 'all':
+				return -1;
+			default:
+				return null;
+		}
+	}
 
 	/**
 	 * Instancia singleton
@@ -123,6 +196,14 @@ class EWM_Admin_Page
 			'ewm-admin-styles',
 			EWM_PLUGIN_URL . 'assets/css/modal-admin.css',
 			array('wp-color-picker'),
+			EWM_VERSION
+		);
+
+		// Estilos específicos para el preview (aislados con prefijos)
+		wp_enqueue_style(
+			'ewm-admin-preview-styles',
+			EWM_PLUGIN_URL . 'assets/css/modal-admin-preview.css',
+			array(),
 			EWM_VERSION
 		);
 
@@ -338,23 +419,44 @@ class EWM_Admin_Page
 								<div class="ewm-form-group">
 									<label for="pages-include"><?php _e('Incluir en páginas', 'ewm-modal-cta'); ?></label>
 									<select id="pages-include" name="pages[include][]" class="ewm-form-control" multiple size="4">
-										<option value="all" <?php selected(in_array('all', $modal_data['display_rules']['pages']['include'] ?? array())); ?>>
-											<?php _e('Todas las páginas', 'ewm-modal-cta'); ?>
-										</option>
-										<option value="home" <?php selected(in_array('home', $modal_data['display_rules']['pages']['include'] ?? array())); ?>>
-											<?php _e('Página de inicio', 'ewm-modal-cta'); ?>
-										</option>
-										<option value="blog" <?php selected(in_array('blog', $modal_data['display_rules']['pages']['include'] ?? array())); ?>>
-											<?php _e('Blog', 'ewm-modal-cta'); ?>
-										</option>
 										<?php
-										$pages = get_pages();
-										foreach ($pages as $page) {
-											$selected = in_array($page->ID, $modal_data['display_rules']['pages']['include'] ?? array());
-											echo '<option value="' . esc_attr($page->ID) . '"' . selected($selected, true, false) . '>';
-											echo esc_html($page->post_title);
-											echo '</option>';
-										}
+										$specials = [
+											[ 'slug' => 'all', 'label' => __('Todas las páginas', 'ewm-modal-cta') ],
+											[ 'slug' => 'none', 'label' => __('No incluir ninguna', 'ewm-modal-cta') ],
+											[ 'slug' => 'home', 'label' => __('Página de inicio', 'ewm-modal-cta') ],
+											[ 'slug' => 'blog', 'label' => __('Blog', 'ewm-modal-cta') ],
+										];
+										$include_selected = $modal_data['display_rules']['pages']['include'] ?? array();
+										$include_selected_ids = array_map(function($v) { return $this->resolve_to_id($v); }, $include_selected);
+									   // LOG: Mostrar todas las opciones especiales antes de renderizar
+									   $specials_log = [];
+									   foreach ($specials as $sp) {
+										   $id = $this->resolve_to_id($sp['slug']);
+										   $specials_log[] = [
+											   'slug' => $sp['slug'],
+											   'label' => $sp['label'],
+											   'id' => $id
+										   ];
+										   if ($id !== null) {
+											   echo '<option value="' . esc_attr($id) . '"' . selected(in_array($id, $include_selected_ids), true, false) . '>';
+											   echo esc_html($sp['label']);
+											   echo '</option>';
+										   }
+									   }
+									   error_log('[EWM LOG] Opciones especiales para incluir (select): ' . print_r($specials_log, true));
+									   $pages = get_pages();
+									   $pages_log = [];
+									   foreach ($pages as $page) {
+										   $selected = in_array($page->ID, $include_selected_ids);
+										   $pages_log[] = [
+											   'id' => $page->ID,
+											   'title' => $page->post_title
+										   ];
+										   echo '<option value="' . esc_attr($page->ID) . '"' . selected($selected, true, false) . '>';
+										   echo esc_html($page->post_title);
+										   echo '</option>';
+									   }
+									   error_log('[EWM LOG] Opciones de páginas normales para incluir (select): ' . print_r($pages_log, true));
 										?>
 									</select>
 									<p class="description"><?php _e('Mantén Ctrl/Cmd presionado para seleccionar múltiples páginas', 'ewm-modal-cta'); ?></p>
@@ -363,22 +465,43 @@ class EWM_Admin_Page
 								<div class="ewm-form-group">
 									<label for="pages-exclude"><?php _e('Excluir de páginas', 'ewm-modal-cta'); ?></label>
 									<select id="pages-exclude" name="pages[exclude][]" class="ewm-form-control" multiple size="4">
-										<option value="none" <?php selected(in_array('none', $modal_data['display_rules']['pages']['exclude'] ?? array())); ?>>
-											<?php _e('No excluir ninguna', 'ewm-modal-cta'); ?>
-										</option>
-										<option value="home" <?php selected(in_array('home', $modal_data['display_rules']['pages']['exclude'] ?? array())); ?>>
-											<?php _e('Página de inicio', 'ewm-modal-cta'); ?>
-										</option>
-										<option value="blog" <?php selected(in_array('blog', $modal_data['display_rules']['pages']['exclude'] ?? array())); ?>>
-											<?php _e('Blog', 'ewm-modal-cta'); ?>
-										</option>
 										<?php
-										foreach ($pages as $page) {
-											$selected = in_array($page->ID, $modal_data['display_rules']['pages']['exclude'] ?? array());
-											echo '<option value="' . esc_attr($page->ID) . '"' . selected($selected, true, false) . '>';
-											echo esc_html($page->post_title);
-											echo '</option>';
-										}
+										$specials_ex = [
+											[ 'slug' => 'none', 'label' => __('No excluir ninguna', 'ewm-modal-cta') ],
+											[ 'slug' => 'all', 'label' => __('Excluir todas', 'ewm-modal-cta') ],
+											[ 'slug' => 'home', 'label' => __('Página de inicio', 'ewm-modal-cta') ],
+											[ 'slug' => 'blog', 'label' => __('Blog', 'ewm-modal-cta') ],
+										];
+										$exclude_selected = $modal_data['display_rules']['pages']['exclude'] ?? array();
+										$exclude_selected_ids = array_map(function($v) { return $this->resolve_to_id($v); }, $exclude_selected);
+									   // LOG: Mostrar todas las opciones especiales antes de renderizar (exclude)
+									   $specials_ex_log = [];
+									   foreach ($specials_ex as $sp) {
+										   $id = $this->resolve_to_id($sp['slug']);
+										   $specials_ex_log[] = [
+											   'slug' => $sp['slug'],
+											   'label' => $sp['label'],
+											   'id' => $id
+										   ];
+										   if ($id !== null) {
+											   echo '<option value="' . esc_attr($id) . '"' . selected(in_array($id, $exclude_selected_ids), true, false) . '>';
+											   echo esc_html($sp['label']);
+											   echo '</option>';
+										   }
+									   }
+									   error_log('[EWM LOG] Opciones especiales para excluir (select): ' . print_r($specials_ex_log, true));
+									   $pages_ex_log = [];
+									   foreach ($pages as $page) {
+										   $selected = in_array($page->ID, $exclude_selected_ids);
+										   $pages_ex_log[] = [
+											   'id' => $page->ID,
+											   'title' => $page->post_title
+										   ];
+										   echo '<option value="' . esc_attr($page->ID) . '"' . selected($selected, true, false) . '>';
+										   echo esc_html($page->post_title);
+										   echo '</option>';
+									   }
+									   error_log('[EWM LOG] Opciones de páginas normales para excluir (select): ' . print_r($pages_ex_log, true));
 										?>
 									</select>
 									<p class="description"><?php _e('Páginas donde NO se mostrará el modal', 'ewm-modal-cta'); ?></p>
@@ -928,58 +1051,385 @@ class EWM_Admin_Page
 	 */
 	private function generate_preview_html($modal_data)
 	{
-		$config = array(
-			'modal_id' => 'preview',
-			'title'    => $modal_data['title'] ?? __('Vista Previa', 'ewm-modal-cta'),
-			'mode'     => $modal_data['mode'] ?? 'formulario',
-			'steps'    => $modal_data['steps'] ?? array(),
-			'design'   => $modal_data['design'] ?? array(),
-			'triggers' => $modal_data['triggers'] ?? array(),
-		);
+		error_log('[EWM DEBUG] generate_preview_html: modal_data=' . print_r($modal_data, true));
 
-		// Usar el motor de renderizado para generar el HTML
+		// Generar preview estático específico para admin
+		return $this->generate_static_preview($modal_data);
+	}
+
+	/**
+	 * Generar preview estático para el admin
+	 */
+	private function generate_static_preview($modal_data)
+	{
+		$steps = $modal_data['steps']['steps'] ?? array();
+		$final_step = $modal_data['steps']['final_step'] ?? array();
+		$progress_bar = $modal_data['steps']['progressBar'] ?? array('enabled' => true);
+		$mode = $modal_data['mode'] ?? 'formulario';
+		$design = $modal_data['design'] ?? array();
+
+		// Si no hay pasos, mostrar mensaje
+		if (empty($steps)) {
+			return '<div class="ewm-preview-empty">
+				<p><strong>No hay pasos configurados</strong></p>
+				<p>Agrega pasos en la pestaña "Pasos" para ver el preview del modal.</p>
+			</div>';
+		}
+
 		ob_start();
-	?>
-		<div class="ewm-preview-modal" style="
-			--ewm-primary-color: <?php echo esc_attr($config['design']['colors']['primary'] ?? '#ff6b35'); ?>;
-			--ewm-secondary-color: <?php echo esc_attr($config['design']['colors']['secondary'] ?? '#333333'); ?>;
-			--ewm-background-color: <?php echo esc_attr($config['design']['colors']['background'] ?? '#ffffff'); ?>;
-		">
-			<div class="ewm-modal-content ewm-size-<?php echo esc_attr($config['design']['modal_size'] ?? 'medium'); ?>">
-				<div class="ewm-modal-header">
-					<span class="ewm-modal-close">×</span>
+		?>
+		<style>
+		/* Estilos específicos para el preview en admin */
+		.ewm-admin-preview {
+			border: 2px solid #ddd;
+			border-radius: 8px;
+			background: #fff;
+			padding: 20px;
+			max-width: 600px;
+			margin: 0 auto;
+			box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+			font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+		}
+		.ewm-preview-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 20px;
+			padding-bottom: 10px;
+			border-bottom: 1px solid #eee;
+		}
+		.ewm-preview-title {
+			font-size: 18px;
+			font-weight: 600;
+			color: #333;
+			margin: 0;
+		}
+		.ewm-preview-close {
+			background: #f0f0f0;
+			border: none;
+			border-radius: 50%;
+			width: 30px;
+			height: 30px;
+			cursor: pointer;
+			font-size: 16px;
+			color: #666;
+		}
+		.ewm-preview-progress {
+			margin-bottom: 20px;
+		}
+		.ewm-preview-progress-bar {
+			background: #f0f0f0;
+			height: 8px;
+			border-radius: 4px;
+			overflow: hidden;
+			margin-bottom: 10px;
+		}
+		.ewm-preview-progress-fill {
+			background: <?php echo esc_attr($design['colors']['primary'] ?? '#ff6b35'); ?>;
+			height: 100%;
+			width: 33%;
+			transition: width 0.3s ease;
+		}
+		.ewm-preview-steps-indicator {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+		}
+		.ewm-preview-step-dot {
+			width: 24px;
+			height: 24px;
+			border-radius: 50%;
+			background: #f0f0f0;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 12px;
+			font-weight: 600;
+			color: #666;
+		}
+		.ewm-preview-step-dot.active {
+			background: <?php echo esc_attr($design['colors']['primary'] ?? '#ff6b35'); ?>;
+			color: white;
+		}
+		.ewm-preview-content {
+			margin-bottom: 20px;
+		}
+		.ewm-preview-step-title {
+			font-size: 16px;
+			font-weight: 600;
+			color: #333;
+			margin: 0 0 10px 0;
+		}
+		.ewm-preview-step-subtitle {
+			font-size: 14px;
+			color: #666;
+			margin: 0 0 15px 0;
+		}
+		.ewm-preview-step-content {
+			font-size: 14px;
+			color: #333;
+			margin: 0 0 15px 0;
+			line-height: 1.5;
+		}
+		.ewm-preview-fields {
+			margin: 15px 0;
+		}
+		.ewm-preview-field {
+			margin-bottom: 15px;
+		}
+		.ewm-preview-field-label {
+			display: block;
+			font-weight: 500;
+			color: #333;
+			margin-bottom: 5px;
+			font-size: 14px;
+		}
+		.ewm-preview-field-input {
+			width: 100%;
+			padding: 10px 12px;
+			border: 1px solid #ddd;
+			border-radius: 4px;
+			font-size: 14px;
+			background: #f9f9f9;
+			color: #666;
+		}
+		.ewm-preview-navigation {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-top: 20px;
+		}
+		.ewm-preview-btn {
+			padding: 10px 20px;
+			border: none;
+			border-radius: 4px;
+			font-size: 14px;
+			font-weight: 500;
+			cursor: pointer;
+			transition: all 0.2s ease;
+		}
+		.ewm-preview-btn-secondary {
+			background: #f0f0f0;
+			color: #666;
+		}
+		.ewm-preview-btn-primary {
+			background: <?php echo esc_attr($design['colors']['primary'] ?? '#ff6b35'); ?>;
+			color: white;
+		}
+		.ewm-preview-info {
+			background: #f8f9fa;
+			border: 1px solid #e9ecef;
+			border-radius: 4px;
+			padding: 15px;
+			margin-bottom: 20px;
+			font-size: 13px;
+			color: #6c757d;
+		}
+		</style>
+
+		<div class="ewm-admin-preview">
+			<div class="ewm-preview-info">
+				<strong>Vista Previa del Modal</strong> - Mostrando el primer paso de <?php echo count($steps); ?> pasos configurados
+			</div>
+
+			<div class="ewm-preview-header">
+				<h3 class="ewm-preview-title">Modal Preview</h3>
+				<button class="ewm-preview-close">&times;</button>
+			</div>
+
+			<?php if ($progress_bar['enabled']) : ?>
+			<div class="ewm-preview-progress">
+				<div class="ewm-preview-progress-bar">
+					<div class="ewm-preview-progress-fill"></div>
 				</div>
-				<div class="ewm-modal-body">
-					<?php if ($config['mode'] === 'formulario') : ?>
-						<h3><?php echo esc_html($config['title']); ?></h3>
-						<p><?php _e('Vista previa del formulario multi-paso', 'ewm-modal-cta'); ?></p>
-
-						<?php if (! empty($config['steps']['progressBar']['enabled'])) : ?>
-							<div class="ewm-progress-bar" data-style="<?php echo esc_attr($config['steps']['progressBar']['style'] ?? 'line'); ?>">
-								<div class="ewm-progress-fill" style="width: 33%;"></div>
-							</div>
-						<?php endif; ?>
-
-						<div class="ewm-preview-form">
-							<div class="ewm-field">
-								<label><?php _e('Campo de ejemplo', 'ewm-modal-cta'); ?></label>
-								<input type="text" placeholder="<?php _e('Introduce tu respuesta...', 'ewm-modal-cta'); ?>">
-							</div>
-							<button class="ewm-btn ewm-btn-primary" style="background: var(--ewm-primary-color);">
-								<?php _e('Siguiente', 'ewm-modal-cta'); ?>
-							</button>
+				<div class="ewm-preview-steps-indicator">
+					<?php
+					$total_steps = count($steps) + (!empty($final_step['title']) || !empty($final_step['fields']) ? 1 : 0);
+					for ($i = 1; $i <= $total_steps; $i++) :
+					?>
+						<div class="ewm-preview-step-dot <?php echo $i === 1 ? 'active' : ''; ?>">
+							<?php echo $i; ?>
 						</div>
-					<?php else : ?>
-						<h3><?php echo esc_html($config['title']); ?></h3>
-						<p><?php _e('Vista previa del anuncio', 'ewm-modal-cta'); ?></p>
-						<button class="ewm-btn ewm-btn-primary" style="background: var(--ewm-primary-color);">
-							<?php _e('Acción', 'ewm-modal-cta'); ?>
-						</button>
-					<?php endif; ?>
+					<?php endfor; ?>
 				</div>
 			</div>
+			<?php endif; ?>
+
+			<?php foreach ($steps as $step_index => $step) : ?>
+			<div class="ewm-preview-content" style="<?php echo $step_index > 0 ? 'margin-top: 30px; padding-top: 20px; border-top: 2px solid #f0f0f0;' : ''; ?>">
+				<div style="display: flex; align-items: center; margin-bottom: 15px;">
+					<span style="background: <?php echo esc_attr($design['colors']['primary'] ?? '#ff6b35'); ?>; color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; margin-right: 10px;">
+						<?php echo $step_index + 1; ?>
+					</span>
+					<h3 class="ewm-preview-step-title" style="margin: 0;">
+						<?php echo esc_html($step['title'] ?? 'Paso ' . ($step_index + 1)); ?>
+					</h3>
+				</div>
+
+				<?php if (!empty($step['subtitle'])) : ?>
+					<p class="ewm-preview-step-subtitle"><?php echo esc_html($step['subtitle']); ?></p>
+				<?php endif; ?>
+
+				<?php if (!empty($step['content'])) : ?>
+					<div class="ewm-preview-step-content"><?php echo wp_kses_post($step['content']); ?></div>
+				<?php endif; ?>
+
+				<div class="ewm-preview-fields">
+					<?php
+					$fields = $step['fields'] ?? array();
+					if (empty($fields)) :
+					?>
+						<div style="padding: 15px; text-align: center; color: #666; border: 1px dashed #ccc; border-radius: 4px; background: #f9f9f9;">
+							<p style="margin: 0;"><small>No hay campos configurados en este paso</small></p>
+						</div>
+					<?php else : ?>
+						<?php foreach ($fields as $field) : ?>
+						<div class="ewm-preview-field">
+							<?php if (!empty($field['label'])) : ?>
+								<label class="ewm-preview-field-label">
+									<?php echo esc_html($field['label']); ?>
+									<?php if (!empty($field['required'])) : ?>
+										<span style="color: red;">*</span>
+									<?php endif; ?>
+								</label>
+							<?php endif; ?>
+
+							<?php
+							$field_type = $field['type'] ?? 'text';
+							$placeholder = $field['placeholder'] ?? '';
+
+							switch ($field_type) {
+								case 'textarea':
+									echo '<textarea class="ewm-preview-field-input" placeholder="' . esc_attr($placeholder) . '" readonly></textarea>';
+									break;
+								case 'select':
+									echo '<select class="ewm-preview-field-input" disabled>';
+									echo '<option>' . esc_html($placeholder ?: 'Selecciona una opción') . '</option>';
+									echo '</select>';
+									break;
+								case 'radio':
+								case 'checkbox':
+									$options = $field['options'] ?? array();
+									if (!empty($options)) {
+										foreach ($options as $option) {
+											echo '<label style="display: block; margin: 5px 0; font-weight: normal;">';
+											echo '<input type="' . esc_attr($field_type) . '" disabled style="margin-right: 8px;">';
+											echo esc_html($option['label'] ?? $option['value'] ?? '');
+											echo '</label>';
+										}
+									} else {
+										echo '<input type="' . esc_attr($field_type) . '" class="ewm-preview-field-input" disabled>';
+									}
+									break;
+								default:
+									echo '<input type="' . esc_attr($field_type) . '" class="ewm-preview-field-input" placeholder="' . esc_attr($placeholder) . '" readonly>';
+									break;
+							}
+							?>
+						</div>
+						<?php endforeach; ?>
+					<?php endif; ?>
+				</div>
+
+				<div class="ewm-preview-navigation">
+					<?php if ($step_index > 0) : ?>
+						<button class="ewm-preview-btn ewm-preview-btn-secondary">Anterior</button>
+					<?php else : ?>
+						<div></div>
+					<?php endif; ?>
+
+					<?php
+					$is_last_step = ($step_index === count($steps) - 1) && empty($final_step['title']);
+					?>
+					<button class="ewm-preview-btn ewm-preview-btn-primary">
+						<?php echo $is_last_step ? 'Enviar' : esc_html($step['button_text'] ?? 'Siguiente'); ?>
+					</button>
+				</div>
+			</div>
+			<?php endforeach; ?>
+
+			<?php if (!empty($final_step['title']) || !empty($final_step['fields'])) : ?>
+			<div class="ewm-preview-content" style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #f0f0f0;">
+				<div style="display: flex; align-items: center; margin-bottom: 15px;">
+					<span style="background: <?php echo esc_attr($design['colors']['primary'] ?? '#ff6b35'); ?>; color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; margin-right: 10px;">
+						✓
+					</span>
+					<h3 class="ewm-preview-step-title" style="margin: 0;">
+						<?php echo esc_html($final_step['title'] ?? 'Paso Final'); ?>
+					</h3>
+				</div>
+
+				<?php if (!empty($final_step['subtitle'])) : ?>
+					<p class="ewm-preview-step-subtitle"><?php echo esc_html($final_step['subtitle']); ?></p>
+				<?php endif; ?>
+
+				<div class="ewm-preview-fields">
+					<?php
+					$final_fields = $final_step['fields'] ?? array();
+					if (empty($final_fields)) :
+					?>
+						<div style="padding: 15px; text-align: center; color: #666; border: 1px dashed #ccc; border-radius: 4px; background: #f9f9f9;">
+							<p style="margin: 0;"><small>Paso final sin campos configurados</small></p>
+						</div>
+					<?php else : ?>
+						<?php foreach ($final_fields as $field) : ?>
+						<div class="ewm-preview-field">
+							<?php if (!empty($field['label'])) : ?>
+								<label class="ewm-preview-field-label">
+									<?php echo esc_html($field['label']); ?>
+									<?php if (!empty($field['required'])) : ?>
+										<span style="color: red;">*</span>
+									<?php endif; ?>
+								</label>
+							<?php endif; ?>
+
+							<?php
+							$field_type = $field['type'] ?? 'text';
+							$placeholder = $field['placeholder'] ?? '';
+
+							switch ($field_type) {
+								case 'textarea':
+									echo '<textarea class="ewm-preview-field-input" placeholder="' . esc_attr($placeholder) . '" readonly></textarea>';
+									break;
+								case 'select':
+									echo '<select class="ewm-preview-field-input" disabled>';
+									echo '<option>' . esc_html($placeholder ?: 'Selecciona una opción') . '</option>';
+									echo '</select>';
+									break;
+								case 'radio':
+								case 'checkbox':
+									$options = $field['options'] ?? array();
+									if (!empty($options)) {
+										foreach ($options as $option) {
+											echo '<label style="display: block; margin: 5px 0; font-weight: normal;">';
+											echo '<input type="' . esc_attr($field_type) . '" disabled style="margin-right: 8px;">';
+											echo esc_html($option['label'] ?? $option['value'] ?? '');
+											echo '</label>';
+										}
+									} else {
+										echo '<input type="' . esc_attr($field_type) . '" class="ewm-preview-field-input" disabled>';
+									}
+									break;
+								default:
+									echo '<input type="' . esc_attr($field_type) . '" class="ewm-preview-field-input" placeholder="' . esc_attr($placeholder) . '" readonly>';
+									break;
+							}
+							?>
+						</div>
+						<?php endforeach; ?>
+					<?php endif; ?>
+				</div>
+
+				<div class="ewm-preview-navigation">
+					<button class="ewm-preview-btn ewm-preview-btn-secondary">Anterior</button>
+					<button class="ewm-preview-btn ewm-preview-btn-primary">Enviar</button>
+				</div>
+			</div>
+			<?php endif; ?>
+
+
 		</div>
-<?php
+		<?php
 
 		return ob_get_clean();
 	}

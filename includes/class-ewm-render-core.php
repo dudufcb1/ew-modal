@@ -60,12 +60,13 @@ class EWM_Render_Core {
 	 * Función principal de renderizado (usada por shortcodes)
 	 */
 	public function render_modal( $modal_id, $config = array() ) {
-
-
+		// Si es preview y se recibe config, asignar automáticamente al global
+		if ( $modal_id === 'preview' && !empty($config) && is_array($config) ) {
+			$GLOBALS['ewm_preview_config'] = $config;
+		}
 
 		// Validar modal
 		$is_valid = $this->validate_modal( $modal_id );
-		// TEMPORAL: Logging directo para debugging
 		error_log( 'EWM RENDER DEBUG - validate_modal result: modal_id=' . $modal_id . ', valid=' . ( $is_valid ? 'true' : 'false' ) );
 		if ( get_post( $modal_id ) ) {
 			error_log( 'EWM RENDER DEBUG - post exists: type=' . get_post( $modal_id )->post_type . ', status=' . get_post( $modal_id )->post_status );
@@ -112,6 +113,9 @@ class EWM_Render_Core {
 	 * Validar modal
 	 */
 	private function validate_modal( $modal_id ) {
+		if ( $modal_id === 'preview' ) {
+			return true;
+		}
 		if ( ! is_numeric( $modal_id ) || $modal_id <= 0 ) {
 			return false;
 		}
@@ -129,6 +133,11 @@ class EWM_Render_Core {
 	 * Obtener configuración completa del modal
 	 */
 	private function get_modal_configuration( $modal_id ) {
+		// Si es preview, retornar la configuración global temporal
+		if ( $modal_id === 'preview' && !empty($GLOBALS['ewm_preview_config']) && is_array($GLOBALS['ewm_preview_config']) ) {
+			return $GLOBALS['ewm_preview_config'];
+		}
+
 		// DEBUGGING PROFUNDO según recomendación del consultor
 		error_log( 'EWM CORE DEBUG: get_modal_configuration called. Passed modal_id: ' . $modal_id . '. Global post ID: ' . ( get_the_ID() ?: 'none' ) );
 
@@ -526,9 +535,9 @@ class EWM_Render_Core {
 		if ( empty( $fields ) ) {
 			// TEMPORAL: Mostrar mensaje cuando no hay campos configurados
 			return '<div class="ewm-no-fields-message" style="padding: 20px; text-align: center; color: #666; border: 1px dashed #ccc; margin: 10px 0;">
-                        <p><strong>Este paso no tiene campos configurados.</strong></p>
-                        <p><small>Agrega campos en el Modal Builder para mostrar contenido del formulario.</small></p>
-                    </div>';
+						<p><strong>Este paso no tiene campos configurados.</strong></p>
+						<p><small>Agrega campos en el Modal Builder para mostrar contenido del formulario.</small></p>
+					</div>';
 		}
 
 		ob_start();
