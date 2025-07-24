@@ -245,5 +245,18 @@
     "rollback_from": null,
     "last_modified_by": "augment_agent",
     "title": "Agregar campos faltantes en la UI para display_rules: devices (desktop/tablet/mo..."
+  },
+  "INTEGRACION_WC_CTA_RESUMEN": {
+    "snapshot_id": "dd073178-a608-49ba-9259-46652af063bc",
+    "task_id": "INTEGRACION_WC_CTA_RESUMEN",
+    "revision": 1,
+    "status": "info",
+    "group_id": "GENERAL",
+    "can_agent_set_done": true,
+    "timestamp": "2025-07-24T19:15:04.555033Z",
+    "rolled_back": false,
+    "rollback_from": null,
+    "last_modified_by": "augment_agent",
+    "title": "Leer INTEGRACION-WC-CTA-RESUMEN.md y crear una memoria estructurada del proceso ..."
   }
 }

@@ -21,5 +21,6 @@ Por definir
 | 1 | FIX_STEPS_COLLECTION_20250722 | augment_agent | 2025-07-22 | done |
 | 1 | FIX_FRONTEND_READING_CONSISTENCY_20250722 | augment_agent | 2025-07-22 | todo |
 | 2 | INVESTIGATE_FRONTEND_MODAL_561_20250722 | augment_agent | 2025-07-22 | done |
+| 1 | INTEGRACION_WC_CTA_RESUMEN | augment_agent | 2025-07-24 | info |
 
-*Última actualización: 2025-07-22T05:11:26.715796Z*
+*Última actualización: 2025-07-24T19:15:04.579110Z*
