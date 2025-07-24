@@ -62,30 +62,50 @@ add_action( 'init', 'ewm_init_core_components', 5 );
 
 // FIX: Inicializar EWM_Admin_Page antes de admin_menu
 add_action( 'plugins_loaded', function() {
-    EWM_Admin_Page::get_instance();
+	EWM_Admin_Page::get_instance();
 }, 1 );
 
 /**
  * Initialize REST API endpoints
  */
+
 function ewm_init_rest_api() {
+	// Incluir endpoints REST personalizados de WooCommerce
+	if ( file_exists( EWM_PLUGIN_DIR . 'includes/class-ewm-woocommerce-endpoints.php' ) ) {
+		require_once EWM_PLUGIN_DIR . 'includes/class-ewm-woocommerce-endpoints.php';
+		if ( class_exists( 'EWM_WooCommerce_Endpoints' ) ) {
+			EWM_WooCommerce_Endpoints::register_routes();
+		}
+	}
 
 	if ( file_exists( EWM_PLUGIN_DIR . 'includes/class-ewm-rest-api.php' ) ) {
 		require_once EWM_PLUGIN_DIR . 'includes/class-ewm-rest-api.php';
 
 		if ( class_exists( 'EWM_REST_API' ) ) {
 			$rest_api = EWM_REST_API::get_instance();
-
 			// Registrar rutas directamente para evitar problemas de timing de hooks.
-			$rest_api->register_routes();			
-		} else {
-			
+			$rest_api->register_routes();            
 		}
-	} else {
-		
 	}
 }
+
 add_action( 'rest_api_init', 'ewm_init_rest_api' );
+
+// ENDPOINT TEMPORAL: Devuelve el nonce wp_rest para el usuario autenticado
+add_action( 'rest_api_init', function() {
+	register_rest_route( 'ewm/v1', '/get-wp-rest-nonce', array(
+		'methods'  => 'GET',
+		'permission_callback' => function () {
+			return is_user_logged_in();
+		},
+		'callback' => function () {
+			return rest_ensure_response( array(
+				'nonce' => wp_create_nonce( 'wp_rest' ),
+				'user'  => get_current_user_id(),
+			) );
+		},
+	) );
+} );
 
 /**
  * Plugin activation hook
