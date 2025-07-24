@@ -337,33 +337,16 @@ class EWM_Render_Core {
 
 		$html_output = ob_get_clean();
 
-		// CONFIGURACIÓN DEL MODAL PARA AUTO-INICIALIZACIÓN
-		$html_output .= "
-		<div style='position: fixed; top: 10px; right: 10px; z-index: 9999; background: #007cba; color: white; padding: 10px; border-radius: 5px;'>
-			<button onclick='testModal{$modal_id}()' style='background: white; color: #007cba; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;'>
-				🧪 Test Modal {$modal_id}
-			</button>
-		</div>
-		<script>
-		// Auto-inicializar modal {$modal_id}
-		if (typeof window.ewm_modal_configs === 'undefined') {
-			window.ewm_modal_configs = [];
-		}
+	   // CONFIGURACIÓN DEL MODAL PARA AUTO-INICIALIZACIÓN (sin botón de test)
+	   $html_output .= "
+	   <script>
+	   // Auto-inicializar modal {$modal_id}
+	   if (typeof window.ewm_modal_configs === 'undefined') {
+		   window.ewm_modal_configs = [];
+	   }
 
-		window.ewm_modal_configs.push(" . wp_json_encode( $config ) . ");
-
-		function testModal{$modal_id}() {
-			console.log('🧪 TESTING modal {$modal_id}');
-			const modalElement = document.getElementById('ewm-modal-{$modal_id}');
-			if (modalElement) {
-				console.log('✅ Modal element found:', modalElement);
-				modalElement.style.display = 'flex';
-				modalElement.classList.add('ewm-modal-visible');
-			} else {
-				console.error('❌ Modal element not found: ewm-modal-{$modal_id}');
-			}
-		}
-		</script>";
+	   window.ewm_modal_configs.push(" . wp_json_encode( $config ) . ");
+	   </script>";
 
 		return $html_output;
 	}

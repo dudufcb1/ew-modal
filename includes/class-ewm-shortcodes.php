@@ -280,97 +280,74 @@ class EWM_Shortcodes {
 	 * Verificar si se puede mostrar el modal
 	 */
 	private function can_display_modal( $modal_id ) {
-		error_log( "[EWM CAN_DISPLAY DEBUG] Checking modal {$modal_id}" );
 
-		// USAR CAMPOS SEPARADOS ACTUALES: Obtener configuración completa
-		$modal_config = $this->get_current_modal_config( $modal_id );
-		$display_rules = $modal_config['display_rules'];
-
-		error_log( "[EWM CAN_DISPLAY DEBUG] Display rules: " . wp_json_encode( $display_rules ) );
+	   // USAR CAMPOS SEPARADOS ACTUALES: Obtener configuración completa
+	   $modal_config = $this->get_current_modal_config( $modal_id );
+	   $display_rules = $modal_config['display_rules'];
 		
 
-		// Si no hay reglas, permitir siempre.
-		if ( empty( $display_rules ) ) {
-			
-			return true;
-		}
+	   // Si no hay reglas, permitir siempre.
+	   if ( empty( $display_rules ) ) {
+			   error_log( "[EWM MODAL DECISION] Modal $modal_id: ALLOW (no display rules)" );
+			   return true;
+	   }
 
-		// --- 1. VALIDACIÓN DE PÁGINAS ---
-		if ( ! empty( $display_rules['pages'] ) ) {
-			$current_page_id = get_queried_object_id();
-			
+	   // --- 1. VALIDACIÓN DE PÁGINAS ---
+	   if ( ! empty( $display_rules['pages'] ) ) {
+		   $current_page_id = get_queried_object_id();
+		   $map_fn = [ 'EWM_Meta_Fields', 'map_special_page_value_to_id' ];
+		   $include_ids = array_filter( array_map( $map_fn, $display_rules['pages']['include'] ?? array() ), function($v){return $v !== null;});
+		   $exclude_ids = array_filter( array_map( $map_fn, $display_rules['pages']['exclude'] ?? array() ), function($v){return $v !== null;});
+		   if ( ! empty( $exclude_ids ) && in_array( $current_page_id, $exclude_ids ) ) {
+			   error_log( "[EWM MODAL DECISION] Modal $modal_id: BLOCK (page $current_page_id in exclude list)" );
+			   return false;
+		   }
+		   if ( ! in_array( -1, $include_ids ) && ! empty( $include_ids ) && ! in_array( $current_page_id, $include_ids ) ) {
+			   error_log( "[EWM MODAL DECISION] Modal $modal_id: BLOCK (page $current_page_id not in include list)" );
+			   return false;
+		   }
+	   }
 
-			// Páginas excluidas
-			if ( ! empty( $display_rules['pages']['exclude'] ) && in_array( $current_page_id, $display_rules['pages']['exclude'] ) ) {
-				
-				return false;
-			}
+	   // --- 2. VALIDACIÓN DE ROLES DE USUARIO ---
+	   if ( ! empty( $display_rules['user_roles'] ) ) {
+		   $user       = wp_get_current_user();
+		   $user_roles = ! empty( $user->roles ) ? $user->roles : array( 'guest' );
+		   if ( ! in_array( 'all', $display_rules['user_roles'] ) && count( array_intersect( $user_roles, $display_rules['user_roles'] ) ) === 0 ) {
+			   error_log( "[EWM MODAL DECISION] Modal $modal_id: BLOCK (user role not allowed)" );
+			   return false;
+		   }
+	   }
 
-			// Páginas incluidas (si está definido y no está vacío, solo mostrar en esas páginas)
-			if ( ! empty( $display_rules['pages']['include'] ) && ! in_array( $current_page_id, $display_rules['pages']['include'] ) ) {
-				
-				return false;
-			}
-			
-		}
-
-		// --- 2. VALIDACIÓN DE ROLES DE USUARIO ---
-		if ( ! empty( $display_rules['user_roles'] ) ) {
-			$user       = wp_get_current_user();
-			$user_roles = ! empty( $user->roles ) ? $user->roles : array( 'guest' );
-			
-			
-
-			if ( count( array_intersect( $user_roles, $display_rules['user_roles'] ) ) === 0 ) {
-				
-				return false;
-			}
-			
-		}
-
-		// --- 3. VALIDACIÓN DE DISPOSITIVOS ---
-		if ( ! empty( $display_rules['devices'] ) ) {
-			$device = $this->detect_device();
-			$devices_config = $display_rules['devices'];
-
-			error_log( "[EWM DEVICE DEBUG] Current device: {$device}, Config: " . wp_json_encode( $devices_config ) );
-
-			// Si hay configuración específica para el dispositivo y está explícitamente en false, bloquear
-			if ( isset( $devices_config[ $device ] ) && $devices_config[ $device ] === false ) {
-				// PERO: Si TODOS los dispositivos están en false, permitir (configuración por defecto)
-				$all_devices_false = ( $devices_config['desktop'] === false &&
-									   $devices_config['tablet'] === false &&
-									   $devices_config['mobile'] === false );
-
-				if ( ! $all_devices_false ) {
-					error_log( "[EWM DEVICE DEBUG] Device {$device} blocked by specific config" );
-					return false;
-				} else {
-					error_log( "[EWM DEVICE DEBUG] All devices false, allowing by default" );
-				}
-			}
-
-		}
+	   // --- 3. VALIDACIÓN DE DISPOSITIVOS ---
+	   if ( ! empty( $display_rules['devices'] ) ) {
+		   $device = $this->detect_device();
+		   $devices_config = $display_rules['devices'];
+		   if ( isset( $devices_config[ $device ] ) && $devices_config[ $device ] === false ) {
+			   $all_devices_false = ( $devices_config['desktop'] === false &&
+									  $devices_config['tablet'] === false &&
+									  $devices_config['mobile'] === false );
+			   if ( ! $all_devices_false ) {
+				   error_log( "[EWM MODAL DECISION] Modal $modal_id: BLOCK (device $device not allowed)" );
+				   return false;
+			   }
+		   }
+	   }
 
 		// --- 4. VALIDACIÓN DE FRECUENCIA CON TRANSIENTS ---
-		$frequency_config = $this->get_modal_frequency_config( $modal_id );
-		
-		// Si es tipo 'always', permitir siempre
-		if ( $frequency_config['type'] === 'always' ) {
-			return true;
-		}
-		
-		// Validar límite de frecuencia usando transients
-		$transient_key = $this->get_modal_transient_key( $modal_id );
-		$view_count = intval( get_transient( $transient_key ) ?: 0 );
-		$limit = intval( $frequency_config['limit'] ?? 1 );
-		
-		// Si ya se alcanzó el límite, no mostrar
-		if ( $view_count >= $limit ) {
-			return false;
-		}
-		
-		return true;
+	   $frequency_config = $this->get_modal_frequency_config( $modal_id );
+	   if ( $frequency_config['type'] === 'always' ) {
+		   error_log( "[EWM MODAL DECISION] Modal $modal_id: ALLOW (frequency always)" );
+		   return true;
+	   }
+	   $transient_key = $this->get_modal_transient_key( $modal_id );
+	   $view_count = intval( get_transient( $transient_key ) ?: 0 );
+	   $limit = intval( $frequency_config['limit'] ?? 1 );
+	   if ( $view_count >= $limit ) {
+		   error_log( "[EWM MODAL DECISION] Modal $modal_id: BLOCK (frequency limit reached: $view_count/$limit)" );
+		   return false;
+	   }
+	   error_log( "[EWM MODAL DECISION] Modal $modal_id: ALLOW (all checks passed)" );
+	   return true;
 	}
 
 	/**
