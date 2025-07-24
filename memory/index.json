@@ -258,5 +258,18 @@
     "rollback_from": null,
     "last_modified_by": "augment_agent",
     "title": "Leer INTEGRACION-WC-CTA-RESUMEN.md y crear una memoria estructurada del proceso ..."
+  },
+  "WC_BUILDER_INTEGRATION": {
+    "snapshot_id": "9c6b95da-6f08-48b6-a59f-e08ae64167a3",
+    "task_id": "WC_BUILDER_INTEGRATION",
+    "revision": 2,
+    "status": "doing",
+    "group_id": "planes_pendientes",
+    "can_agent_set_done": true,
+    "timestamp": "2025-07-24T19:36:13.349153Z",
+    "rolled_back": false,
+    "rollback_from": null,
+    "last_modified_by": "augment_agent",
+    "title": "Modificar el builder para integrar la funcionalidad de WooCommerce, agregando un..."
   }
 }

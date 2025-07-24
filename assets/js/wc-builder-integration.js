@@ -314,6 +314,13 @@
         if ($('#wc-integration-enabled').length > 0) {
             if (typeof ewmModal !== 'undefined') {
                 window.EWMWCBuilderIntegration = new EWMWCBuilderIntegration();
+
+                // Inicializar estado basado en checkbox actual
+                const isEnabled = $('#wc-integration-enabled').is(':checked');
+                if (isEnabled) {
+                    $('#wc-integration-settings').show();
+                    window.EWMWCBuilderIntegration.loadCoupons();
+                }
             } else {
                 console.warn('EWM WC Builder: ewmModal not available, WooCommerce integration disabled');
             }

@@ -35,6 +35,9 @@
                 this.loadModalData();
             }
 
+            // Inicializar estado de WooCommerce
+            this.initWCIntegration();
+
             console.log('EWM Modal Admin: Initialized successfully');
         },
 
@@ -59,6 +62,12 @@
 
             // Eliminar paso
             $(document).on('click', '.ewm-remove-step', this.removeStep.bind(this));
+
+            // WooCommerce integration toggle
+            $(document).on('change', '#wc-integration-enabled', this.toggleWCIntegration.bind(this));
+
+            // WooCommerce timer toggle
+            $(document).on('change', '#wc-timer-enabled', this.toggleWCTimer.bind(this));
         },
 
         /**
@@ -401,8 +410,26 @@
          * Recopilar datos de WooCommerce
          */
         collectWCData: function() {
+            const enabled = $('#wc-integration-enabled').is(':checked');
+
+            if (!enabled) {
+                return { enabled: false };
+            }
+
             return {
-                enabled: $('#enable-woocommerce').is(':checked')
+                enabled: true,
+                discount_code: $('#wc-coupon-select').val(),
+                wc_promotion: {
+                    title: $('#wc-promotion-title').val(),
+                    description: $('#wc-promotion-description').val(),
+                    cta_text: $('#wc-promotion-cta').val(),
+                    auto_apply: $('#wc-auto-apply').is(':checked'),
+                    show_restrictions: $('#wc-show-restrictions').is(':checked'),
+                    timer_config: {
+                        enabled: $('#wc-timer-enabled').is(':checked'),
+                        threshold_seconds: parseInt($('#wc-timer-threshold').val()) || 180
+                    }
+                }
             };
         },
 
@@ -574,6 +601,101 @@
             e.preventDefault();
             console.log('EWM Modal Admin: Remove step clicked');
             // Implementar lógica para eliminar paso
+        },
+
+        /**
+         * Inicializar estado de WooCommerce
+         */
+        initWCIntegration: function() {
+            // Verificar estado inicial del checkbox
+            const isEnabled = $('#wc-integration-enabled').is(':checked');
+
+            if (isEnabled) {
+                // Mostrar pestaña y configuraciones de WooCommerce
+                $('#woocommerce-tab').show();
+                $('#wc-integration-settings').show();
+
+                // Ocultar otras pestañas
+                $('.non-wc-tab').hide();
+
+                // Cargar cupones si está disponible la integración
+                if (window.EWMWCBuilderIntegration) {
+                    window.EWMWCBuilderIntegration.loadCoupons();
+                }
+            } else {
+                // Estado por defecto: mostrar todas las pestañas excepto WooCommerce
+                $('#woocommerce-tab').hide();
+                $('#wc-integration-settings').hide();
+                $('.non-wc-tab').show();
+            }
+
+            // Inicializar estado del timer
+            const timerEnabled = $('#wc-timer-enabled').is(':checked');
+            if (timerEnabled) {
+                $('#wc-timer-settings').show();
+            } else {
+                $('#wc-timer-settings').hide();
+            }
+        },
+
+        /**
+         * Toggle WooCommerce integration
+         */
+        toggleWCIntegration: function(e) {
+            const enabled = $(e.target).is(':checked');
+            const $wcTab = $('#woocommerce-tab');
+            const $wcPane = $('#woocommerce');
+            const $wcSettings = $('#wc-integration-settings');
+            const $nonWcTabs = $('.non-wc-tab');
+
+            if (enabled) {
+                // Mostrar pestaña y configuraciones de WooCommerce
+                $wcTab.show();
+                $wcSettings.slideDown(300);
+
+                // Ocultar otras pestañas
+                $nonWcTabs.hide();
+
+                // Cambiar a la pestaña WooCommerce
+                $('.ewm-tabs-nav a').removeClass('active');
+                $('.ewm-tab-pane').removeClass('active').hide();
+                $wcTab.find('a').addClass('active');
+                $wcPane.addClass('active').show();
+
+                // Cargar cupones si está disponible la integración
+                if (window.EWMWCBuilderIntegration) {
+                    window.EWMWCBuilderIntegration.loadCoupons();
+                }
+            } else {
+                // Ocultar pestaña y configuraciones de WooCommerce
+                $wcTab.hide();
+                $wcSettings.slideUp(300);
+
+                // Mostrar otras pestañas
+                $nonWcTabs.show();
+
+                // Volver a la pestaña General si estamos en WooCommerce
+                if ($wcPane.hasClass('active')) {
+                    $('.ewm-tabs-nav a').removeClass('active');
+                    $('.ewm-tab-pane').removeClass('active').hide();
+                    $('.ewm-tabs-nav a[href="#general"]').addClass('active');
+                    $('#general').addClass('active').show();
+                }
+            }
+        },
+
+        /**
+         * Toggle WooCommerce timer settings
+         */
+        toggleWCTimer: function(e) {
+            const enabled = $(e.target).is(':checked');
+            const $timerSettings = $('#wc-timer-settings');
+
+            if (enabled) {
+                $timerSettings.slideDown(300);
+            } else {
+                $timerSettings.slideUp(300);
+            }
         },
 
         showShortcode: function(modalId) {

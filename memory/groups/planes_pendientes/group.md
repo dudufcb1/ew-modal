@@ -17,5 +17,7 @@ Registrar y dar seguimiento a los planes y tareas pendientes del plugin ewm-moda
 | Revision | Task ID | Autor | Fecha | Estado |
 |----------|---------|-------|-------|--------|
 | 1 | INICIAL | augment_agent | 2025-07-24T19:00:23.470198Z | pending |
+| 1 | WC_BUILDER_INTEGRATION | augment_agent | 2025-07-24 | doing |
+| 2 | WC_BUILDER_INTEGRATION | augment_agent | 2025-07-24 | doing |
 
-*Última actualización: 2025-07-24T19:00:23.470198Z*
+*Última actualización: 2025-07-24T19:36:13.367480Z*

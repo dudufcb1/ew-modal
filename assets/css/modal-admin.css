@@ -829,6 +829,75 @@ select.ewm-form-control {
     margin-bottom: 15px;
 }
 
+/* WooCommerce Integration Styles */
+.ewm-wc-integration-settings {
+    background: #f9f9f9;
+    border: 1px solid var(--ewm-border);
+    border-radius: var(--ewm-border-radius);
+    padding: 20px;
+    margin-top: 15px;
+}
+
+.ewm-wc-integration-settings h3 {
+    color: var(--ewm-primary);
+    border-bottom: 2px solid var(--ewm-primary);
+    padding-bottom: 8px;
+    margin-bottom: 15px;
+    margin-top: 25px;
+}
+
+.ewm-wc-integration-settings h3:first-of-type {
+    margin-top: 15px;
+}
+
+#wc-integration-settings {
+    transition: var(--ewm-transition);
+}
+
+#wc-timer-settings {
+    margin-left: 25px;
+    padding: 15px;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: var(--ewm-border-radius);
+    margin-top: 10px;
+    transition: var(--ewm-transition);
+}
+
+/* WooCommerce tab styling */
+#woocommerce-tab {
+    transition: var(--ewm-transition);
+}
+
+#woocommerce-tab a {
+    background: linear-gradient(135deg, #96588a 0%, #7b4397 100%);
+    color: white !important;
+    border-radius: var(--ewm-border-radius) var(--ewm-border-radius) 0 0;
+}
+
+#woocommerce-tab a:hover {
+    background: linear-gradient(135deg, #7b4397 0%, #96588a 100%);
+}
+
+#woocommerce-tab a.active {
+    background: linear-gradient(135deg, #96588a 0%, #7b4397 100%);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Coupon select styling */
+#wc-coupon-select {
+    min-height: 40px;
+    background: #fff;
+    border: 2px solid var(--ewm-border);
+    border-radius: var(--ewm-border-radius);
+    transition: var(--ewm-transition);
+}
+
+#wc-coupon-select:focus {
+    border-color: var(--ewm-primary);
+    box-shadow: 0 0 0 2px rgba(0, 115, 170, 0.1);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .ewm-form-row {
@@ -839,5 +908,13 @@ select.ewm-form-control {
     .ewm-field-header {
         flex-wrap: wrap;
         gap: 10px;
+    }
+
+    .ewm-wc-integration-settings {
+        padding: 15px;
+    }
+
+    #wc-timer-settings {
+        margin-left: 0;
     }
 }

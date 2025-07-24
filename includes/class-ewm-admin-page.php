@@ -225,6 +225,15 @@ class EWM_Admin_Page {
 				EWM_VERSION . '-debug-' . time(), // Forzar recarga para debugging
 				true
 			);
+
+			// Encolar WooCommerce builder integration
+			wp_enqueue_script(
+				'ewm-wc-builder-integration',
+				EWM_PLUGIN_URL . 'assets/js/wc-builder-integration.js',
+				array('jquery', 'ewm-admin-scripts'),
+				EWM_VERSION . '-debug-' . time(), // Forzar recarga para debugging
+				true
+			);
 		}
 
 		// Variables para JavaScript
@@ -313,11 +322,12 @@ class EWM_Admin_Page {
 
 				<ul class="ewm-tabs-nav">
 					<li><a href="#general" class="active"><?php _e('General', 'ewm-modal-cta'); ?></a></li>
-					<li><a href="#pasos"><?php _e('Pasos', 'ewm-modal-cta'); ?></a></li>
-					<li><a href="#diseno"><?php _e('Diseño', 'ewm-modal-cta'); ?></a></li>
-					<li><a href="#triggers"><?php _e('Triggers', 'ewm-modal-cta'); ?></a></li>
-					<li><a href="#avanzado"><?php _e('Avanzado', 'ewm-modal-cta'); ?></a></li>
-					<li><a href="#preview"><?php _e('Vista Previa', 'ewm-modal-cta'); ?></a></li>
+					<li><a href="#woocommerce" id="woocommerce-tab" style="display: none;"><?php _e('WooCommerce', 'ewm-modal-cta'); ?></a></li>
+					<li><a href="#pasos" class="non-wc-tab"><?php _e('Pasos', 'ewm-modal-cta'); ?></a></li>
+					<li><a href="#diseno" class="non-wc-tab"><?php _e('Diseño', 'ewm-modal-cta'); ?></a></li>
+					<li><a href="#triggers" class="non-wc-tab"><?php _e('Triggers', 'ewm-modal-cta'); ?></a></li>
+					<li><a href="#avanzado" class="non-wc-tab"><?php _e('Avanzado', 'ewm-modal-cta'); ?></a></li>
+					<li><a href="#preview" class="non-wc-tab"><?php _e('Vista Previa', 'ewm-modal-cta'); ?></a></li>
 				</ul>
 
 				<form id="ewm-modal-form" method="post">
@@ -370,9 +380,9 @@ class EWM_Admin_Page {
 
 							<div class="ewm-form-group">
 								<div class="ewm-checkbox">
-									<input type="checkbox" id="enable-woocommerce" name="wc_integration_enabled" value="1"
+									<input type="checkbox" id="wc-integration-enabled" name="wc_integration_enabled" value="1"
 										<?php checked($modal_data['wc_integration']['enabled'] ?? false); ?>>
-									<label for="enable-woocommerce"><?php _e('Integración WooCommerce', 'ewm-modal-cta'); ?></label>
+									<label for="wc-integration-enabled"><?php _e('Integración WooCommerce', 'ewm-modal-cta'); ?></label>
 								</div>
 								<p class="description"><?php _e('Habilita funciones especiales para WooCommerce como cupones y abandono de carrito', 'ewm-modal-cta'); ?></p>
 							</div>
@@ -530,6 +540,94 @@ class EWM_Admin_Page {
 									?>
 								</select>
 								<p class="description"><?php _e('Mantén Ctrl/Cmd presionado para seleccionar múltiples roles', 'ewm-modal-cta'); ?></p>
+							</div>
+						</div>
+					</div>
+
+					<!-- Pestaña WooCommerce -->
+					<div id="woocommerce" class="ewm-tab-pane" style="display: none;">
+						<h2><?php _e('Configuración WooCommerce', 'ewm-modal-cta'); ?></h2>
+
+						<div class="ewm-wc-integration-settings">
+							<div class="ewm-form-group">
+								<div class="ewm-checkbox">
+									<input type="checkbox" id="wc-integration-enabled" name="wc_integration_enabled" value="1"
+										<?php checked($modal_data['wc_integration']['enabled'] ?? false); ?>>
+									<label for="wc-integration-enabled"><?php _e('Habilitar Integración WooCommerce', 'ewm-modal-cta'); ?></label>
+								</div>
+								<p class="description"><?php _e('Activa las funciones especiales de WooCommerce para este modal', 'ewm-modal-cta'); ?></p>
+							</div>
+
+							<div id="wc-integration-settings" style="display: none;">
+								<h3><?php _e('Selección de Cupón', 'ewm-modal-cta'); ?></h3>
+
+								<div class="ewm-form-group">
+									<label for="wc-coupon-select"><?php _e('Cupón de Descuento', 'ewm-modal-cta'); ?></label>
+									<select id="wc-coupon-select" name="wc_coupon_code" class="ewm-form-control">
+										<option value=""><?php _e('Cargando cupones...', 'ewm-modal-cta'); ?></option>
+									</select>
+									<p class="description"><?php _e('Selecciona el cupón que se aplicará cuando el usuario interactúe con el modal', 'ewm-modal-cta'); ?></p>
+								</div>
+
+								<h3><?php _e('Configuración de Promoción', 'ewm-modal-cta'); ?></h3>
+
+								<div class="ewm-form-group">
+									<label for="wc-promotion-title"><?php _e('Título de la Promoción', 'ewm-modal-cta'); ?></label>
+									<input type="text" id="wc-promotion-title" name="wc_promotion_title" class="ewm-form-control"
+										value="<?php echo esc_attr($modal_data['wc_integration']['wc_promotion']['title'] ?? ''); ?>"
+										placeholder="<?php _e('¡Oferta Especial!', 'ewm-modal-cta'); ?>">
+								</div>
+
+								<div class="ewm-form-group">
+									<label for="wc-promotion-description"><?php _e('Descripción de la Promoción', 'ewm-modal-cta'); ?></label>
+									<textarea id="wc-promotion-description" name="wc_promotion_description" class="ewm-form-control" rows="3"
+										placeholder="<?php _e('Obtén un descuento especial en tu compra...', 'ewm-modal-cta'); ?>"><?php echo esc_textarea($modal_data['wc_integration']['wc_promotion']['description'] ?? ''); ?></textarea>
+								</div>
+
+								<div class="ewm-form-group">
+									<label for="wc-promotion-cta"><?php _e('Texto del Botón CTA', 'ewm-modal-cta'); ?></label>
+									<input type="text" id="wc-promotion-cta" name="wc_promotion_cta" class="ewm-form-control"
+										value="<?php echo esc_attr($modal_data['wc_integration']['wc_promotion']['cta_text'] ?? ''); ?>"
+										placeholder="<?php _e('Aplicar Cupón Ahora', 'ewm-modal-cta'); ?>">
+								</div>
+
+								<h3><?php _e('Opciones Avanzadas', 'ewm-modal-cta'); ?></h3>
+
+								<div class="ewm-form-group">
+									<div class="ewm-checkbox">
+										<input type="checkbox" id="wc-auto-apply" name="wc_auto_apply" value="1"
+											<?php checked($modal_data['wc_integration']['wc_promotion']['auto_apply'] ?? false); ?>>
+										<label for="wc-auto-apply"><?php _e('Aplicar Cupón Automáticamente', 'ewm-modal-cta'); ?></label>
+									</div>
+									<p class="description"><?php _e('El cupón se aplicará automáticamente al carrito cuando el usuario haga clic', 'ewm-modal-cta'); ?></p>
+								</div>
+
+								<div class="ewm-form-group">
+									<div class="ewm-checkbox">
+										<input type="checkbox" id="wc-show-restrictions" name="wc_show_restrictions" value="1"
+											<?php checked($modal_data['wc_integration']['wc_promotion']['show_restrictions'] ?? false); ?>>
+										<label for="wc-show-restrictions"><?php _e('Mostrar Restricciones del Cupón', 'ewm-modal-cta'); ?></label>
+									</div>
+									<p class="description"><?php _e('Muestra información sobre las restricciones del cupón (monto mínimo, productos, etc.)', 'ewm-modal-cta'); ?></p>
+								</div>
+
+								<div class="ewm-form-group">
+									<div class="ewm-checkbox">
+										<input type="checkbox" id="wc-timer-enabled" name="wc_timer_enabled" value="1"
+											<?php checked($modal_data['wc_integration']['wc_promotion']['timer_config']['enabled'] ?? false); ?>>
+										<label for="wc-timer-enabled"><?php _e('Habilitar Temporizador de Urgencia', 'ewm-modal-cta'); ?></label>
+									</div>
+									<p class="description"><?php _e('Muestra un temporizador para crear sensación de urgencia', 'ewm-modal-cta'); ?></p>
+								</div>
+
+								<div class="ewm-form-group" id="wc-timer-settings" style="display: none;">
+									<label for="wc-timer-threshold"><?php _e('Duración del Temporizador (segundos)', 'ewm-modal-cta'); ?></label>
+									<input type="number" id="wc-timer-threshold" name="wc_timer_threshold" class="ewm-form-control small"
+										min="30" max="3600" step="30"
+										value="<?php echo esc_attr($modal_data['wc_integration']['wc_promotion']['timer_config']['threshold_seconds'] ?? 180); ?>"
+										placeholder="180">
+									<p class="description"><?php _e('Tiempo en segundos (mínimo 30, máximo 3600)', 'ewm-modal-cta'); ?></p>
+								</div>
 							</div>
 						</div>
 					</div>
