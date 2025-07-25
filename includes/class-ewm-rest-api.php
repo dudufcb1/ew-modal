@@ -191,6 +191,47 @@ class EWM_REST_API {
 			)
 		);
 
+		// Endpoint para modales activos (Modal Injection System)
+		register_rest_route(
+			self::NAMESPACE,
+			'/modals/active',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'get_active_modals_endpoint' ),
+				'permission_callback' => '__return_true', // Público para uso en frontend
+				'args'                => array(
+					'page_type' => array(
+						'description' => 'Tipo de página (product, shop, cart, home)',
+						'type'        => 'string',
+						'required'    => false,
+						'sanitize_callback' => 'sanitize_text_field',
+						'validate_callback' => function( $param ) {
+							$valid_types = array( 'product', 'shop', 'cart', 'home', 'category', 'tag' );
+							return in_array( $param, $valid_types, true );
+						},
+					),
+					'product_id' => array(
+						'description' => 'ID del producto actual (opcional)',
+						'type'        => 'integer',
+						'required'    => false,
+						'sanitize_callback' => 'absint',
+					),
+					'user_agent' => array(
+						'description' => 'User agent para detección de dispositivo',
+						'type'        => 'string',
+						'required'    => false,
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+					'context' => array(
+						'description' => 'Contexto adicional en formato JSON',
+						'type'        => 'string',
+						'required'    => false,
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+				),
+			)
+		);
+
 		// Verificar que las rutas se registraron correctamente
 		$registered_routes = rest_get_server()->get_routes();
 		$our_routes        = array_filter(
@@ -771,6 +812,352 @@ class EWM_REST_API {
 				array( 'status' => 500 )
 			);
 		}
+	}
+
+	/**
+	 * Endpoint para obtener modales activos (Modal Injection System)
+	 *
+	 * @param WP_REST_Request $request La petición REST.
+	 * @return WP_REST_Response|WP_Error Respuesta con modales activos o error.
+	 */
+	public function get_active_modals_endpoint( $request ) {
+		$start_time = microtime( true );
+
+		try {
+			// Obtener parámetros de la petición
+			$page_type  = $request->get_param( 'page_type' ) ?: 'general';
+			$product_id = $request->get_param( 'product_id' );
+			$user_agent = $request->get_param( 'user_agent' ) ?: '';
+			$context    = $request->get_param( 'context' ) ?: '{}';
+
+			// Validar y decodificar contexto adicional
+			$context_data = array();
+			if ( ! empty( $context ) && $context !== '{}' ) {
+				$context_data = json_decode( $context, true );
+				if ( json_last_error() !== JSON_ERROR_NONE ) {
+					$context_data = array();
+				}
+			}
+
+			// Obtener todos los modales publicados
+			$modals = $this->get_all_published_modals();
+
+			// Aplicar filtros inteligentes
+			$filtered_modals = $this->apply_modal_filters( $modals, array(
+				'page_type'    => $page_type,
+				'product_id'   => $product_id,
+				'user_agent'   => $user_agent,
+				'context_data' => $context_data,
+			) );
+
+			// Preparar respuesta
+			$response_data = array(
+				'success' => true,
+				'data'    => $filtered_modals,
+				'meta'    => array(
+					'total'          => count( $modals ),
+					'filtered_count' => count( $filtered_modals ),
+					'filtered'       => count( $filtered_modals ) !== count( $modals ),
+					'cache_hit'      => false, // TODO: Implementar caché en Fase 1.3
+					'page_type'      => $page_type,
+					'execution_time' => microtime( true ) - $start_time,
+				),
+			);
+
+			return rest_ensure_response( $response_data );
+
+		} catch ( Exception $e ) {
+			error_log( 'EWM Active Modals Error: ' . $e->getMessage() );
+			
+			return new WP_Error(
+				'ewm_active_modals_error',
+				'Failed to retrieve active modals: ' . $e->getMessage(),
+				array( 'status' => 500 )
+			);
+		}
+	}
+
+	/**
+	 * Obtener todos los modales publicados
+	 *
+	 * @return array Array de modales con su configuración.
+	 */
+	private function get_all_published_modals() {
+		$args = array(
+			'post_type'      => 'ew_modal',
+			'post_status'    => 'publish',
+			'posts_per_page' => -1, // Obtener todos los modales
+			'meta_query'     => array(
+				array(
+					'key'     => 'ewm_modal_config',
+					'compare' => 'EXISTS',
+				),
+			),
+		);
+
+		$query  = new WP_Query( $args );
+		$modals = array();
+
+		foreach ( $query->posts as $post ) {
+			$config_json = get_post_meta( $post->ID, 'ewm_modal_config', true );
+			
+			if ( ! empty( $config_json ) ) {
+				$config = json_decode( $config_json, true );
+				
+				if ( json_last_error() === JSON_ERROR_NONE && $config ) {
+					$modals[] = array(
+						'id'           => $post->ID,
+						'title'        => $post->post_title,
+						'config'       => $config,
+						'created_date' => $post->post_date,
+						'modified_date'=> $post->post_modified,
+					);
+				}
+			}
+		}
+
+		return $modals;
+	}
+
+	/**
+	 * Aplicar filtros inteligentes a los modales
+	 *
+	 * @param array $modals Array de modales.
+	 * @param array $filters Filtros a aplicar.
+	 * @return array Modales filtrados.
+	 */
+	private function apply_modal_filters( $modals, $filters ) {
+		$filtered_modals = $modals;
+
+		// Filtro por tipo de página
+		$filtered_modals = $this->filter_modals_by_page_context( $filtered_modals, $filters );
+
+		// Filtro por dispositivo
+		$filtered_modals = $this->filter_modals_by_device( $filtered_modals, $filters );
+
+		// Filtro por usuario (roles, login status)
+		$filtered_modals = $this->filter_modals_by_user_role( $filtered_modals, $filters );
+
+		// Filtro por contexto WooCommerce
+		$filtered_modals = $this->filter_modals_by_wc_context( $filtered_modals, $filters );
+
+		return $filtered_modals;
+	}
+
+	/**
+	 * Filtrar modales por contexto de página
+	 *
+	 * @param array $modals Array de modales.
+	 * @param array $context Contexto de filtrado.
+	 * @return array Modales filtrados.
+	 */
+	private function filter_modals_by_page_context( $modals, $context ) {
+		$page_type = $context['page_type'];
+		
+		return array_filter( $modals, function( $modal ) use ( $page_type ) {
+			$config = $modal['config'];
+			
+			// Si no hay reglas de display, mostrar en todas las páginas
+			if ( ! isset( $config['display_rules'] ) || ! is_array( $config['display_rules'] ) ) {
+				return true;
+			}
+
+			$display_rules = $config['display_rules'];
+			
+			// Verificar reglas de páginas
+			if ( isset( $display_rules['pages'] ) && is_array( $display_rules['pages'] ) ) {
+				$allowed_pages = $display_rules['pages'];
+				
+				// Si 'all' está en las páginas permitidas, mostrar en todas
+				if ( in_array( 'all', $allowed_pages, true ) ) {
+					return true;
+				}
+				
+				// Verificar si la página actual está permitida
+				return in_array( $page_type, $allowed_pages, true );
+			}
+
+			// Por defecto, mostrar el modal si no hay reglas específicas
+			return true;
+		} );
+	}
+
+	/**
+	 * Filtrar modales por dispositivo
+	 *
+	 * @param array $modals Array de modales.
+	 * @param array $context Contexto de filtrado.
+	 * @return array Modales filtrados.
+	 */
+	private function filter_modals_by_device( $modals, $context ) {
+		$user_agent = $context['user_agent'];
+		$device_type = $this->detect_device_type( $user_agent );
+		
+		return array_filter( $modals, function( $modal ) use ( $device_type ) {
+			$config = $modal['config'];
+			
+			// Si no hay reglas de dispositivo, mostrar en todos
+			if ( ! isset( $config['display_rules']['devices'] ) ) {
+				return true;
+			}
+
+			$allowed_devices = $config['display_rules']['devices'];
+			
+			// Si 'all' está en los dispositivos, mostrar en todos
+			if ( in_array( 'all', $allowed_devices, true ) ) {
+				return true;
+			}
+			
+			// Verificar si el dispositivo actual está permitido
+			return in_array( $device_type, $allowed_devices, true );
+		} );
+	}
+
+	/**
+	 * Filtrar modales por rol de usuario
+	 *
+	 * @param array $modals Array de modales.
+	 * @param array $context Contexto de filtrado.
+	 * @return array Modales filtrados.
+	 */
+	private function filter_modals_by_user_role( $modals, $context ) {
+		$current_user = wp_get_current_user();
+		$user_roles = $current_user->roles;
+		$is_logged_in = is_user_logged_in();
+		
+		return array_filter( $modals, function( $modal ) use ( $user_roles, $is_logged_in ) {
+			$config = $modal['config'];
+			
+			// Si no hay reglas de usuario, mostrar para todos
+			if ( ! isset( $config['display_rules']['user_roles'] ) ) {
+				return true;
+			}
+
+			$allowed_roles = $config['display_rules']['user_roles'];
+			
+			// Si 'all' está permitido, mostrar para todos
+			if ( in_array( 'all', $allowed_roles, true ) ) {
+				return true;
+			}
+			
+			// Verificar guest users
+			if ( ! $is_logged_in && in_array( 'guest', $allowed_roles, true ) ) {
+				return true;
+			}
+			
+			// Verificar roles del usuario logueado
+			if ( $is_logged_in && ! empty( $user_roles ) ) {
+				return ! empty( array_intersect( $user_roles, $allowed_roles ) );
+			}
+			
+			return false;
+		} );
+	}
+
+	/**
+	 * Filtrar modales por contexto de WooCommerce
+	 *
+	 * @param array $modals Array de modales.
+	 * @param array $context Contexto de filtrado.
+	 * @return array Modales filtrados.
+	 */
+	private function filter_modals_by_wc_context( $modals, $context ) {
+		$product_id = $context['product_id'];
+		
+		// Si no hay WooCommerce o no es una página de producto, no filtrar
+		if ( ! class_exists( 'WooCommerce' ) || ! $product_id ) {
+			return $modals;
+		}
+		
+		$product = wc_get_product( $product_id );
+		if ( ! $product ) {
+			return $modals;
+		}
+		
+		return array_filter( $modals, function( $modal ) use ( $product, $product_id ) {
+			$config = $modal['config'];
+			
+			// Si WooCommerce no está habilitado en el modal, mostrar en todos los productos
+			if ( ! isset( $config['woocommerce']['enabled'] ) || ! $config['woocommerce']['enabled'] ) {
+				return true;
+			}
+
+			$wc_config = $config['woocommerce'];
+			
+			// Filtrar por IDs de productos específicos (CONEXIÓN PRINCIPAL)
+			if ( isset( $wc_config['product_ids'] ) && ! empty( $wc_config['product_ids'] ) ) {
+				$allowed_product_ids = array_map( 'intval', $wc_config['product_ids'] );
+				
+				// Si el producto actual no está en la lista permitida, NO mostrar
+				if ( ! in_array( $product_id, $allowed_product_ids, true ) ) {
+					return false;
+				}
+			}
+			
+			// Filtrar por categorías de producto (usando wc_rules si existe)
+			if ( isset( $config['wc_rules']['product_categories'] ) && ! empty( $config['wc_rules']['product_categories'] ) ) {
+				$product_categories = wp_get_post_terms( $product_id, 'product_cat', array( 'fields' => 'ids' ) );
+				$allowed_categories = $config['wc_rules']['product_categories'];
+				
+				if ( empty( array_intersect( $product_categories, $allowed_categories ) ) ) {
+					return false;
+				}
+			}
+			
+			// Filtrar por rango de precios (usando wc_rules si existe)
+			if ( isset( $config['wc_rules']['price_range'] ) ) {
+				$price_range = $config['wc_rules']['price_range'];
+				$product_price = floatval( $product->get_price() );
+				
+				if ( isset( $price_range['min'] ) && $product_price < floatval( $price_range['min'] ) ) {
+					return false;
+				}
+				
+				if ( isset( $price_range['max'] ) && $product_price > floatval( $price_range['max'] ) ) {
+					return false;
+				}
+			}
+			
+			return true;
+		} );
+	}
+
+	/**
+	 * Detectar tipo de dispositivo basado en User Agent
+	 *
+	 * @param string $user_agent User Agent string.
+	 * @return string Tipo de dispositivo: mobile, tablet, desktop.
+	 */
+	private function detect_device_type( $user_agent ) {
+		if ( empty( $user_agent ) ) {
+			return 'desktop';
+		}
+		
+		// Patrones para dispositivos móviles
+		$mobile_patterns = array(
+			'/Mobile|Android|iPhone|iPod|BlackBerry|Windows Phone/i',
+		);
+		
+		// Patrones para tablets
+		$tablet_patterns = array(
+			'/iPad|Android.*Tablet|Kindle|PlayBook|Nexus [0-9]/i',
+		);
+		
+		// Verificar tablets primero (más específico)
+		foreach ( $tablet_patterns as $pattern ) {
+			if ( preg_match( $pattern, $user_agent ) ) {
+				return 'tablet';
+			}
+		}
+		
+		// Verificar móviles
+		foreach ( $mobile_patterns as $pattern ) {
+			if ( preg_match( $pattern, $user_agent ) ) {
+				return 'mobile';
+			}
+		}
+		
+		return 'desktop';
 	}
 
 	// GUTENBERG ELIMINADO: Método de transformación removido

@@ -1,0 +1,109 @@
+{
+  "meta": {
+    "author": "augment_agent",
+    "can_agent_set_done": false,
+    "date": "2025-07-25T00:00:00Z",
+    "group_id": "GENERAL",
+    "project": "ewm-modal-cta",
+    "revision": 1,
+    "snapshot_id": "85efe07e-4091-4b23-b9c7-ed98db17711c",
+    "status": "todo",
+    "task_id": "IMPLEMENT_MODAL_INJECTION_SYSTEM",
+    "timestamp": "2025-07-25T06:28:52.906062Z",
+    "rolled_back": false,
+    "group_md": "groups/GENERAL/group.md"
+  },
+  "problem": {
+    "business_goal": "Implementar sistema de inyección automática de modales para mejorar conversión",
+    "constraints": [
+      "Seguir plan arquitectónico documentado",
+      "Preservar modal-admin.js intacto",
+      "Implementación incremental por fases",
+      "Testing en cada milestone"
+    ],
+    "user_request": "Implementar Modal Injection Engine siguiendo arquitectura ya diseñada, comenzando por Backend API Enhancement"
+  },
+  "schema_version": "2.0.0",
+  "scope": {
+    "components": [
+      "Backend API Enhancement",
+      "Modal Injection Engine",
+      "Behavior Tracking",
+      "Integration Layer"
+    ],
+    "files": [
+      "includes/class-ewm-rest-api.php",
+      "assets/js/wc-modal-injector.js",
+      "assets/js/wc-promotion-frontend.js"
+    ]
+  },
+  "solution": {
+    "current_phase": "Fase 1 - Backend API Enhancement",
+    "description": "Implementación secuencial del Modal Injection Engine siguiendo plan arquitectónico ya documentado",
+    "implementation_plan": {
+      "phase_1": {
+        "deliverables": [
+          "Endpoint /ewm/v1/modals/active",
+          "Filtros avanzados",
+          "Sistema caché",
+          "Testing performance"
+        ],
+        "files": [
+          "includes/class-ewm-rest-api.php"
+        ],
+        "status": "todo"
+      },
+      "phase_2": {
+        "deliverables": [
+          "wc-modal-injector.js",
+          "Context Detector",
+          "Rules Engine",
+          "Trigger integration"
+        ],
+        "files": [
+          "assets/js/wc-modal-injector.js"
+        ],
+        "status": "pending"
+      },
+      "phase_3": {
+        "deliverables": [
+          "User behavior tracking",
+          "Frequency management",
+          "LocalStorage"
+        ],
+        "status": "pending"
+      },
+      "phase_4": {
+        "deliverables": [
+          "Frontend integration",
+          "Cross-browser testing",
+          "Performance optimization"
+        ],
+        "status": "pending"
+      },
+      "phase_5": {
+        "deliverables": [
+          "Documentation",
+          "Final testing",
+          "Deployment prep"
+        ],
+        "status": "pending"
+      }
+    },
+    "reference_architecture": "MODAL_INJECTION_ARCHITECTURE_PLAN"
+  },
+  "validation": {
+    "success_criteria": [
+      "Endpoint funcional con filtros",
+      "No regresión en sistema existente",
+      "Performance optimizado",
+      "Código bien documentado"
+    ],
+    "test_scenarios": [
+      "API retorna modales activos correctamente",
+      "Filtros por página funcionan",
+      "Caché mejora performance",
+      "Sistema existente sigue funcionando"
+    ]
+  }
+}

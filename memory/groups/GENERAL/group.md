@@ -22,5 +22,11 @@ Por definir
 | 1 | FIX_FRONTEND_READING_CONSISTENCY_20250722 | augment_agent | 2025-07-22 | todo |
 | 2 | INVESTIGATE_FRONTEND_MODAL_561_20250722 | augment_agent | 2025-07-22 | done |
 | 1 | INTEGRACION_WC_CTA_RESUMEN | augment_agent | 2025-07-24 | info |
+| 1 | MODAL_INJECTION_ARCHITECTURE_PLAN | augment_agent | 2025-07-25 | done |
+| 1 | IMPLEMENT_MODAL_INJECTION_SYSTEM | augment_agent | 2025-07-25 | todo |
+| 1 | PHASE1_TASK1_1_ENDPOINT_ACTIVE_MODALS | augment_agent | 2025-07-25 | doing |
+| 2 | PHASE1_TASK1_1_ENDPOINT_ACTIVE_MODALS | augment_agent | 2025-07-25 | done |
+| 1 | MODAL_INJECTION_WC_FIX | augment_agent | 2025-07-25 | done |
+| 1 | CRITICAL_PHP_FATAL_ERROR_FIX | augment_agent | 2025-07-25 | done |
 
-*Última actualización: 2025-07-24T19:15:04.579110Z*
+*Última actualización: 2025-07-25T07:19:32.531120Z*

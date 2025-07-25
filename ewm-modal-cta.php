@@ -45,6 +45,16 @@ if ( is_admin() ) {
 	require_once EWM_PLUGIN_DIR . 'admin/class-ewm-testing-page.php';
 }
 
+// Incluir test del endpoint de modales activos (con verificación tardía de permisos)
+if ( is_admin() ) {
+	// Mover la verificación de permisos a un hook tardío para evitar el error de wp_get_current_user()
+	add_action( 'init', function() {
+		if ( current_user_can( 'manage_options' ) ) {
+			require_once EWM_PLUGIN_DIR . 'tests/test-active-modals-endpoint.php';
+		}
+	}, 10 );
+}
+
 /**
  * Initialize core components
  */

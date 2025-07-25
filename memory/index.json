@@ -297,5 +297,70 @@
     "rollback_from": null,
     "last_modified_by": "augment_agent",
     "title": "Integración completa de WooCommerce en el builder del modal CTA con funcionalida..."
+  },
+  "MODAL_INJECTION_ARCHITECTURE_PLAN": {
+    "snapshot_id": "7aea33a6-ff6d-4e38-8b82-fae7c5f92b22",
+    "task_id": "MODAL_INJECTION_ARCHITECTURE_PLAN",
+    "revision": 1,
+    "status": "done",
+    "group_id": "GENERAL",
+    "can_agent_set_done": true,
+    "timestamp": "2025-07-25T06:25:52.378385Z",
+    "rolled_back": false,
+    "rollback_from": null,
+    "last_modified_by": "augment_agent",
+    "title": "Completar sistema de modales WooCommerce con inyección automática inteligente en..."
+  },
+  "IMPLEMENT_MODAL_INJECTION_SYSTEM": {
+    "snapshot_id": "85efe07e-4091-4b23-b9c7-ed98db17711c",
+    "task_id": "IMPLEMENT_MODAL_INJECTION_SYSTEM",
+    "revision": 1,
+    "status": "todo",
+    "group_id": "GENERAL",
+    "can_agent_set_done": false,
+    "timestamp": "2025-07-25T06:28:52.906062Z",
+    "rolled_back": false,
+    "rollback_from": null,
+    "last_modified_by": "augment_agent",
+    "title": "Implementar Modal Injection Engine siguiendo arquitectura ya diseñada, comenzand..."
+  },
+  "PHASE1_TASK1_1_ENDPOINT_ACTIVE_MODALS": {
+    "snapshot_id": "66aabeaa-53ed-4f67-ac91-8f147aa17f60",
+    "task_id": "PHASE1_TASK1_1_ENDPOINT_ACTIVE_MODALS",
+    "revision": 2,
+    "status": "done",
+    "group_id": "GENERAL",
+    "can_agent_set_done": true,
+    "timestamp": "2025-07-25T06:46:17.080371Z",
+    "rolled_back": false,
+    "rollback_from": null,
+    "last_modified_by": "augment_agent",
+    "title": "✅ COMPLETADO - Implementar sistema de inyección automática de modales empezando ..."
+  },
+  "MODAL_INJECTION_WC_FIX": {
+    "snapshot_id": "d0153b64-c427-4515-9c77-42752b783f4a",
+    "task_id": "MODAL_INJECTION_WC_FIX",
+    "revision": 1,
+    "status": "done",
+    "group_id": "GENERAL",
+    "can_agent_set_done": true,
+    "timestamp": "2025-07-25T07:04:24.388552Z",
+    "rolled_back": false,
+    "rollback_from": null,
+    "last_modified_by": "augment_agent",
+    "title": "Corregir el filtrado WooCommerce que no funcionaba según el contrato real woocom..."
+  },
+  "CRITICAL_PHP_FATAL_ERROR_FIX": {
+    "snapshot_id": "d1a969dd-ab99-4416-9946-648c4db52718",
+    "task_id": "CRITICAL_PHP_FATAL_ERROR_FIX",
+    "revision": 1,
+    "status": "done",
+    "group_id": "GENERAL",
+    "can_agent_set_done": true,
+    "timestamp": "2025-07-25T07:19:32.519543Z",
+    "rolled_back": false,
+    "rollback_from": null,
+    "last_modified_by": "augment_agent",
+    "title": "Corregir error fatal crítico en ewm-modal-cta.php: 'Call to undefined function w..."
   }
 }

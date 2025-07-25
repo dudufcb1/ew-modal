@@ -1,0 +1,50 @@
+{
+  "meta": {
+    "author": "augment_agent",
+    "can_agent_set_done": true,
+    "date": "2025-07-25T00:00:00Z",
+    "group_id": "GENERAL",
+    "project": "ewm-modal-cta",
+    "revision": 1,
+    "rolled_back": false,
+    "snapshot_id": "956c70f5-37de-4969-8700-362bc4f3287e",
+    "status": "doing",
+    "task_id": "PHASE1_TASK1_1_ENDPOINT_ACTIVE_MODALS",
+    "timestamp": "2025-07-25T06:41:23.043539Z",
+    "group_md": "groups/GENERAL/group.md"
+  },
+  "problem": {
+    "acceptance_criteria": [
+      "Endpoint /wp-json/ewm/v1/modals/active responde correctamente",
+      "Validación de parámetros implementada y funcional",
+      "Sistema de filtros básico por página, dispositivo y usuario",
+      "Manejo de errores graceful",
+      "Performance optimizada para múltiples modales"
+    ],
+    "context": "Fase 1.1 del Modal Injection System. Necesitamos un endpoint que filtre modales basado en contexto de página, dispositivo, usuario y producto.",
+    "description": "Crear nuevo endpoint REST API optimizado para obtener modales activos con filtros inteligentes como base del sistema de inyección automática de modales",
+    "title": "Implementar Endpoint /modals/active para Modal Injection System",
+    "user_request": "Implementar sistema de inyección automática de modales empezando por crear endpoint optimizado /modals/active"
+  },
+  "schema_version": "2.0.0",
+  "scope": {
+    "affected_files": [
+      "includes/class-ewm-rest-api.php"
+    ],
+    "complexity": "medium",
+    "components": [
+      "REST API",
+      "Modal Filtering",
+      "Parameter Validation"
+    ],
+    "domain": "backend_api",
+    "files": [
+      "includes/class-ewm-rest-api.php"
+    ],
+    "project_type": "wordpress_plugin",
+    "technologies": [
+      "PHP",
+      "WordPress REST API"
+    ]
+  }
+}
