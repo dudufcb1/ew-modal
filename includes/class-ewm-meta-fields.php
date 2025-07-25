@@ -16,87 +16,45 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Clase para manejar meta fields flexibles con soporte JSON y serializado
  */
 class EWM_Meta_Fields {
-	/**
-	 * Mapea slugs especiales ('home', 'blog', 'none', 'all') a su ID o valor lógico.
-	 * Si es numérico, lo retorna como int. Si es un slug, busca el ID de la página.
-	 * Si no encuentra nada, retorna null.
-	 */
-	public static function map_special_page_value_to_id($value) {
-		if (is_numeric($value)) {
-			return (int)$value;
-		}
-		switch ($value) {
-			case 'home':
-				$id = (int) get_option('page_on_front');
-				return $id > 0 ? $id : null;
-			case 'blog':
-				$id = (int) get_option('page_for_posts');
-				return $id > 0 ? $id : null;
-			case 'none':
-				return 0;
-			case 'all':
-				return -1;
-			default:
-				$page = get_page_by_path($value);
-				if ($page) {
-					return (int)$page->ID;
-				}
-				// Si quieres soportar categorías, puedes agregar aquí get_category_by_slug
-				return null;
-		}
-	}
-
-	/**
-	 * Instancia singleton
-	 */
-	private static $instance = null;
-
-	/**
-	 * Schema de validación para meta fields
-	 */
-	private $field_schemas = array(
-		'ewm_steps_config'   => array(
-			'type'       => 'object',
-			'storage'    => 'json',
-			'validation' => 'steps_config',
-		),
-		'ewm_design_config'  => array(
-			'type'       => 'object',
-			'storage'    => 'json',
-			'validation' => 'design_config',
-		),
-		'ewm_trigger_config' => array(
-			'type'       => 'object',
-			'storage'    => 'json',
-			'validation' => 'trigger_config',
-		),
-		'ewm_wc_integration' => array(
-			'type'       => 'object',
-			'storage'    => 'json',
-			'validation' => 'wc_integration',
-		),
-		'ewm_display_rules'  => array(
-			'type'       => 'object',
-			'storage'    => 'json',
-			'validation' => 'display_rules',
-		),
-		'ewm_field_mapping'  => array(
-			'type'       => 'object',
-			'storage'    => 'json',
-			'validation' => 'field_mapping',
-		),
-	);
-
-	/**
-	 * Constructor privado para singleton
-	 */
-	private function __construct() {
-		$this->init();
-	}
-
-	/**
-	 * Obtener instancia singleton
-	 */
+   /**
+	* Instancia singleton
+	*/
+   private static $instance = null;
+   /**
+	* Resuelve un valor de página/categoría especial, slug o numérico a su ID o valor lógico.
+	* Si es numérico, lo retorna como int. Si es un slug, busca el ID de la página o categoría.
+	* Si no encuentra nada, retorna null.
+	*/
+   public static function resolve_to_id($value) {
+	   if (is_numeric($value)) {
+		   return (int)$value;
+	   }
+	   switch ($value) {
+		   case 'home':
+			   $id = (int) get_option('page_on_front');
+			   return $id > 0 ? $id : null;
+		   case 'blog':
+			   $id = (int) get_option('page_for_posts');
+			   return $id > 0 ? $id : null;
+		   case 'none':
+			   return 0;
+		   case 'all':
+			   return -1;
+		   default:
+			   $page = get_page_by_path($value);
+			   if ($page) {
+				   return (int)$page->ID;
+			   }
+			   // Soporte para categorías por slug
+			   if (function_exists('get_category_by_slug')) {
+				   $cat = get_category_by_slug($value);
+				   if ($cat && isset($cat->term_id)) {
+					   return (int)$cat->term_id;
+				   }
+			   }
+			   return null;
+	   }
+   }
 	public static function get_instance() {
 		if ( null === self::$instance ) {
 			self::$instance = new self();
@@ -104,174 +62,21 @@ class EWM_Meta_Fields {
 		return self::$instance;
 	}
 
-	/**
-	 * Inicializar la clase
-	 */
-	private function init() {
-		add_action( 'init', array( $this, 'register_meta_fields' ) );
-		// 🔧 TEMPORALMENTE DESHABILITADO: Este filtro estaba sobrescribiendo los datos de Gutenberg
-		// add_filter( 'sanitize_post_meta_ewm_steps_config', array( $this, 'sanitize_json_field' ), 10, 3 );
-		add_filter( 'sanitize_post_meta_ewm_design_config', array( $this, 'sanitize_json_field' ), 10, 3 );
-		add_filter( 'sanitize_post_meta_ewm_trigger_config', array( $this, 'sanitize_json_field' ), 10, 3 );
-		add_filter( 'sanitize_post_meta_ewm_wc_integration', array( $this, 'sanitize_json_field' ), 10, 3 );
-		add_filter( 'sanitize_post_meta_ewm_display_rules', array( $this, 'sanitize_json_field' ), 10, 3 );
-		add_filter( 'sanitize_post_meta_ewm_field_mapping', array( $this, 'sanitize_json_field' ), 10, 3 );
-	}
 
-	/**
-	 * Registrar meta fields con REST API
-	 */
-	public function register_meta_fields() {
-		foreach ( $this->field_schemas as $meta_key => $schema ) {
-			register_post_meta(
-				'ew_modal',
-				$meta_key,
-				array(
-					'show_in_rest'      => array(
-						'schema' => array(
-							'type'        => $schema['type'],
-							'context'     => array( 'view', 'edit' ),
-							'description' => $this->get_field_description( $meta_key ),
-						),
-					),
-					'single'            => true,
-					'type'              => 'string',
-					'auth_callback'     => function () {
-						return current_user_can( 'edit_posts' );
-					},
-					'sanitize_callback' => array( $this, 'sanitize_meta_field' ),
-				)
-			);
-		}
 
-	
-	}
 
-	/**
-	 * Obtener descripción del campo
-	 */
-	private function get_field_description( $meta_key ) {
-		$descriptions = array(
-			'ewm_steps_config'   => 'Configuración de pasos del formulario multi-paso',
-			'ewm_design_config'  => 'Configuración de diseño y estilos del modal',
-			'ewm_trigger_config' => 'Configuración de triggers y eventos',
-			'ewm_wc_integration' => 'Configuración de integración con WooCommerce',
-			'ewm_display_rules'  => 'Reglas de visualización del modal',
-			'ewm_field_mapping'  => 'Mapeo de campos personalizados',
-		);
 
-		return $descriptions[ $meta_key ] ?? '';
-	}
 
-	/**
-	 * Sanitizar meta field
-	 */
-	public function sanitize_meta_field( $meta_value, $meta_key, $object_type ) {
-		if ( ! isset( $this->field_schemas[ $meta_key ] ) ) {
-			return $meta_value;
-		}
 
-		$schema = $this->field_schemas[ $meta_key ];
 
-		// Validar según el tipo
-		switch ( $schema['type'] ) {
-			case 'object':
-				return $this->sanitize_object_field( $meta_value, $meta_key );
-			case 'array':
-				return $this->sanitize_array_field( $meta_value, $meta_key );
-			default:
-				return sanitize_text_field( $meta_value );
-		}
-	}
 
-	/**
-	 * Sanitizar campo JSON
-	 */
-	public function sanitize_json_field( $meta_value, $meta_key, $object_id ) {
-		// Si es string, intentar decodificar
-		if ( is_string( $meta_value ) ) {
-			$decoded = json_decode( $meta_value, true );
-			if ( json_last_error() === JSON_ERROR_NONE ) {
-				$meta_value = $decoded;
-			}
-		}
 
-		// Validar estructura según el campo
-		$validated = $this->validate_field_structure( $meta_value, $meta_key );
 
-		// Volver a codificar como JSON
-		return wp_json_encode( $validated );
-	}
 
-	/**
-	 * Sanitizar campo de objeto
-	 */
-	private function sanitize_object_field( $value, $meta_key ) {
-		if ( is_string( $value ) ) {
-			$decoded = json_decode( $value, true );
-			if ( json_last_error() !== JSON_ERROR_NONE ) {
-							return wp_json_encode( array() );
-			}
-			$value = $decoded;
-		}
 
-		if ( ! is_array( $value ) ) {
-			return wp_json_encode( array() );
-		}
 
-		// Validar estructura específica
-		$validated = $this->validate_field_structure( $value, $meta_key );
 
-		return wp_json_encode( $validated );
-	}
 
-	/**
-	 * Sanitizar campo de array
-	 */
-	private function sanitize_array_field( $value, $meta_key ) {
-		if ( is_string( $value ) ) {
-			$decoded = json_decode( $value, true );
-			if ( json_last_error() !== JSON_ERROR_NONE ) {
-				return wp_json_encode( array() );
-			}
-			$value = $decoded;
-		}
-
-		if ( ! is_array( $value ) ) {
-			return wp_json_encode( array() );
-		}
-
-		// Sanitizar cada elemento del array
-		$sanitized = array_map( 'sanitize_text_field', $value );
-
-		return wp_json_encode( $sanitized );
-	}
-
-	/**
-	 * Validar estructura del campo según su tipo
-	 */
-	private function validate_field_structure( $value, $meta_key ) {
-		if ( ! is_array( $value ) ) {
-			return array();
-		}
-
-		switch ( $meta_key ) {
-			case 'ewm_steps_config':
-				return $this->validate_steps_config( $value );
-			case 'ewm_design_config':
-				return $this->validate_design_config( $value );
-			case 'ewm_trigger_config':
-				return $this->validate_trigger_config( $value );
-			case 'ewm_wc_integration':
-				return $this->validate_wc_integration( $value );
-			case 'ewm_display_rules':
-				return $this->validate_display_rules( $value );
-			case 'ewm_field_mapping':
-				return $this->validate_field_mapping( $value );
-			default:
-				return $value;
-		}
-	}
 
 	/**
 	 * Validar configuración de pasos
@@ -501,8 +306,8 @@ private function validate_wc_integration( $config ) {
 		return array(
 			'enabled'    => ! empty( $config['enabled'] ),
 			'pages'      => array(
-				'include' => array_filter(array_map( [self::class, 'map_special_page_value_to_id'], $config['pages']['include'] ?? array() ), function($v){return $v !== null;}),
-				'exclude' => array_filter(array_map( [self::class, 'map_special_page_value_to_id'], $config['pages']['exclude'] ?? array() ), function($v){return $v !== null;}),
+			'include' => array_filter(array_map( [self::class, 'resolve_to_id'], $config['pages']['include'] ?? array() ), function($v){return $v !== null;}),
+			'exclude' => array_filter(array_map( [self::class, 'resolve_to_id'], $config['pages']['exclude'] ?? array() ), function($v){return $v !== null;}),
 			),
 			'user_roles' => array_map( 'sanitize_text_field', $config['user_roles'] ?? array() ),
 			'devices'    => array(
@@ -555,23 +360,5 @@ private function validate_wc_integration( $config ) {
 		return is_array( $value ) ? $value : $default;
 	}
 
-	/**
-	 * Actualizar meta field con validación
-	 */
-	public static function update_meta( $post_id, $meta_key, $value ) {
-		/** @var EWM_Meta_Fields $instance */
-		$instance = self::get_instance();
-
-		// Validar estructura si está definida
-		if ( isset( $instance->field_schemas[ $meta_key ] ) ) {
-			$value = $instance->validate_field_structure( $value, $meta_key );
-		}
-
-		// Codificar como JSON si es array
-		if ( is_array( $value ) ) {
-			$value = wp_json_encode( $value );
-		}
-
-		return update_post_meta( $post_id, $meta_key, $value );
-	}
+// ...existing code...
 }
