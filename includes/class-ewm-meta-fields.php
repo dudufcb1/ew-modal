@@ -485,21 +485,14 @@ class EWM_Meta_Fields {
 	/**
 	 * Validar integración WooCommerce
 	 */
-	private function validate_wc_integration( $config ) {
-		return array(
-			'enabled'          => ! empty( $config['enabled'] ),
-			'coupon_id'        => intval( $config['coupon_id'] ?? 0 ),
-			'product_ids'      => array_map( 'intval', $config['product_ids'] ?? array() ),
-			'cart_abandonment' => array(
-				'enabled'       => ! empty( $config['cart_abandonment']['enabled'] ),
-				'delay_minutes' => intval( $config['cart_abandonment']['delay_minutes'] ?? 15 ),
-			),
-			'upsell'           => array(
-				'enabled'        => ! empty( $config['upsell']['enabled'] ),
-				'trigger_amount' => floatval( $config['upsell']['trigger_amount'] ?? 0 ),
-			),
-		);
+private function validate_wc_integration( $config ) {
+	// Asegurar que la configuración es un array. Si no, devolver array vacío.
+	if ( ! is_array( $config ) ) {
+		return array();
 	}
+	// Devolver la configuración recibida sin modificarla.
+	return $config;
+}
 
 	/**
 	 * Validar reglas de visualización

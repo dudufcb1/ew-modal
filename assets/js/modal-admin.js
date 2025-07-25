@@ -385,6 +385,15 @@
             // LOGGING: Payload generado antes de enviar
             console.log('[EWM LOG] [GUARDAR] Payload generado:', JSON.stringify(formData, null, 2));
 
+            // LOGGING: Stack trace JS en el momento de guardar
+            try {
+                throw new Error('[EWM LOG] [GUARDAR] Stack trace al guardar modal');
+            } catch (err) {
+                if (err.stack) {
+                    console.log(err.stack);
+                }
+            }
+
             $.ajax({
                 url: ewm_admin_vars.ajax_url,
                 type: 'POST',
