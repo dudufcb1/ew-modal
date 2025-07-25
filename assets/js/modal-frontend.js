@@ -6,6 +6,37 @@
     'use strict';
 
     class EWMModalFrontend {
+        /**
+         * Poblar campos del modal con datos del usuario (REST API)
+         */
+        async autofillFieldsFromUserProfile() {
+            try {
+                const response = await fetch('/wp-json/ewm/v1/user-profile', {
+                    credentials: 'same-origin',
+                    headers: {
+                        'X-WP-Nonce': (window.ewmModal && window.ewmModal.nonce) ? window.ewmModal.nonce : ''
+                    }
+                });
+                if (!response.ok) return;
+                const data = await response.json();
+                if (!data || typeof data !== 'object') return;
+
+                // Poblar campos si existen en el modal
+                if (this.modal) {
+                    if (data.first_name && this.modal.querySelector('input[name="first_name"]')) {
+                        this.modal.querySelector('input[name="first_name"]').value = data.first_name;
+                    }
+                    if (data.last_name && this.modal.querySelector('input[name="last_name"]')) {
+                        this.modal.querySelector('input[name="last_name"]').value = data.last_name;
+                    }
+                    if (data.email && this.modal.querySelector('input[name="email"]')) {
+                        this.modal.querySelector('input[name="email"]').value = data.email;
+                    }
+                }
+            } catch (e) {
+                console.log('EWM Modal Frontend: Error autofill user profile', e);
+            }
+        }
         constructor(config) {
             this.config = config;
             this.currentStep = 1;
@@ -408,6 +439,9 @@
             this.modal.style.display = 'flex';
             this.isVisible = true;
             document.body.style.overflow = 'hidden'; // Evitar scroll de la página de fondo
+
+            // Poblar campos automáticamente con datos del usuario
+            await this.autofillFieldsFromUserProfile();
 
             // Registrar visualización en servidor (transients)
             this.registerView();

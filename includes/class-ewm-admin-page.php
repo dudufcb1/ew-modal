@@ -254,6 +254,19 @@ class EWM_Admin_Page {
 				),
 			)
 		);
+
+		// Variables para WooCommerce integration (compatibilidad con wc-builder-integration.js)
+		wp_localize_script(
+			'ewm-admin-scripts',
+			'ewmModal',
+			array(
+				'ajaxUrl'   => admin_url('admin-ajax.php'),
+				'restUrl'   => rest_url('ewm/v1/'),
+				'nonce'     => wp_create_nonce('ewm_modal_nonce'),
+				'restNonce' => wp_create_nonce('wp_rest'),
+				'debug'     => defined('WP_DEBUG') && WP_DEBUG,
+			)
+		);
 	}
 
 	/**
@@ -549,16 +562,7 @@ class EWM_Admin_Page {
 						<h2><?php _e('Configuración WooCommerce', 'ewm-modal-cta'); ?></h2>
 
 						<div class="ewm-wc-integration-settings">
-							<div class="ewm-form-group">
-								<div class="ewm-checkbox">
-									<input type="checkbox" id="wc-integration-enabled" name="wc_integration_enabled" value="1"
-										<?php checked($modal_data['wc_integration']['enabled'] ?? false); ?>>
-									<label for="wc-integration-enabled"><?php _e('Habilitar Integración WooCommerce', 'ewm-modal-cta'); ?></label>
-								</div>
-								<p class="description"><?php _e('Activa las funciones especiales de WooCommerce para este modal', 'ewm-modal-cta'); ?></p>
-							</div>
-
-							<div id="wc-integration-settings" style="display: none;">
+							<div id="wc-integration-settings">
 								<h3><?php _e('Selección de Cupón', 'ewm-modal-cta'); ?></h3>
 
 								<div class="ewm-form-group">
@@ -567,6 +571,51 @@ class EWM_Admin_Page {
 										<option value=""><?php _e('Cargando cupones...', 'ewm-modal-cta'); ?></option>
 									</select>
 									<p class="description"><?php _e('Selecciona el cupón que se aplicará cuando el usuario interactúe con el modal', 'ewm-modal-cta'); ?></p>
+								</div>
+
+								<!-- Panel de detalles del cupón -->
+								<div id="wc-coupon-details" class="ewm-coupon-details-panel" style="display: none;">
+									<h4><?php _e('Detalles del Cupón', 'ewm-modal-cta'); ?></h4>
+									<div class="ewm-coupon-info-grid">
+										<div class="ewm-coupon-info-item">
+											<strong><?php _e('Código:', 'ewm-modal-cta'); ?></strong>
+											<span id="coupon-detail-code">-</span>
+										</div>
+										<div class="ewm-coupon-info-item">
+											<strong><?php _e('Tipo de Descuento:', 'ewm-modal-cta'); ?></strong>
+											<span id="coupon-detail-type">-</span>
+										</div>
+										<div class="ewm-coupon-info-item">
+											<strong><?php _e('Cantidad:', 'ewm-modal-cta'); ?></strong>
+											<span id="coupon-detail-amount">-</span>
+										</div>
+										<div class="ewm-coupon-info-item">
+											<strong><?php _e('Descripción:', 'ewm-modal-cta'); ?></strong>
+											<span id="coupon-detail-description">-</span>
+										</div>
+										<div class="ewm-coupon-info-item">
+											<strong><?php _e('Monto Mínimo:', 'ewm-modal-cta'); ?></strong>
+											<span id="coupon-detail-minimum">-</span>
+										</div>
+										<div class="ewm-coupon-info-item">
+											<strong><?php _e('Fecha de Expiración:', 'ewm-modal-cta'); ?></strong>
+											<span id="coupon-detail-expires">-</span>
+										</div>
+										<div class="ewm-coupon-info-item">
+											<strong><?php _e('Límite de Uso:', 'ewm-modal-cta'); ?></strong>
+											<span id="coupon-detail-usage-limit">-</span>
+										</div>
+										<div class="ewm-coupon-info-item">
+											<strong><?php _e('Usos Actuales:', 'ewm-modal-cta'); ?></strong>
+											<span id="coupon-detail-usage-count">-</span>
+										</div>
+									</div>
+
+									<div class="ewm-coupon-actions">
+										<button type="button" id="wc-auto-fill-fields" class="button button-secondary">
+											<?php _e('Auto-llenar campos con datos del cupón', 'ewm-modal-cta'); ?>
+										</button>
+									</div>
 								</div>
 
 								<h3><?php _e('Configuración de Promoción', 'ewm-modal-cta'); ?></h3>

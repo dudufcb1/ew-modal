@@ -1,0 +1,74 @@
+{
+  "schema_version": "2.0.0",
+  "meta": {
+    "date": "2025-07-24T20:10:00Z",
+    "project": "ewm-modal-cta",
+    "author": "augment_agent",
+    "task_id": "WC_BUILDER_INTEGRATION_FIX",
+    "status": "doing",
+    "revision": 1,
+    "snapshot_id": "8a92c447-4a07-4685-b9ae-1961370ceaa6",
+    "group_id": "planes_pendientes",
+    "can_agent_set_done": true,
+    "rolled_back": false,
+    "timestamp": "2025-07-24T19:45:15.334803Z",
+    "group_md": "groups/planes_pendientes/group.md"
+  },
+  "scope": {
+    "files": [
+      "includes/class-ewm-admin-page.php",
+      "assets/js/modal-admin.js"
+    ],
+    "components": [
+      "EWM_Admin_Page",
+      "EWMModalAdmin",
+      "WooCommerce Integration Logic"
+    ]
+  },
+  "problem": {
+    "user_request": "Corregir bug en la integración WooCommerce del builder: al hacer click en habilitar integración, la pestaña general se queda sin contenido y en WooCommerce aparece otro checkbox sin chequear que resetea el formulario",
+    "business_goal": "Asegurar que la integración WooCommerce funcione correctamente sin duplicar checkboxes ni perder contenido",
+    "constraints": [
+      "Mantener un solo checkbox de control",
+      "No perder contenido de la pestaña General",
+      "Evitar reseteo del formulario"
+    ]
+  },
+  "analysis": {
+    "root_cause": "Hay dos checkboxes de WooCommerce (uno en General y otro en WooCommerce) que no están sincronizados correctamente",
+    "hypotheses": [
+      "Los checkboxes tienen IDs diferentes o lógica conflictiva",
+      "La lógica de mostrar/ocultar está afectando el contenido de la pestaña General",
+      "El evento de toggle se está ejecutando múltiples veces"
+    ]
+  },
+  "implementation_plan": {
+    "steps": [
+      {
+        "step": "Investigar el problema de los checkboxes duplicados",
+        "status": "doing",
+        "estimated_time": "15min"
+      },
+      {
+        "step": "Eliminar checkbox duplicado en pestaña WooCommerce",
+        "status": "todo",
+        "estimated_time": "10min"
+      },
+      {
+        "step": "Corregir lógica de mostrar/ocultar para no afectar contenido de General",
+        "status": "todo",
+        "estimated_time": "20min"
+      },
+      {
+        "step": "Probar y verificar funcionamiento correcto",
+        "status": "todo",
+        "estimated_time": "15min"
+      }
+    ]
+  },
+  "next_actions": [
+    "Revisar HTML de ambas pestañas",
+    "Identificar conflicto entre checkboxes",
+    "Corregir lógica JavaScript"
+  ]
+}

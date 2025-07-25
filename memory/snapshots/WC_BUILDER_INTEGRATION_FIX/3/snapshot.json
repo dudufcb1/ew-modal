@@ -1,0 +1,98 @@
+{
+  "schema_version": "2.0.0",
+  "meta": {
+    "date": "2025-07-24T20:30:00Z",
+    "project": "ewm-modal-cta",
+    "author": "augment_agent",
+    "task_id": "WC_BUILDER_INTEGRATION_FIX",
+    "status": "doing",
+    "revision": 3,
+    "snapshot_id": "290d50fe-a2ab-444e-8e7c-e43d33d52ad5",
+    "group_id": "planes_pendientes",
+    "can_agent_set_done": true,
+    "rolled_back": false,
+    "timestamp": "2025-07-24T19:56:14.214218Z",
+    "group_md": "groups/planes_pendientes/group.md"
+  },
+  "scope": {
+    "files": [
+      "includes/class-ewm-admin-page.php",
+      "assets/js/wc-builder-integration.js"
+    ],
+    "components": [
+      "EWM_Admin_Page",
+      "EWMWCBuilderIntegration",
+      "WooCommerce Integration Logic"
+    ]
+  },
+  "problem": {
+    "user_request": "Corregir bug en la integración WooCommerce del builder: el mensaje 'cargando cupones' se queda colgado porque el script usa AJAX en lugar del endpoint REST API que ya funciona",
+    "business_goal": "Hacer que los cupones se carguen correctamente en el selector de la pestaña WooCommerce del builder",
+    "constraints": [
+      "Usar el endpoint REST API existente /ewm/v1/coupons",
+      "Evitar crear endpoints AJAX adicionales",
+      "Mantener compatibilidad con la funcionalidad existente"
+    ]
+  },
+  "analysis": {
+    "root_cause": "El script wc-builder-integration.js usaba AJAX con acción 'ewm_get_wc_coupons_enhanced' que no existe, en lugar del endpoint REST API que sí funciona",
+    "progress": "Cambiado de AJAX a REST API, corregido problema de nonce (rest_cookie_invalid_nonce), agregado restNonce a variables ewmModal",
+    "current_issue": "Todavía hay error 'EWM WC Builder: Error loading coupons: {}' pero el endpoint REST API funciona correctamente cuando se prueba directamente"
+  },
+  "implementation_plan": {
+    "steps": [
+      {
+        "step": "Investigar el problema de los checkboxes duplicados",
+        "status": "done",
+        "estimated_time": "15min"
+      },
+      {
+        "step": "Eliminar checkbox duplicado en pestaña WooCommerce",
+        "status": "done",
+        "estimated_time": "10min"
+      },
+      {
+        "step": "Corregir lógica de mostrar/ocultar para no afectar contenido de General",
+        "status": "done",
+        "estimated_time": "20min"
+      },
+      {
+        "step": "Cambiar de AJAX a REST API para cargar cupones",
+        "status": "done",
+        "estimated_time": "20min"
+      },
+      {
+        "step": "Corregir problema de autenticación REST API",
+        "status": "done",
+        "estimated_time": "15min"
+      },
+      {
+        "step": "Depurar error restante en carga de cupones",
+        "status": "doing",
+        "estimated_time": "15min"
+      }
+    ]
+  },
+  "experiments": [
+    {
+      "test_case": "Cambiar de AJAX a REST API",
+      "result": "Cambiado exitosamente, endpoint REST API funciona directamente",
+      "logs_link": "assets/js/wc-builder-integration.js:88-109"
+    },
+    {
+      "test_case": "Corregir nonce para REST API",
+      "result": "Agregado restNonce a ewmModal y actualizado script para usarlo",
+      "logs_link": "includes/class-ewm-admin-page.php:261, assets/js/wc-builder-integration.js:97"
+    },
+    {
+      "test_case": "Probar endpoint directamente",
+      "result": "Endpoint /ewm/v1/coupons funciona y devuelve cupon 'expertoenwp'",
+      "logs_link": "http://localhost/plugins/wp-json/ewm/v1/coupons"
+    }
+  ],
+  "next_actions": [
+    "Depurar por qué el script sigue dando error vacío",
+    "Verificar si hay problema con manejo de respuesta",
+    "Probar desde consola del navegador para identificar problema exacto"
+  ]
+}

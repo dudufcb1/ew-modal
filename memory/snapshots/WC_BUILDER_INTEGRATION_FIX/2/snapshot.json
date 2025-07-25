@@ -1,0 +1,91 @@
+{
+  "schema_version": "2.0.0",
+  "meta": {
+    "date": "2025-07-24T20:20:00Z",
+    "project": "ewm-modal-cta",
+    "author": "augment_agent",
+    "task_id": "WC_BUILDER_INTEGRATION_FIX",
+    "status": "doing",
+    "revision": 2,
+    "snapshot_id": "a7743aa6-05ac-4c7a-84ee-2a8715d57109",
+    "group_id": "planes_pendientes",
+    "can_agent_set_done": true,
+    "rolled_back": false,
+    "timestamp": "2025-07-24T19:47:05.312270Z",
+    "group_md": "groups/planes_pendientes/group.md"
+  },
+  "scope": {
+    "files": [
+      "includes/class-ewm-admin-page.php",
+      "assets/js/modal-admin.js"
+    ],
+    "components": [
+      "EWM_Admin_Page",
+      "EWMModalAdmin",
+      "WooCommerce Integration Logic"
+    ]
+  },
+  "problem": {
+    "user_request": "Corregir bug en la integración WooCommerce del builder: al hacer click en habilitar integración, la pestaña general se queda sin contenido y en WooCommerce aparece otro checkbox sin chequear que resetea el formulario",
+    "business_goal": "Asegurar que la integración WooCommerce funcione correctamente sin duplicar checkboxes ni perder contenido",
+    "constraints": [
+      "Mantener un solo checkbox de control",
+      "No perder contenido de la pestaña General",
+      "Evitar reseteo del formulario"
+    ]
+  },
+  "analysis": {
+    "root_cause": "Había dos checkboxes con el mismo ID wc-integration-enabled (uno en General y otro en WooCommerce) causando conflictos. Además, la lógica JavaScript ocultaba TODAS las pestañas incluyendo General",
+    "hypotheses": [
+      "Los checkboxes duplicados causaban eventos conflictivos",
+      "La lógica $('.ewm-tab-pane').hide() ocultaba también la pestaña General",
+      "El selector no era específico para las pestañas correctas"
+    ]
+  },
+  "implementation_plan": {
+    "steps": [
+      {
+        "step": "Investigar el problema de los checkboxes duplicados",
+        "status": "done",
+        "estimated_time": "15min"
+      },
+      {
+        "step": "Eliminar checkbox duplicado en pestaña WooCommerce",
+        "status": "done",
+        "estimated_time": "10min"
+      },
+      {
+        "step": "Corregir lógica de mostrar/ocultar para no afectar contenido de General",
+        "status": "done",
+        "estimated_time": "20min"
+      },
+      {
+        "step": "Probar y verificar funcionamiento correcto",
+        "status": "doing",
+        "estimated_time": "15min"
+      }
+    ]
+  },
+  "experiments": [
+    {
+      "test_case": "Identificar checkboxes duplicados",
+      "result": "Encontrados dos checkboxes con ID wc-integration-enabled en líneas 383 y 554",
+      "logs_link": "includes/class-ewm-admin-page.php:383,554"
+    },
+    {
+      "test_case": "Eliminar checkbox duplicado",
+      "result": "Eliminado checkbox de pestaña WooCommerce, manteniendo solo el de General",
+      "logs_link": "includes/class-ewm-admin-page.php:552-558"
+    },
+    {
+      "test_case": "Corregir lógica JavaScript",
+      "result": "Cambiado $('.ewm-tab-pane').hide() por $('.ewm-tab-pane.non-wc-tab').hide() para preservar General",
+      "logs_link": "assets/js/modal-admin.js:662"
+    }
+  ],
+  "next_actions": [
+    "Probar funcionalidad en el browser",
+    "Verificar que no se pierde contenido de General",
+    "Confirmar que WooCommerce funciona correctamente"
+  ]
+}

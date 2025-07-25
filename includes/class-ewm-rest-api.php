@@ -15,6 +15,39 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Clase para manejar los endpoints REST API del plugin
  */
 class EWM_REST_API {
+	/**
+	 * Endpoint: /user-profile
+	 * Devuelve datos básicos del usuario autenticado
+	 */
+	public function register_user_profile_route() {
+		register_rest_route(
+			self::NAMESPACE,
+			'/user-profile',
+			array(
+				'methods'  => WP_REST_Server::READABLE,
+				'callback' => array( $this, 'get_user_profile' ),
+				'permission_callback' => function () {
+					return is_user_logged_in();
+				},
+			)
+		);
+	}
+
+	/**
+	 * Callback para /user-profile
+	 */
+	public function get_user_profile( $request ) {
+		$user = wp_get_current_user();
+		if ( ! $user || 0 === $user->ID ) {
+			return new WP_Error( 'not_logged_in', 'Usuario no autenticado', array( 'status' => 401 ) );
+		}
+		return array(
+			'ID'         => $user->ID,
+			'first_name' => get_user_meta( $user->ID, 'first_name', true ),
+			'last_name'  => get_user_meta( $user->ID, 'last_name', true ),
+			'email'      => $user->user_email,
+		);
+	}
 
 	/**
 	 * Namespace de la API
@@ -56,6 +89,8 @@ class EWM_REST_API {
 	 * Registrar todas las rutas REST
 	 */
 	public function register_routes() {
+		// Endpoint para datos de usuario autenticado
+		$this->register_user_profile_route();
 
 		// Endpoint de prueba simple.
 		$test_route_registered = register_rest_route(
@@ -1022,11 +1057,21 @@ class EWM_REST_API {
 				'exit_intent'        => false,
 				'scroll_percentage'  => 50,
 			),
-			'woocommerce'    => array(
-				'enabled'       => false,
-				'product_ids'   => array(),
-				'discount_code' => '',
-			),
+		   'wc_integration'    => array(
+			   'enabled' => false,
+			   'discount_code' => '',
+			   'wc_promotion' => array(
+				   'title' => '',
+				   'description' => '',
+				   'cta_text' => '',
+				   'auto_apply' => false,
+				   'show_restrictions' => false,
+				   'timer_config' => array(
+					   'enabled' => false,
+					   'threshold_seconds' => 180
+				   )
+			   )
+		   ),
 			'display_rules'  => array(
 				'pages'      => array( 'all' ),
 				'user_roles' => array( 'all' ),

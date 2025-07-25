@@ -1,0 +1,153 @@
+{
+  "schema_version": "2.0.0",
+  "meta": {
+    "date": "2025-07-24T20:45:00Z",
+    "project": "ewm-modal-cta",
+    "author": "augment_agent",
+    "task_id": "WC_INTEGRATION_COMPLETE",
+    "status": "doing",
+    "revision": 1,
+    "snapshot_id": "184a5b7e-358a-42f2-b91c-6fdc975f4b43",
+    "group_id": "planes_pendientes",
+    "can_agent_set_done": true,
+    "rolled_back": false,
+    "timestamp": "2025-07-24T20:25:21.598931Z",
+    "group_md": "groups/planes_pendientes/group.md"
+  },
+  "scope": {
+    "files": [
+      "includes/class-ewm-admin-page.php",
+      "assets/js/wc-builder-integration.js",
+      "assets/js/modal-admin.js",
+      "assets/css/modal-admin.css"
+    ],
+    "components": [
+      "EWM_Admin_Page",
+      "EWMWCBuilderIntegration",
+      "EWMModalAdmin",
+      "Modal Builder UI",
+      "WooCommerce Integration"
+    ]
+  },
+  "problem": {
+    "user_request": "Integración completa de WooCommerce en el builder del modal CTA con funcionalidades avanzadas",
+    "business_goal": "Crear una integración completa y funcional de WooCommerce que permita configurar modales con cupones de manera intuitiva y eficiente",
+    "constraints": [
+      "Usar endpoint REST API existente",
+      "Mantener compatibilidad con funcionalidad existente",
+      "Interfaz intuitiva y coherente con el diseño del builder"
+    ]
+  },
+  "completed_features": [
+    {
+      "feature": "Pestaña WooCommerce específica",
+      "description": "Agregada pestaña dedicada para configuración WooCommerce con diseño distintivo",
+      "status": "completado",
+      "files": [
+        "includes/class-ewm-admin-page.php",
+        "assets/css/modal-admin.css"
+      ]
+    },
+    {
+      "feature": "Lógica mostrar/ocultar pestañas",
+      "description": "Al habilitar WooCommerce se ocultan otras pestañas y se muestra solo General y WooCommerce",
+      "status": "completado",
+      "files": [
+        "assets/js/modal-admin.js"
+      ]
+    },
+    {
+      "feature": "Carga de cupones via REST API",
+      "description": "Integración con endpoint /ewm/v1/coupons para cargar cupones disponibles",
+      "status": "completado",
+      "files": [
+        "assets/js/wc-builder-integration.js",
+        "includes/class-ewm-admin-page.php"
+      ]
+    },
+    {
+      "feature": "Selector de cupones funcional",
+      "description": "Dropdown que muestra cupones disponibles con formato 'código - descripción'",
+      "status": "completado",
+      "files": [
+        "assets/js/wc-builder-integration.js"
+      ]
+    },
+    {
+      "feature": "Panel de detalles del cupón",
+      "description": "Panel completo que muestra todos los términos del cupón seleccionado",
+      "status": "completado",
+      "files": [
+        "includes/class-ewm-admin-page.php",
+        "assets/js/wc-builder-integration.js",
+        "assets/css/modal-admin.css"
+      ]
+    },
+    {
+      "feature": "Configuración de promoción",
+      "description": "Campos para título, descripción y texto del botón CTA",
+      "status": "completado",
+      "files": [
+        "includes/class-ewm-admin-page.php"
+      ]
+    },
+    {
+      "feature": "Opciones avanzadas",
+      "description": "Configuración de aplicación automática, mostrar restricciones y temporizador de urgencia",
+      "status": "completado",
+      "files": [
+        "includes/class-ewm-admin-page.php",
+        "assets/js/modal-admin.js"
+      ]
+    }
+  ],
+  "pending_features": [
+    {
+      "feature": "Auto-llenar campos",
+      "description": "Implementar funcionalidad del botón 'Auto-llenar campos con datos del cupón' para completar automáticamente título, descripción y CTA",
+      "priority": "alta",
+      "estimated_time": "30min",
+      "files": [
+        "assets/js/wc-builder-integration.js"
+      ]
+    },
+    {
+      "feature": "Empalme vigencia modal con cupón",
+      "description": "Nueva feature para sincronizar la vigencia/estado activo del modal con la fecha de expiración del cupón seleccionado",
+      "priority": "alta",
+      "estimated_time": "45min",
+      "files": [
+        "includes/class-ewm-admin-page.php",
+        "assets/js/wc-builder-integration.js"
+      ]
+    }
+  ],
+  "technical_details": {
+    "endpoint_used": "/ewm/v1/coupons",
+    "authentication": "wp_rest nonce",
+    "coupon_structure": {
+      "id": 85,
+      "code": "expertoenwp",
+      "description": "Cupon demo para el modal",
+      "discount_type": "percent",
+      "amount": "5",
+      "minimum_amount": "50",
+      "date_expires": "2025-11-30T00:00:00+00:00",
+      "usage_count": 0,
+      "usage_limit": 0
+    },
+    "ui_components": [
+      "Pestaña WooCommerce",
+      "Selector de cupones",
+      "Panel de detalles",
+      "Configuración de promoción",
+      "Opciones avanzadas",
+      "Botón auto-llenar"
+    ]
+  },
+  "next_actions": [
+    "Implementar funcionalidad auto-llenar campos",
+    "Diseñar e implementar feature de empalme vigencia modal-cupón",
+    "Probar funcionalidad completa end-to-end"
+  ]
+}

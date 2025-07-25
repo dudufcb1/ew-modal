@@ -260,16 +260,42 @@
     "title": "Leer INTEGRACION-WC-CTA-RESUMEN.md y crear una memoria estructurada del proceso ..."
   },
   "WC_BUILDER_INTEGRATION": {
-    "snapshot_id": "9c6b95da-6f08-48b6-a59f-e08ae64167a3",
+    "snapshot_id": "2e857bb7-9da9-4f5b-a188-6104890b657d",
     "task_id": "WC_BUILDER_INTEGRATION",
-    "revision": 2,
-    "status": "doing",
+    "revision": 3,
+    "status": "done",
     "group_id": "planes_pendientes",
     "can_agent_set_done": true,
-    "timestamp": "2025-07-24T19:36:13.349153Z",
+    "timestamp": "2025-07-24T19:40:10.175192Z",
     "rolled_back": false,
     "rollback_from": null,
     "last_modified_by": "augment_agent",
     "title": "Modificar el builder para integrar la funcionalidad de WooCommerce, agregando un..."
+  },
+  "WC_BUILDER_INTEGRATION_FIX": {
+    "snapshot_id": "47503e18-d662-47cd-9cd1-ef0b64a431c5",
+    "task_id": "WC_BUILDER_INTEGRATION_FIX",
+    "revision": 4,
+    "status": "done",
+    "group_id": "planes_pendientes",
+    "can_agent_set_done": true,
+    "timestamp": "2025-07-24T20:04:31.116676Z",
+    "rolled_back": false,
+    "rollback_from": null,
+    "last_modified_by": "augment_agent",
+    "title": "Corregir bug en la integración WooCommerce del builder: el mensaje 'cargando cup..."
+  },
+  "WC_INTEGRATION_COMPLETE": {
+    "snapshot_id": "184a5b7e-358a-42f2-b91c-6fdc975f4b43",
+    "task_id": "WC_INTEGRATION_COMPLETE",
+    "revision": 1,
+    "status": "doing",
+    "group_id": "planes_pendientes",
+    "can_agent_set_done": true,
+    "timestamp": "2025-07-24T20:25:21.598931Z",
+    "rolled_back": false,
+    "rollback_from": null,
+    "last_modified_by": "augment_agent",
+    "title": "Integración completa de WooCommerce en el builder del modal CTA con funcionalida..."
   }
 }

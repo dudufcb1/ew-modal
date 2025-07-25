@@ -55,6 +55,11 @@
             $('#wc-coupon-select').on('change', () => {
                 this.autoFillPromotionFields();
             });
+
+            // Botón para auto-llenar campos
+            $(document).on('click', '#wc-auto-fill-fields', () => {
+                this.autoFillPromotionFields();
+            });
         }
 
         /**
@@ -73,9 +78,16 @@
         }
 
         /**
+         * Cargar cupones disponibles (versión async/await)
+         */
+        async loadCouponsAsync() {
+            return await this.loadCoupons();
+        }
+
+        /**
          * Cargar cupones disponibles
          */
-        async loadCoupons() {
+        async loadCoupons(callback) {
             console.log('EWM WC Builder: Loading coupons...');
 
             // Verificar que ewmModal esté disponible
@@ -86,33 +98,54 @@
             }
 
             try {
-                // Usar AJAX en lugar de REST API para evitar problemas de nonce en admin
-                console.log('EWM WC Builder: Using AJAX method (not REST API)');
-                console.log('EWM WC Builder: AJAX URL:', ewmModal.ajaxUrl);
+                // Usar REST API directamente (más eficiente y ya está funcionando)
+                console.log('EWM WC Builder: Using REST API method');
+                console.log('EWM WC Builder: REST URL:', ewmModal.restUrl);
+                console.log('EWM WC Builder: Full URL:', ewmModal.restUrl + 'coupons');
+                console.log('EWM WC Builder: Rest Nonce:', ewmModal.restNonce);
 
                 const response = await $.ajax({
-                    url: ewmModal.ajaxUrl,
-                    method: 'POST',
-                    data: {
-                        action: 'ewm_get_wc_coupons_enhanced',
-                        nonce: ewmModal.nonce,
-                        only_valid: false,
-                        include_restrictions: true,
-                        include_products: true
+                    url: ewmModal.restUrl + 'coupons',
+                    method: 'GET',
+                    beforeSend: function(xhr) {
+                        console.log('EWM WC Builder: Setting nonce header:', ewmModal.restNonce);
+                        xhr.setRequestHeader('X-WP-Nonce', ewmModal.restNonce);
                     }
                 });
 
-                if (response.success) {
-                    this.coupons = response.data.coupons || [];
-                    this.populateCouponSelect();
-                    console.log('EWM WC Builder: Loaded', this.coupons.length, 'coupons');
-                } else {
-                    console.warn('EWM WC Builder: Failed to load coupons:', response.data);
-                    this.showCouponError('Error al cargar cupones: ' + (response.data || 'Error desconocido'));
+                console.log('EWM WC Builder: Raw response:', response);
+                console.log('EWM WC Builder: Response type:', typeof response);
+                console.log('EWM WC Builder: Response length:', Array.isArray(response) ? response.length : 'Not array');
+
+                // El endpoint REST API devuelve directamente el array de cupones
+                this.coupons = response || [];
+                this.populateCouponSelect();
+                console.log('EWM WC Builder: Loaded', this.coupons.length, 'coupons via REST API');
+
+                // Ejecutar callback si se proporciona
+                if (callback && typeof callback === 'function') {
+                    callback();
                 }
+
             } catch (error) {
                 console.error('EWM WC Builder: Error loading coupons:', error);
+                console.error('EWM WC Builder: Error details:', {
+                    status: error.status,
+                    statusText: error.statusText,
+                    responseText: error.responseText,
+                    responseJSON: error.responseJSON
+                });
                 this.showCouponError('Error de conexión al cargar cupones');
+
+                // Actualizar el selector para mostrar el error
+                const $select = $('#wc-coupon-select');
+                const $firstOption = $select.find('option:first');
+                $firstOption.text('Error al cargar cupones');
+
+                // Ejecutar callback incluso en caso de error
+                if (callback && typeof callback === 'function') {
+                    callback();
+                }
             }
         }
 
@@ -123,14 +156,25 @@
             const $select = $('#wc-coupon-select');
             const currentValue = $select.val();
 
+            // Actualizar el texto de la primera opción para indicar que la carga terminó
+            const $firstOption = $select.find('option:first');
+            if (this.coupons.length > 0) {
+                $firstOption.text('-- Selecciona un cupón --');
+            } else {
+                $firstOption.text('No hay cupones disponibles');
+            }
+
             // Limpiar opciones existentes (excepto la primera)
             $select.find('option:not(:first)').remove();
 
             // Agregar cupones
             this.coupons.forEach(coupon => {
+                // Usar la estructura real del cupón del endpoint
+                const displayText = coupon.description || `${coupon.discount_type} ${coupon.amount}${coupon.discount_type === 'percent' ? '%' : ''}`;
+
                 const option = $('<option></option>')
                     .attr('value', coupon.code)
-                    .text(`${coupon.code} - ${coupon.modal_info.display_text}`)
+                    .text(`${coupon.code} - ${displayText}`)
                     .data('coupon', coupon);
 
                 $select.append(option);
@@ -153,9 +197,9 @@
             }
 
             this.selectedCoupon = this.coupons.find(c => c.code === couponCode);
-            
+
             if (this.selectedCoupon) {
-                this.showCouponPreview(this.selectedCoupon);
+                this.showCouponDetails(this.selectedCoupon);
                 console.log('EWM WC Builder: Selected coupon:', couponCode);
             } else {
                 console.warn('EWM WC Builder: Coupon not found:', couponCode);
@@ -164,20 +208,49 @@
         }
 
         /**
-         * Mostrar preview del cupón
+         * Mostrar detalles del cupón en el panel
          */
-        showCouponPreview(coupon) {
-            const $preview = $('#wc-coupon-preview');
-            
-            // Actualizar información del preview
-            $('#preview-coupon-code').text(coupon.code);
-            $('#preview-coupon-description').text(coupon.modal_info.display_text);
-            
-            // Mostrar restricciones si existen
-            const restrictions = this.formatCouponRestrictions(coupon);
-            $('#preview-coupon-restrictions').text(restrictions);
-            
-            $preview.slideDown(300);
+        showCouponDetails(coupon) {
+            const $details = $('#wc-coupon-details');
+
+            // Formatear tipo de descuento
+            const discountTypeText = coupon.discount_type === 'percent' ? 'Porcentaje' :
+                                   coupon.discount_type === 'fixed_cart' ? 'Cantidad fija del carrito' :
+                                   coupon.discount_type === 'fixed_product' ? 'Cantidad fija del producto' :
+                                   coupon.discount_type;
+
+            // Formatear cantidad
+            const amountText = coupon.discount_type === 'percent' ?
+                              `${coupon.amount}%` :
+                              `$${coupon.amount}`;
+
+            // Formatear fecha de expiración
+            const expiresText = coupon.date_expires ?
+                               new Date(coupon.date_expires).toLocaleDateString('es-ES') :
+                               'Sin expiración';
+
+            // Formatear límite de uso
+            const usageLimitText = coupon.usage_limit > 0 ?
+                                  coupon.usage_limit :
+                                  'Sin límite';
+
+            // Formatear monto mínimo
+            const minimumText = coupon.minimum_amount && coupon.minimum_amount !== '' ?
+                               `$${coupon.minimum_amount}` :
+                               'Sin mínimo';
+
+            // Actualizar los campos del panel
+            $('#coupon-detail-code').text(coupon.code);
+            $('#coupon-detail-type').text(discountTypeText);
+            $('#coupon-detail-amount').text(amountText);
+            $('#coupon-detail-description').text(coupon.description || 'Sin descripción');
+            $('#coupon-detail-minimum').text(minimumText);
+            $('#coupon-detail-expires').text(expiresText);
+            $('#coupon-detail-usage-limit').text(usageLimitText);
+            $('#coupon-detail-usage-count').text(coupon.usage_count || 0);
+
+            // Mostrar el panel
+            $details.slideDown(300);
         }
 
         /**
@@ -213,7 +286,7 @@
          */
         clearCouponSelection() {
             this.selectedCoupon = null;
-            $('#wc-coupon-preview').slideUp(300);
+            $('#wc-coupon-details').slideUp(300);
         }
 
         /**
@@ -223,20 +296,23 @@
             if (!this.selectedCoupon) return;
 
             const coupon = this.selectedCoupon;
-            
+
+            // Usar estructura real del cupón
+            const displayText = coupon.description || `${coupon.discount_type} ${coupon.amount}${coupon.discount_type === 'percent' ? '%' : ''}`;
+
             // Auto-completar título si está vacío
             const $title = $('#wc-promotion-title');
             if (!$title.val().trim()) {
-                $title.val(`Oferta Especial: ${coupon.modal_info.display_text}`);
+                $title.val(`Oferta Especial: ${displayText}`);
             }
-            
+
             // Auto-completar descripción si está vacía
             const $description = $('#wc-promotion-description');
             if (!$description.val().trim()) {
-                let description = `Aprovecha esta oferta de ${coupon.modal_info.display_text}`;
-                
-                if (coupon.restrictions && coupon.restrictions.minimum_amount) {
-                    description += ` en compras desde ${coupon.restrictions.minimum_amount.formatted}`;
+                let description = `Aprovecha esta oferta de ${displayText}`;
+
+                if (coupon.minimum_amount && coupon.minimum_amount !== '') {
+                    description += ` en compras desde $${coupon.minimum_amount}`;
                 }
                 
                 $description.val(description);
@@ -310,21 +386,37 @@
 
     // Inicializar cuando el DOM esté listo
     $(document).ready(function() {
-        // Solo inicializar si estamos en la página del builder y ewmModal está disponible
-        if ($('#wc-integration-enabled').length > 0) {
-            if (typeof ewmModal !== 'undefined') {
-                window.EWMWCBuilderIntegration = new EWMWCBuilderIntegration();
+        // Solo inicializar si estamos en la página del builder
+        if ($('#wc-integration-enabled').length > 0 || $('.ewm-modal-builder').length > 0) {
+            console.log('EWM WC Builder: Page detected, initializing integration...');
+            
+            // Verificar ewmModal con retry para casos de carga asíncrona
+            const initWithRetry = (attempts = 0) => {
+                if (typeof ewmModal !== 'undefined') {
+                    console.log('EWM WC Builder: ewmModal available, creating instance...');
+                    window.EWMWCBuilderIntegration = new EWMWCBuilderIntegration();
 
-                // Inicializar estado basado en checkbox actual
-                const isEnabled = $('#wc-integration-enabled').is(':checked');
-                if (isEnabled) {
-                    $('#wc-integration-settings').show();
-                    window.EWMWCBuilderIntegration.loadCoupons();
+                    // Inicializar estado basado en checkbox actual si existe
+                    const $checkbox = $('#wc-integration-enabled');
+                    if ($checkbox.length > 0 && $checkbox.is(':checked')) {
+                        $('#wc-integration-settings').show();
+                        window.EWMWCBuilderIntegration.loadCoupons();
+                    }
+                } else if (attempts < 20) { // 2 segundos máximo
+                    console.log('EWM WC Builder: ewmModal not ready, retrying...', attempts + 1);
+                    setTimeout(() => initWithRetry(attempts + 1), 100);
+                } else {
+                    console.warn('EWM WC Builder: ewmModal not available after retries, WooCommerce integration disabled');
                 }
-            } else {
-                console.warn('EWM WC Builder: ewmModal not available, WooCommerce integration disabled');
-            }
+            };
+            
+            initWithRetry();
+        } else {
+            console.log('EWM WC Builder: Not on builder page, skipping initialization');
         }
     });
+
+    // Exponer la clase globalmente para uso en otros módulos
+    window.EWMWCBuilderIntegration = EWMWCBuilderIntegration;
 
 })(jQuery);
