@@ -16,18 +16,24 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class EWM_REST_API {
 	/**
-	 * Endpoint de testing: Verificar si algún modal se mostraría para un producto dado
-	 * GET /ewm/v1/test-modal-visibility/(?P<product_id>\d+)
+	 * Endpoint de testing: Verificar si un modal específico se mostraría para un producto dado
+	 * GET /ewm/v1/test-modal-visibility/(?P<modal_id>\d+)/(?P<product_id>\d+)
 	 */
 	public function register_test_modal_visibility_route() {
 		register_rest_route(
 			self::NAMESPACE,
-			'/test-modal-visibility/(?P<product_id>\\d+)',
+			'/test-modal-visibility/(?P<modal_id>\\d+)/(?P<product_id>\\d+)',
 			array(
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'test_modal_visibility' ),
 				'permission_callback' => '__return_true', // Público
 				'args'                => array(
+					'modal_id' => array(
+						'description' => 'ID del modal a testear',
+						'type'        => 'integer',
+						'required'    => true,
+						'sanitize_callback' => 'absint',
+					),
 					'product_id' => array(
 						'description' => 'ID del producto a testear',
 						'type'        => 'integer',
@@ -45,22 +51,52 @@ class EWM_REST_API {
 	 * @return WP_REST_Response
 	 */
 	public function test_modal_visibility( $request ) {
+		$modal_id   = absint( $request->get_param( 'modal_id' ) );
 		$product_id = absint( $request->get_param( 'product_id' ) );
-		if ( ! $product_id || ! class_exists( 'WooCommerce' ) ) {
-			return rest_ensure_response( array( 'result' => 'will not show', 'reason' => 'invalid product_id or WooCommerce not active' ) );
+		if ( ! $modal_id ) {
+			return rest_ensure_response( array( 'result' => 'will not show', 'reason' => 'invalid modal_id' ) );
+		}
+		if ( ! $product_id ) {
+			return rest_ensure_response( array( 'result' => 'will not show', 'reason' => 'invalid product_id' ) );
+		}
+		// Cargar WooCommerce si no está cargado
+		if ( ! class_exists( 'WooCommerce' ) ) {
+			if ( file_exists( WP_PLUGIN_DIR . '/woocommerce/woocommerce.php' ) ) {
+				include_once WP_PLUGIN_DIR . '/woocommerce/woocommerce.php';
+			}
+		}
+		if ( ! function_exists( 'wc_get_product' ) ) {
+			return rest_ensure_response( array( 'result' => 'will not show', 'reason' => 'WooCommerce not active' ) );
 		}
 		$product = wc_get_product( $product_id );
 		if ( ! $product ) {
 			return rest_ensure_response( array( 'result' => 'will not show', 'reason' => 'product not found' ) );
 		}
-		// Obtener todos los modales publicados
-		$modals = $this->get_all_published_modals();
-		// Simular contexto de filtrado solo con product_id
-		$filtered = $this->filter_modals_by_wc_context( $modals, array( 'product_id' => $product_id ) );
-		if ( ! empty( $filtered ) ) {
-			return rest_ensure_response( array( 'result' => 'will show', 'modal_count' => count($filtered) ) );
+		// Obtener el modal solicitado
+		$modal_post = get_post( $modal_id );
+		if ( ! $modal_post || $modal_post->post_type !== 'ew_modal' ) {
+			return rest_ensure_response( array( 'result' => 'will not show', 'reason' => 'modal not found' ) );
+		}
+		$config_json = get_post_meta( $modal_id, 'ewm_modal_config', true );
+		if ( empty( $config_json ) ) {
+			$config = array();
 		} else {
-			return rest_ensure_response( array( 'result' => 'will not show', 'modal_count' => 0 ) );
+			$config = json_decode( $config_json, true );
+			if ( ! is_array( $config ) ) {
+				return rest_ensure_response( array( 'result' => 'will not show', 'reason' => 'invalid modal config' ) );
+			}
+		}
+		// Simular estructura de modal para el filtro
+		$modal_struct = array(
+			'id'     => $modal_id,
+			'title'  => $modal_post->post_title,
+			'config' => $config,
+		);
+		$filtered = $this->filter_modals_by_wc_context( array( $modal_struct ), array( 'product_id' => $product_id ) );
+		if ( ! empty( $filtered ) ) {
+			return rest_ensure_response( array( 'result' => 'will show', 'modal_id' => $modal_id, 'product_id' => $product_id ) );
+		} else {
+			return rest_ensure_response( array( 'result' => 'will not show', 'modal_id' => $modal_id, 'product_id' => $product_id ) );
 		}
 	}
 	/**
@@ -1115,10 +1151,15 @@ class EWM_REST_API {
 		$product_id = $context['product_id'];
 		
 		// Si no hay WooCommerce o no es una página de producto, no filtrar
-		if ( ! class_exists( 'WooCommerce' ) || ! $product_id ) {
+		// Cargar WooCommerce si no está cargado
+		if ( ! class_exists( 'WooCommerce' ) ) {
+			if ( file_exists( WP_PLUGIN_DIR . '/woocommerce/woocommerce.php' ) ) {
+				include_once WP_PLUGIN_DIR . '/woocommerce/woocommerce.php';
+			}
+		}
+		if ( ! function_exists( 'wc_get_product' ) || ! $product_id ) {
 			return $modals;
 		}
-		
 		$product = wc_get_product( $product_id );
 		if ( ! $product ) {
 			return $modals;
@@ -1130,12 +1171,25 @@ class EWM_REST_API {
 	   return array_filter( $modals, function( $modal ) use ( $product, $product_id, &$coupon_cache ) {
 		   $config = $modal['config'];
 
-		   // Si WooCommerce no está habilitado en el modal, mostrar en todos los productos
-		   if ( ! isset( $config['woocommerce']['enabled'] ) || ! $config['woocommerce']['enabled'] ) {
+		   // Compatibilidad: buscar integración WooCommerce en config o en el meta ewm_wc_integration
+		   $wc_config = null;
+		   if ( isset( $config['woocommerce'] ) ) {
+			   $wc_config = $config['woocommerce'];
+		   } else {
+			   // Intentar cargar del meta ewm_wc_integration
+			   $integration = get_post_meta( $modal['id'], 'ewm_wc_integration', true );
+			   if ( $integration ) {
+				   $integration = is_array($integration) ? $integration : json_decode($integration, true);
+				   if ( is_array($integration) ) {
+					   $wc_config = $integration;
+				   }
+			   }
+		   }
+
+		   if ( ! $wc_config || ! isset( $wc_config['enabled'] ) || ! $wc_config['enabled'] ) {
 			   return true;
 		   }
 
-		   $wc_config = $config['woocommerce'];
 		   $discount_code = isset($wc_config['discount_code']) ? $wc_config['discount_code'] : null;
 		   if ( empty( $discount_code ) ) {
 			   // Si no hay código de cupón, mostrar el modal (no hay restricción)
@@ -1146,6 +1200,13 @@ class EWM_REST_API {
 		   if ( isset( $coupon_cache[ $discount_code ] ) ) {
 			   $coupon = $coupon_cache[ $discount_code ];
 		   } else {
+			   if ( ! class_exists( 'WC_Coupon' ) ) {
+				   if ( file_exists( WP_PLUGIN_DIR . '/woocommerce/includes/class-wc-coupon.php' ) ) {
+					   include_once WP_PLUGIN_DIR . '/woocommerce/includes/class-wc-coupon.php';
+				   } else {
+					   return false;
+				   }
+			   }
 			   $coupon = new \WC_Coupon( $discount_code );
 			   $coupon_cache[ $discount_code ] = $coupon;
 		   }
@@ -1155,26 +1216,27 @@ class EWM_REST_API {
 			   return false;
 		   }
 
-		   // Validar producto excluido
+		   // 1. Exclusión de productos: prioridad absoluta
 		   $excluded_product_ids = $coupon->get_excluded_product_ids();
-		   if ( ! empty( $excluded_product_ids ) && in_array( $product_id, $excluded_product_ids, true ) ) {
+		   $pid = (int) $product_id;
+		   if ( ! empty( $excluded_product_ids ) && in_array( $pid, $excluded_product_ids, true ) ) {
+			   // Si el producto está excluido, siempre retorna false, aunque esté en permitidos
 			   return false;
 		   }
 
-		   // Validar categorías excluidas
+		   // 2. Exclusión de categorías
 		   $excluded_category_ids = $coupon->get_excluded_product_categories();
 		   $product_category_ids = $product->get_category_ids();
 		   if ( ! empty( $excluded_category_ids ) && ! empty( array_intersect( $product_category_ids, $excluded_category_ids ) ) ) {
 			   return false;
 		   }
 
-		   // Validar productos permitidos
+		   // 3. Permitidos: solo si no está excluido
 		   $allowed_product_ids = $coupon->get_product_ids();
 		   if ( ! empty( $allowed_product_ids ) && ! in_array( $product_id, $allowed_product_ids, true ) ) {
 			   return false;
 		   }
 
-		   // Validar categorías permitidas
 		   $allowed_category_ids = $coupon->get_product_categories();
 		   if ( ! empty( $allowed_category_ids ) && empty( array_intersect( $product_category_ids, $allowed_category_ids ) ) ) {
 			   return false;
