@@ -92,11 +92,33 @@ class EWM_REST_API {
 			'title'  => $modal_post->post_title,
 			'config' => $config,
 		);
+		// Reglas de display propias del modal
+		$display_rules = get_post_meta( $modal_id, 'ewm_display_rules', true );
+		$display_rules = $display_rules ? json_decode($display_rules, true) : array();
+		$reasons = array();
+		// Modal activo
+		if ( isset($display_rules['enabled']) && !$display_rules['enabled'] ) {
+			$reasons[] = 'modal not active';
+		}
+		// Dispositivo objetivo (simulado: desktop)
+		$device = 'desktop'; // Se puede mejorar con User-Agent
+		if ( isset($display_rules['devices']) && is_array($display_rules['devices']) ) {
+			if ( empty($display_rules['devices'][$device]) ) {
+				$reasons[] = 'device not allowed';
+			}
+		}
+		// Aquí se pueden agregar más reglas: páginas, roles, etc.
+
+		// Lógica de producto/cupón
 		$filtered = $this->filter_modals_by_wc_context( array( $modal_struct ), array( 'product_id' => $product_id ) );
-		if ( ! empty( $filtered ) ) {
-			return rest_ensure_response( array( 'result' => 'will show', 'modal_id' => $modal_id, 'product_id' => $product_id ) );
+		if ( empty( $filtered ) ) {
+			$reasons[] = 'product/coupon restriction';
+		}
+
+		if ( empty($reasons) ) {
+			return rest_ensure_response( array( 'result' => 'will show', 'reason' => 'all conditions passed', 'modal_id' => $modal_id, 'product_id' => $product_id ) );
 		} else {
-			return rest_ensure_response( array( 'result' => 'will not show', 'modal_id' => $modal_id, 'product_id' => $product_id ) );
+			return rest_ensure_response( array( 'result' => 'will not show', 'reason' => implode('; ', $reasons), 'modal_id' => $modal_id, 'product_id' => $product_id ) );
 		}
 	}
 	/**
