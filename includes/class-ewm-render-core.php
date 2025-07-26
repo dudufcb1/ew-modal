@@ -718,6 +718,9 @@ class EWM_Render_Core {
 		error_log( 'EWM DATA-CONFIG FINAL - Modal ' . $modal_id . ' triggers: ' . json_encode( $config['triggers'] ?? 'MISSING' ) );
 		error_log( 'EWM DATA-CONFIG FINAL - Modal ' . $modal_id . ' display_rules: ' . json_encode( $config['display_rules'] ?? 'MISSING' ) );
 
+		// Determinar si WooCommerce está habilitado
+		$is_woocommerce = isset( $config['wc_integration']['enabled'] ) && $config['wc_integration']['enabled'] === true;
+
 		$data_attrs = array(
 			'data-modal-id' => $modal_id,
 			'data-trigger'  => $config['trigger'] ?? 'manual',
@@ -728,6 +731,7 @@ class EWM_Render_Core {
 						'design'         => $config['design'],
 						'wc_integration' => $config['wc_integration'],
 						'display_rules'  => $config['display_rules'],
+						'is_woocommerce' => $is_woocommerce,
 					)
 				)
 			),

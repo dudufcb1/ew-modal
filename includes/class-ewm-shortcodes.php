@@ -295,7 +295,14 @@ class EWM_Shortcodes {
 	   // --- 1. VALIDACIÓN DE PÁGINAS ---
 	   if ( ! empty( $display_rules['pages'] ) ) {
 		   $current_page_id = get_queried_object_id();
-		   $map_fn = [ 'EWM_Meta_Fields', 'map_special_page_value_to_id' ];
+		   $map_fn = [ 'EWM_Meta_Fields', 'resolve_to_id' ];
+
+		   // Defensive error handling for array_map callback
+		   if ( ! is_callable( $map_fn ) ) {
+			   error_log( "[EWM SHORTCODE ERROR] Modal $modal_id: resolve_to_id method not callable" );
+			   return false;
+		   }
+
 		   $include_ids = array_filter( array_map( $map_fn, $display_rules['pages']['include'] ?? array() ), function($v){return $v !== null;});
 		   $exclude_ids = array_filter( array_map( $map_fn, $display_rules['pages']['exclude'] ?? array() ), function($v){return $v !== null;});
 		   if ( ! empty( $exclude_ids ) && in_array( $current_page_id, $exclude_ids ) ) {
