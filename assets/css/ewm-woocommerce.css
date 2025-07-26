@@ -1,0 +1,273 @@
+/**
+ * Estilos específicos para modales WooCommerce
+ * 
+ * @package EWM_Modal_CTA
+ * @since 1.0.0
+ */
+
+/* Contenedor principal WooCommerce */
+.ewm-woocommerce-content {
+    padding: 20px;
+    text-align: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* Título de la promoción */
+.ewm-wc-promotion-title h2 {
+    margin: 0 0 15px 0;
+    font-size: 28px;
+    font-weight: bold;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    line-height: 1.2;
+}
+
+/* Descripción de la promoción */
+.ewm-wc-promotion-description {
+    margin-bottom: 25px;
+}
+
+.ewm-wc-promotion-description p {
+    margin: 0;
+    font-size: 16px;
+    opacity: 0.9;
+    line-height: 1.4;
+}
+
+/* Sección del cupón */
+.ewm-wc-coupon-section {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.ewm-wc-coupon-label {
+    font-size: 14px;
+    margin-bottom: 10px;
+    opacity: 0.8;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.ewm-wc-coupon-code {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.ewm-coupon-text {
+    background: #fff;
+    color: #333;
+    padding: 12px 20px;
+    border-radius: 6px;
+    font-family: 'Courier New', monospace;
+    font-size: 18px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    border: 2px dashed #667eea;
+    min-width: 120px;
+    display: inline-block;
+}
+
+.ewm-copy-coupon {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.ewm-copy-coupon:hover {
+    background: #218838;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.ewm-copy-coupon:active {
+    transform: translateY(0);
+}
+
+.ewm-copy-coupon.copied {
+    background: #17a2b8;
+    animation: pulse 0.6s ease-in-out;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Sección del timer */
+.ewm-wc-timer-section {
+    margin: 20px 0;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.ewm-wc-timer-label {
+    font-size: 14px;
+    margin-bottom: 10px;
+    opacity: 0.8;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.ewm-wc-timer {
+    font-size: 32px;
+    font-weight: bold;
+    font-family: 'Courier New', monospace;
+    color: #ffeb3b;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    letter-spacing: 2px;
+}
+
+.ewm-timer-minutes,
+.ewm-timer-seconds {
+    display: inline-block;
+    min-width: 50px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    padding: 5px;
+}
+
+/* Sección del CTA */
+.ewm-wc-cta-section {
+    margin-top: 25px;
+}
+
+.ewm-wc-cta-button {
+    background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 50px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 15px rgba(238, 90, 36, 0.4);
+    min-width: 200px;
+}
+
+.ewm-wc-cta-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(238, 90, 36, 0.6);
+    background: linear-gradient(45deg, #ee5a24, #ff6b6b);
+}
+
+.ewm-wc-cta-button:active {
+    transform: translateY(-1px);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .ewm-woocommerce-content {
+        padding: 15px;
+    }
+    
+    .ewm-wc-promotion-title h2 {
+        font-size: 24px;
+    }
+    
+    .ewm-wc-promotion-description p {
+        font-size: 14px;
+    }
+    
+    .ewm-wc-coupon-code {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .ewm-coupon-text {
+        font-size: 16px;
+        padding: 10px 15px;
+    }
+    
+    .ewm-wc-timer {
+        font-size: 28px;
+    }
+    
+    .ewm-wc-cta-button {
+        font-size: 16px;
+        padding: 12px 25px;
+        min-width: 180px;
+    }
+}
+
+/* Animaciones de entrada */
+.ewm-woocommerce-content {
+    animation: slideInUp 0.6s ease-out;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Estados especiales */
+.ewm-wc-timer.urgent {
+    color: #ff4757;
+    animation: urgentPulse 1s infinite;
+}
+
+@keyframes urgentPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* Efectos de hover mejorados */
+.ewm-wc-coupon-section:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    transition: all 0.3s ease;
+}
+
+.ewm-wc-timer-section:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transition: all 0.3s ease;
+}
+
+/* Indicador de copiado */
+.ewm-copy-feedback {
+    position: absolute;
+    background: #28a745;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    animation: showFeedback 2s ease-in-out;
+}
+
+@keyframes showFeedback {
+    0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+    20%, 80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+    100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+}

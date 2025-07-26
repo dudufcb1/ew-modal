@@ -38,6 +38,7 @@ require_once EWM_PLUGIN_DIR . 'includes/class-ewm-render-core.php';
 require_once EWM_PLUGIN_DIR . 'includes/class-ewm-shortcodes.php';
 require_once EWM_PLUGIN_DIR . 'includes/class-ewm-admin-page.php';
 require_once EWM_PLUGIN_DIR . 'includes/class-ewm-woocommerce.php';
+require_once EWM_PLUGIN_DIR . 'includes/class-ewm-wc-auto-injection.php';
 require_once EWM_PLUGIN_DIR . 'includes/class-ewm-performance.php';
 
 // Incluir página de testing (solo en admin)
@@ -248,8 +249,8 @@ function ewm_modal_cta_enqueue_admin_devpipe() {
 add_action( 'admin_enqueue_scripts', 'ewm_modal_cta_enqueue_admin_devpipe' );
 
 /**
- * Check if page has modal shortcode
- * CORREGIDO: Detecta shortcodes en contenido raw y procesado
+ * Check if page has modal shortcode OR is a WooCommerce product page with applicable modals
+ * CORREGIDO: Detecta shortcodes en contenido raw y procesado + páginas WC
  */
 function ewm_has_modal_shortcode() {
 	global $post;
@@ -262,6 +263,32 @@ function ewm_has_modal_shortcode() {
 	if ( ! $post ) {
 		error_log( '🔍 DETECTION DEBUG: No post, returning FALSE' );
 		return false;
+	}
+
+	// NUEVO: Verificar si es página de producto WooCommerce con modales WC configurados
+	if ( $post->post_type === 'product' && class_exists( 'WooCommerce' ) ) {
+		error_log( '🔍 DETECTION DEBUG: Product page detected, checking for WC modals' );
+
+		// Buscar si existen modales WooCommerce configurados (sin validar aplicabilidad específica)
+		$wc_modals = get_posts( array(
+			'post_type'      => 'ew_modal',
+			'post_status'    => 'publish',
+			'posts_per_page' => 1, // Solo necesitamos saber si existe al menos uno
+			'meta_query'     => array(
+				array(
+					'key'     => 'ewm_wc_integration',
+					'value'   => '"enabled":true',
+					'compare' => 'LIKE',
+				),
+			),
+		) );
+
+		if ( ! empty( $wc_modals ) ) {
+			error_log( '🔍 DETECTION DEBUG: WC modals exist in system, loading assets for product page' );
+			return true;
+		} else {
+			error_log( '🔍 DETECTION DEBUG: No WC modals configured in system' );
+		}
 	}
 
 	error_log( '🔍 DETECTION DEBUG: Post content length = ' . strlen( $post->post_content ) );

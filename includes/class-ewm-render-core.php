@@ -688,7 +688,96 @@ class EWM_Render_Core {
 	 * Generar contenido de anuncio
 	 */
 	private function generate_announcement_content( $modal_id, $config ) {
-		// Placeholder para contenido de anuncio
+		// Verificar si es un modal WooCommerce
+		$is_woocommerce = isset( $config['is_woocommerce'] ) && $config['is_woocommerce'] === true;
+
+		error_log( "[EWM RENDER DEBUG] generate_announcement_content - Modal {$modal_id}" );
+		error_log( "[EWM RENDER DEBUG] Config keys: " . implode( ', ', array_keys( $config ) ) );
+		error_log( "[EWM RENDER DEBUG] is_woocommerce value: " . var_export( $config['is_woocommerce'] ?? 'NOT_SET', true ) );
+		error_log( "[EWM RENDER DEBUG] is_woocommerce boolean: " . ( $is_woocommerce ? 'TRUE' : 'FALSE' ) );
+
+		if ( $is_woocommerce ) {
+			error_log( "[EWM RENDER DEBUG] Using WooCommerce content generation" );
+			return $this->generate_woocommerce_content( $modal_id, $config );
+		}
+
+		error_log( "[EWM RENDER DEBUG] Using generic announcement content" );
+		// Contenido de anuncio genérico
+		return $this->generate_generic_announcement_content( $modal_id, $config );
+	}
+
+	/**
+	 * Generar contenido especializado para modales WooCommerce
+	 */
+	private function generate_woocommerce_content( $modal_id, $config ) {
+		$wc_config = $config['wc_integration'] ?? array();
+		$wc_promotion = $wc_config['wc_promotion'] ?? array();
+
+		// Obtener información del cupón
+		$discount_code = $wc_config['discount_code'] ?? '';
+		$promotion_title = $wc_promotion['title'] ?? 'Oferta Especial';
+		$promotion_description = $wc_promotion['description'] ?? 'Aprovecha esta oferta limitada';
+		$cta_text = $wc_promotion['cta_text'] ?? 'Aplicar Cupón';
+
+		// Configuración del timer
+		$timer_config = $wc_promotion['timer_config'] ?? array();
+		$timer_enabled = $timer_config['enabled'] ?? false;
+		$timer_threshold = $timer_config['threshold_seconds'] ?? 180;
+
+		$html = '<div class="ewm-woocommerce-content">';
+
+		// Título de la promoción
+		if ( ! empty( $promotion_title ) ) {
+			$html .= '<div class="ewm-wc-promotion-title">';
+			$html .= '<h2>' . esc_html( $promotion_title ) . '</h2>';
+			$html .= '</div>';
+		}
+
+		// Descripción de la promoción
+		if ( ! empty( $promotion_description ) ) {
+			$html .= '<div class="ewm-wc-promotion-description">';
+			$html .= '<p>' . esc_html( $promotion_description ) . '</p>';
+			$html .= '</div>';
+		}
+
+		// Información del cupón
+		if ( ! empty( $discount_code ) ) {
+			$html .= '<div class="ewm-wc-coupon-section">';
+			$html .= '<div class="ewm-wc-coupon-label">Código de descuento:</div>';
+			$html .= '<div class="ewm-wc-coupon-code">';
+			$html .= '<span class="ewm-coupon-text">' . esc_html( $discount_code ) . '</span>';
+			$html .= '<button class="ewm-copy-coupon" data-coupon="' . esc_attr( $discount_code ) . '">Copiar</button>';
+			$html .= '</div>';
+			$html .= '</div>';
+		}
+
+		// Timer si está habilitado
+		if ( $timer_enabled ) {
+			$html .= '<div class="ewm-wc-timer-section">';
+			$html .= '<div class="ewm-wc-timer-label">Oferta válida por:</div>';
+			$html .= '<div class="ewm-wc-timer" data-threshold="' . esc_attr( $timer_threshold ) . '">';
+			$html .= '<span class="ewm-timer-minutes">00</span>:<span class="ewm-timer-seconds">00</span>';
+			$html .= '</div>';
+			$html .= '</div>';
+		}
+
+		// CTA Button
+		$html .= '<div class="ewm-wc-cta-section">';
+		$html .= '<button class="ewm-wc-cta-button" data-action="apply-coupon" data-coupon="' . esc_attr( $discount_code ) . '">';
+		$html .= esc_html( $cta_text );
+		$html .= '</button>';
+		$html .= '</div>';
+
+		$html .= '</div>';
+
+		return $html;
+	}
+
+	/**
+	 * Generar contenido de anuncio genérico
+	 */
+	private function generate_generic_announcement_content( $modal_id, $config ) {
+		// Contenido de anuncio genérico básico
 		return '<div class="ewm-announcement-content"><p>Contenido de anuncio aquí</p></div>';
 	}
 
