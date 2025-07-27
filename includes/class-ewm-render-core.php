@@ -98,8 +98,13 @@ class EWM_Render_Core {
 			return '';
 		}
 
-		// Combinar configuración
+		// Combinar configuración (config pasado tiene prioridad para flags especiales como is_woocommerce)
 		$render_config = array_merge( $modal_config, $config );
+
+		// IMPORTANTE: Si es modal WooCommerce, forzar modo 'anuncio'
+		if ( isset( $render_config['is_woocommerce'] ) && $render_config['is_woocommerce'] === true ) {
+			$render_config['mode'] = 'anuncio';
+		}
 
 		// Encolar assets si es necesario
 		$this->enqueue_modal_assets();
