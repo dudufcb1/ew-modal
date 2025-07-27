@@ -45,8 +45,10 @@
             this.modal = null;
             this.isVisible = false;
             this.shownInThisPageLoad = false; // Flag para evitar re-mostrar en la misma carga de página
+            console.log(`[EWM LOG] [PAGE LOAD] Inicializado flag shownInThisPageLoad = false para modal ${this.config.modal_id}`);
             this.triggers = config.triggers || {};
-            
+            // Guardar timestamp de entrada
+            this.ewmEntryTimestamp = Date.now();
             this.init();
         }
 
@@ -263,8 +265,12 @@
             if (this.triggers.time_delay?.enabled) {
                 const delay = this.triggers.time_delay.delay || 5000;
                 setTimeout(() => {
+                    console.log(`[EWM LOG] [PAGE LOAD] Evaluando trigger time_delay para modal ${this.config.modal_id}. shownInThisPageLoad=${this.shownInThisPageLoad}`);
                     if (!this.shownInThisPageLoad) { // Solo mostrar si no se ha mostrado
+                        console.log(`[EWM LOG] [PAGE LOAD] Trigger time_delay cumple condiciones, llamando show() para modal ${this.config.modal_id}`);
                         this.show();
+                    } else {
+                        console.log(`[EWM LOG] [PAGE LOAD] Trigger time_delay bloqueado por flag shownInThisPageLoad=true para modal ${this.config.modal_id}`);
                     }
                 }, delay);
             }
@@ -289,7 +295,15 @@
             document.addEventListener('mouseleave', (e) => {
                 // Solo mostrar si: mouse sale por arriba, modal no visible Y no se ha mostrado en esta carga
                 if (e.clientY <= 0 && !this.isVisible && !this.shownInThisPageLoad) {
-                    this.show();
+                    // Verificar tiempo mínimo de navegación
+                    const minSeconds = this.triggers.exit_intent?.min_seconds ?? 10;
+                    const now = Date.now();
+                    const elapsed = (now - this.ewmEntryTimestamp) / 1000;
+                    if (elapsed >= minSeconds) {
+                        this.show();
+                    } else {
+                        console.log(`EWM Modal Frontend: Exit intent bloqueado, solo ${elapsed.toFixed(1)}s en página (mínimo ${minSeconds}s)`);
+                    }
                 }
             });
         }
@@ -429,21 +443,21 @@
             console.log('EWM Modal Frontend: this.isVisible:', this.isVisible);
 
             if (!this.modal || this.isVisible) {
-                console.log('EWM Modal Frontend: Show aborted. Modal not found or already visible.');
-                console.log('EWM Modal Frontend: Reason - !this.modal:', !this.modal, 'this.isVisible:', this.isVisible);
+                console.log(`[EWM LOG] [PAGE LOAD] Show abortado. Modal no encontrado (${!this.modal}) o ya visible (${this.isVisible}) para modal ${this.config.modal_id}`);
                 return;
             }
 
             // Validar frecuencia antes de mostrar
             const canShow = await this.checkFrequencyLimit();
             if (!canShow) {
-                console.log('EWM Modal Frontend: Modal blocked by frequency limit');
+                console.log(`[EWM LOG] [PAGE LOAD] Modal bloqueado por frecuencia para modal ${this.config.modal_id}`);
                 return;
             }
 
             this.modal.style.display = 'flex';
             this.isVisible = true;
             this.shownInThisPageLoad = true; // Marcar como mostrado en esta carga de página
+            console.log(`[EWM LOG] [PAGE LOAD] Modal mostrado, flag shownInThisPageLoad=true para modal ${this.config.modal_id}`);
             document.body.style.overflow = 'hidden'; // Evitar scroll de la página de fondo
 
             // Poblar campos automáticamente con datos del usuario
@@ -457,7 +471,7 @@
                 this.modal.classList.add('ewm-modal-visible');
             }, 10);
 
-            console.log('EWM Modal Frontend: Modal shown');
+            console.log(`[EWM LOG] [PAGE LOAD] Modal shown (animación activada) para modal ${this.config.modal_id}`);
         }
 
         /**

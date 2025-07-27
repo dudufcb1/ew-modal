@@ -579,11 +579,12 @@
 
             return {
                 exit_intent: {
-                    enabled: $('#enable-exit-intent').is(':checked')
+                    enabled: $('#enable-exit-intent').is(':checked'),
+                    min_seconds: parseInt($('#exit-intent-min-seconds').val()) || 10
                 },
                 time_delay: {
                     enabled: $('#enable-time-delay').is(':checked'),
-                    delay: parseInt($('#time-delay').val()) || 5000
+                    delay: (parseInt($('#time-delay').val()) || 5) * 1000 // Guardar en ms internamente
                 },
                 scroll_percentage: {
                     enabled: $('#enable-scroll-trigger').is(':checked'),
@@ -676,8 +677,9 @@
             // Triggers
             if (data.triggers) {
                 $('#enable-exit-intent').prop('checked', data.triggers.exit_intent?.enabled || false);
+                $('#exit-intent-min-seconds').val(data.triggers.exit_intent?.min_seconds ?? 10);
                 $('#enable-time-delay').prop('checked', data.triggers.time_delay?.enabled || false);
-                $('#time-delay').val(data.triggers.time_delay?.delay || 5000);
+                $('#time-delay').val(data.triggers.time_delay?.delay ? parseInt(data.triggers.time_delay.delay)/1000 : 5);
                 $('#enable-scroll-trigger').prop('checked', data.triggers.scroll_percentage?.enabled || false);
                 $('#scroll-percentage').val(data.triggers.scroll_percentage?.percentage || 50);
                 $('#enable-manual-trigger').prop('checked', data.triggers.manual?.enabled || true);

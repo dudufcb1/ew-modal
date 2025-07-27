@@ -778,6 +778,13 @@ class EWM_Admin_Page {
 								<label for="enable-exit-intent"><?php _e('Exit Intent', 'ewm-modal-cta'); ?></label>
 							</div>
 							<p class="description"><?php _e('Mostrar modal cuando el usuario intente salir de la página', 'ewm-modal-cta'); ?></p>
+						<div class="ewm-form-group">
+							<label for="exit-intent-min-seconds" class="ewm-label">Tiempo mínimo antes de mostrar (segundos):</label>
+							<input type="number" id="exit-intent-min-seconds" name="exit_intent_min_seconds" class="ewm-form-control small" min="0" step="1"
+								value="<?php echo esc_attr($modal_data['triggers']['exit_intent']['min_seconds'] ?? 10); ?>"
+								placeholder="10">
+							<p class="description">No mostrar el modal de exit intent si el usuario lleva menos de X segundos en la página.</p>
+						</div>
 						</div>
 
 						<div class="ewm-form-group">
@@ -786,10 +793,10 @@ class EWM_Admin_Page {
 									<?php checked($modal_data['triggers']['time_delay']['enabled'] ?? false); ?>>
 								<label for="enable-time-delay"><?php _e('Retraso por Tiempo', 'ewm-modal-cta'); ?></label>
 							</div>
-							<input type="number" id="time-delay" name="time_delay" class="ewm-form-control small" min="1000" step="1000"
-								value="<?php echo esc_attr($modal_data['triggers']['time_delay']['delay'] ?? 5000); ?>"
-								placeholder="5000">
-							<p class="description"><?php _e('Tiempo en milisegundos (ej: 5000 = 5 segundos)', 'ewm-modal-cta'); ?></p>
+							<input type="number" id="time-delay" name="time_delay" class="ewm-form-control small" min="0" step="1"
+								value="<?php echo esc_attr($modal_data['triggers']['time_delay']['delay'] ? intval($modal_data['triggers']['time_delay']['delay'])/1000 : 5); ?>"
+								placeholder="5">
+							<p class="description"><?php _e('Tiempo en segundos antes de mostrar el modal (ej: 5 = 5 segundos)', 'ewm-modal-cta'); ?></p>
 						</div>
 
 						<div class="ewm-form-group">
@@ -821,9 +828,6 @@ class EWM_Admin_Page {
 								?>
 								<option value="always" <?php selected($frequency_type, 'always'); ?>>
 									<?php _e('Siempre', 'ewm-modal-cta'); ?>
-								</option>
-								<option value="page_load" <?php selected($frequency_type, 'page_load'); ?>>
-									<?php _e('Una vez por carga de página', 'ewm-modal-cta'); ?>
 								</option>
 								<option value="session" <?php selected($frequency_type, 'session'); ?>>
 									<?php _e('Una vez por sesión (30 minutos)', 'ewm-modal-cta'); ?>

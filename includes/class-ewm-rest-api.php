@@ -1446,6 +1446,9 @@ class EWM_REST_API {
 			if ( isset( $exit_intent['enabled'] ) && ! is_bool( $exit_intent['enabled'] ) ) {
 				return false;
 			}
+			if ( isset( $exit_intent['min_seconds'] ) && (! is_int( $exit_intent['min_seconds'] ) || $exit_intent['min_seconds'] < 0 ) ) {
+				return false;
+			}
 		}
 
 		// Validar estructura de time_delay si existe

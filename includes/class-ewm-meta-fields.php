@@ -266,6 +266,7 @@ class EWM_Meta_Fields {
 			'exit_intent'       => array(
 				'enabled'     => ! empty( $config['exit_intent']['enabled'] ),
 				'sensitivity' => intval( $config['exit_intent']['sensitivity'] ?? 20 ),
+				'min_seconds' => intval( $config['exit_intent']['min_seconds'] ?? 10 ),
 			),
 			'time_delay'        => array(
 				'enabled' => ! empty( $config['time_delay']['enabled'] ),
