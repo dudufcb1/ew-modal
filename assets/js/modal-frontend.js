@@ -320,6 +320,9 @@
                 const response = await this.submitFormData(formData);
                 console.log('EWM Modal Frontend: Form submitted successfully:', response);
 
+                // NUEVO: Marcar como enviado exitosamente (bloquear por 2 días)
+                this.markAsSuccessfullySubmitted();
+
                 // Mostrar paso de éxito
                 this.showSuccessStep();
 
@@ -713,6 +716,57 @@
         }
 
         /**
+         * Verificar si el modal está bloqueado por envío exitoso (localStorage)
+         */
+        isBlockedBySuccessfulSubmission() {
+            try {
+                const key = `ewm_modal_${this.config.modal_id}_submitted`;
+                const submittedData = localStorage.getItem(key);
+
+                if (!submittedData) {
+                    console.log('EWM Modal Frontend: No submission data found in localStorage');
+                    return false;
+                }
+
+                const { timestamp, modalId } = JSON.parse(submittedData);
+                const twoDaysInMs = 2 * 24 * 60 * 60 * 1000; // 2 días en milisegundos
+                const now = Date.now();
+                const elapsed = now - timestamp;
+
+                console.log('EWM Modal Frontend: Submission check:', {
+                    modalId: modalId,
+                    submittedAt: new Date(timestamp).toISOString(),
+                    elapsedHours: (elapsed / (1000 * 60 * 60)).toFixed(1),
+                    isBlocked: elapsed < twoDaysInMs
+                });
+
+                return elapsed < twoDaysInMs;
+            } catch (error) {
+                console.error('EWM Modal Frontend: Error checking submission block:', error);
+                return false; // En caso de error, no bloquear
+            }
+        }
+
+        /**
+         * Marcar modal como enviado exitosamente (localStorage)
+         */
+        markAsSuccessfullySubmitted() {
+            try {
+                const key = `ewm_modal_${this.config.modal_id}_submitted`;
+                const data = {
+                    timestamp: Date.now(),
+                    modalId: this.config.modal_id,
+                    submittedAt: new Date().toISOString()
+                };
+
+                localStorage.setItem(key, JSON.stringify(data));
+                console.log('EWM Modal Frontend: Modal marked as successfully submitted:', data);
+            } catch (error) {
+                console.error('EWM Modal Frontend: Error marking submission:', error);
+            }
+        }
+
+        /**
          * Verificar si el modal puede mostrarse según la configuración de frecuencia
          */
         async checkFrequencyLimit() {
@@ -765,7 +819,7 @@
         }
 
         /**
-         * Mostrar modal (con validación de frecuencia)
+         * Mostrar modal (con validación de frecuencia y envío exitoso)
          */
         async show() {
             console.log('EWM Modal Frontend: show() called');
@@ -774,6 +828,12 @@
 
             if (!this.modal || this.isVisible) {
                 console.log(`[EWM LOG] [PAGE LOAD] Show abortado. Modal no encontrado (${!this.modal}) o ya visible (${this.isVisible}) para modal ${this.config.modal_id}`);
+                return;
+            }
+
+            // NUEVO: Verificar si está bloqueado por envío exitoso
+            if (this.isBlockedBySuccessfulSubmission()) {
+                console.log(`[EWM LOG] [PAGE LOAD] Modal bloqueado por envío exitoso reciente para modal ${this.config.modal_id}`);
                 return;
             }
 

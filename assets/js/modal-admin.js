@@ -29,6 +29,7 @@
             this.initTabs();
             this.initColorPickers();
             this.initStepsManager();
+            this.initModalTypeExclusion();
 
             // Cargar datos del modal si estamos editando
             if (this.currentModalId) {
@@ -633,6 +634,9 @@
         collectDisplayRules: function() {
             return {
                 enabled: $('#modal-enabled').is(':checked'),
+                use_global_config: $('#use-global-config').is(':checked'),
+                omit_wc_products: $('#omit-wc-products').is(':checked'),
+                omit_wc_categories: $('#omit-wc-categories').is(':checked'),
                 devices: {
                     desktop: $('#device-desktop').is(':checked'),
                     tablet: $('#device-tablet').is(':checked'),
@@ -792,6 +796,9 @@
             // Reglas de visualización
             if (data.display_rules) {
                 $('#modal-enabled').prop('checked', data.display_rules.enabled !== false);
+                $('#use-global-config').prop('checked', data.display_rules.use_global_config !== false);
+                $('#omit-wc-products').prop('checked', data.display_rules.omit_wc_products === true);
+                $('#omit-wc-categories').prop('checked', data.display_rules.omit_wc_categories === true);
 
                 // Devices
                 if (data.display_rules.devices) {
@@ -820,8 +827,11 @@
             if (data.steps && data.steps.progressBar) {
                 $('#show-progress-bar').prop('checked', data.steps.progressBar.enabled !== false);
             }
-        
+
             console.log('EWM Modal Admin: Form populated with data');
+
+            // Aplicar estado inicial de exclusión de tipos de modales después de poblar
+            this.applyInitialModalTypeState();
         },
 
         /**
@@ -874,6 +884,153 @@
             e.preventDefault();
             console.log('EWM Modal Admin: Remove step clicked');
             // Implementar lógica para eliminar paso
+        },
+
+        /**
+         * Inicializar lógica de exclusión mutua entre tipos de modales
+         */
+        initModalTypeExclusion: function() {
+            console.log('EWM Modal Admin: Initializing modal type exclusion logic');
+
+            const $useGlobalConfig = $('#use-global-config');
+            const $wcIntegration = $('#wc-integration-enabled');
+            const $showProgressBar = $('#show-progress-bar');
+            const $omitWcProducts = $('#omit-wc-products');
+            const $omitWcCategories = $('#omit-wc-categories');
+
+            // Función para manejar cambios en "Usar configuración global"
+            $useGlobalConfig.on('change', function() {
+                const isChecked = $(this).is(':checked');
+                console.log('Use global config changed:', isChecked);
+
+                if (isChecked) {
+                    // Si se activa configuración global, deshabilitar WooCommerce con tooltip
+                    $wcIntegration.prop('checked', false).prop('disabled', true);
+                    const $formGroup = $wcIntegration.closest('.ewm-form-group');
+                    $formGroup.addClass('disabled');
+
+                    // Agregar tooltip explicativo
+                    if (!$formGroup.find('.ewm-disabled-tooltip').length) {
+                        $formGroup.append('<div class="ewm-disabled-tooltip" data-tooltip="Para habilitar WooCommerce, primero desactiva \'Configuración Global\'. Ambas opciones no pueden estar activas simultáneamente."></div>');
+                    }
+
+                    console.log('Disabled WooCommerce integration with tooltip');
+                } else {
+                    // Si se desactiva configuración global, habilitar WooCommerce
+                    $wcIntegration.prop('disabled', false);
+                    const $formGroup = $wcIntegration.closest('.ewm-form-group');
+                    $formGroup.removeClass('disabled');
+                    $formGroup.find('.ewm-disabled-tooltip').remove();
+
+                    console.log('Enabled WooCommerce integration');
+                }
+            });
+
+            // Función para manejar cambios en "Integración WooCommerce"
+            $wcIntegration.on('change', function() {
+                const isChecked = $(this).is(':checked');
+                console.log('WC integration changed:', isChecked);
+
+                if (isChecked) {
+                    // Si se activa WooCommerce, deshabilitar configuración global con tooltip
+                    $useGlobalConfig.prop('checked', false).prop('disabled', true);
+                    const $globalFormGroup = $useGlobalConfig.closest('.ewm-form-group');
+                    $globalFormGroup.addClass('disabled');
+
+                    // Agregar tooltip explicativo para configuración global
+                    if (!$globalFormGroup.find('.ewm-disabled-tooltip').length) {
+                        $globalFormGroup.append('<div class="ewm-disabled-tooltip" data-tooltip="Para habilitar Configuración Global, primero desactiva \'Integración WooCommerce\'. Ambas opciones no pueden estar activas simultáneamente."></div>');
+                    }
+
+                    // También ocultar barra de progreso (solo anuncios en WooCommerce)
+                    $showProgressBar.prop('checked', false).closest('.ewm-form-group').hide();
+
+                    // NUEVO: Ocultar controles de WooCommerce (no aplican a modales WC)
+                    $omitWcProducts.prop('checked', false).closest('.ewm-form-group').hide();
+                    $omitWcCategories.prop('checked', false).closest('.ewm-form-group').hide();
+
+                    // NUEVO: Forzar modo "anuncio" y deshabilitar la opción "formulario"
+                    const $modalMode = $('#modal-mode');
+                    $modalMode.val('anuncio');
+                    $modalMode.find('option[value="formulario"]').prop('disabled', true);
+
+                    console.log('Disabled global config with tooltip, hidden progress bar and WC controls for WooCommerce, forced announcement mode');
+                } else {
+                    // Si se desactiva WooCommerce, habilitar configuración global
+                    $useGlobalConfig.prop('disabled', false);
+                    const $globalFormGroup = $useGlobalConfig.closest('.ewm-form-group');
+                    $globalFormGroup.removeClass('disabled');
+                    $globalFormGroup.find('.ewm-disabled-tooltip').remove();
+
+                    // Mostrar otros controles
+                    $showProgressBar.closest('.ewm-form-group').show();
+                    $omitWcProducts.closest('.ewm-form-group').show();
+                    $omitWcCategories.closest('.ewm-form-group').show();
+
+                    // NUEVO: Rehabilitar la opción "formulario"
+                    const $modalMode = $('#modal-mode');
+                    $modalMode.find('option[value="formulario"]').prop('disabled', false);
+
+                    console.log('Enabled global config, shown all controls, enabled form mode');
+                }
+            });
+
+            // Aplicar estado inicial basado en valores actuales
+            this.applyInitialModalTypeState();
+        },
+
+        /**
+         * Aplicar estado inicial de exclusión de tipos de modales
+         */
+        applyInitialModalTypeState: function() {
+            const $useGlobalConfig = $('#use-global-config');
+            const $wcIntegration = $('#wc-integration-enabled');
+            const $showProgressBar = $('#show-progress-bar');
+            const $omitWcProducts = $('#omit-wc-products');
+            const $omitWcCategories = $('#omit-wc-categories');
+            const $modalMode = $('#modal-mode');
+
+            console.log('Applying initial modal type state');
+            console.log('Use global config:', $useGlobalConfig.is(':checked'));
+            console.log('WC integration:', $wcIntegration.is(':checked'));
+
+            if ($useGlobalConfig.is(':checked')) {
+                // Si configuración global está activa, deshabilitar WooCommerce con tooltip
+                $wcIntegration.prop('disabled', true);
+                const $formGroup = $wcIntegration.closest('.ewm-form-group');
+                $formGroup.addClass('disabled');
+
+                // Agregar tooltip explicativo
+                if (!$formGroup.find('.ewm-disabled-tooltip').length) {
+                    $formGroup.append('<div class="ewm-disabled-tooltip" data-tooltip="Para habilitar WooCommerce, primero desactiva \'Configuración Global\'. Ambas opciones no pueden estar activas simultáneamente."></div>');
+                }
+
+                console.log('Initial: Disabled WooCommerce integration with tooltip');
+            } else if ($wcIntegration.is(':checked')) {
+                // Si WooCommerce está activo, deshabilitar configuración global con tooltip
+                $useGlobalConfig.prop('disabled', true);
+                const $globalFormGroup = $useGlobalConfig.closest('.ewm-form-group');
+                $globalFormGroup.addClass('disabled');
+
+                // Agregar tooltip explicativo para configuración global
+                if (!$globalFormGroup.find('.ewm-disabled-tooltip').length) {
+                    $globalFormGroup.append('<div class="ewm-disabled-tooltip" data-tooltip="Para habilitar Configuración Global, primero desactiva \'Integración WooCommerce\'. Ambas opciones no pueden estar activas simultáneamente."></div>');
+                }
+
+                // Ocultar otros controles no aplicables
+                $showProgressBar.closest('.ewm-form-group').hide();
+                $omitWcProducts.closest('.ewm-form-group').hide();
+                $omitWcCategories.closest('.ewm-form-group').hide();
+
+                // NUEVO: Forzar modo "anuncio" y deshabilitar "formulario"
+                $modalMode.val('anuncio');
+                $modalMode.find('option[value="formulario"]').prop('disabled', true);
+
+                console.log('Initial: Disabled global config with tooltip, hidden non-WC controls, forced announcement mode');
+            } else {
+                // Si ninguno está activo, asegurar que formulario esté habilitado
+                $modalMode.find('option[value="formulario"]').prop('disabled', false);
+            }
         },
 
         /**

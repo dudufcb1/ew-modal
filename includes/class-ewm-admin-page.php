@@ -393,6 +393,33 @@ class EWM_Admin_Page {
 
 							<div class="ewm-form-group">
 								<div class="ewm-checkbox">
+									<input type="checkbox" id="use-global-config" name="use_global_config" value="1"
+										<?php checked($modal_data['display_rules']['use_global_config'] ?? true); ?>>
+									<label for="use-global-config"><?php _e('Usar configuración global', 'ewm-modal-cta'); ?></label>
+								</div>
+								<p class="description"><?php _e('Permite que el modal se auto-inyecte basándose en las reglas de páginas configuradas. Si está desactivado, el modal solo funcionará con shortcodes.', 'ewm-modal-cta'); ?></p>
+							</div>
+
+							<div class="ewm-form-group">
+								<div class="ewm-checkbox">
+									<input type="checkbox" id="omit-wc-products" name="omit_wc_products" value="1"
+										<?php checked($modal_data['display_rules']['omit_wc_products'] ?? false); ?>>
+									<label for="omit-wc-products"><?php _e('Omitir en páginas de productos', 'ewm-modal-cta'); ?></label>
+								</div>
+								<p class="description"><?php _e('Evita que el modal se muestre automáticamente en páginas de productos WooCommerce para prevenir conflictos con modales de cupones.', 'ewm-modal-cta'); ?></p>
+							</div>
+
+							<div class="ewm-form-group">
+								<div class="ewm-checkbox">
+									<input type="checkbox" id="omit-wc-categories" name="omit_wc_categories" value="1"
+										<?php checked($modal_data['display_rules']['omit_wc_categories'] ?? false); ?>>
+									<label for="omit-wc-categories"><?php _e('Omitir en páginas de categorías', 'ewm-modal-cta'); ?></label>
+								</div>
+								<p class="description"><?php _e('Evita que el modal se muestre automáticamente en páginas de categorías WooCommerce.', 'ewm-modal-cta'); ?></p>
+							</div>
+
+							<div class="ewm-form-group">
+								<div class="ewm-checkbox">
 									<input type="checkbox" id="wc-integration-enabled" name="wc_integration_enabled" value="1"
 										<?php checked($modal_data['wc_integration']['enabled'] ?? false); ?>>
 									<label for="wc-integration-enabled"><?php _e('Integración WooCommerce', 'ewm-modal-cta'); ?></label>

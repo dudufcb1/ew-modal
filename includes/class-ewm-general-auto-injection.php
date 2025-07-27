@@ -115,6 +115,12 @@ class EWM_General_Auto_Injection {
 		// Método 1: Usar funciones condicionales de WordPress (funciona en frontend)
 		if ( is_front_page() ) {
 			return 'home';
+		} elseif ( function_exists( 'is_product' ) && is_product() ) {
+			return 'product';
+		} elseif ( function_exists( 'is_product_category' ) && is_product_category() ) {
+			return 'product_cat';
+		} elseif ( function_exists( 'is_product_tag' ) && is_product_tag() ) {
+			return 'product_tag';
 		} elseif ( is_page() ) {
 			return 'page';
 		} elseif ( is_single() ) {
@@ -147,6 +153,22 @@ class EWM_General_Auto_Injection {
 					return 'product';
 				default:
 					return $post->post_type;
+			}
+		}
+
+		// Método 3: Detectar categorías/tags de WooCommerce por contexto
+		if ( function_exists( 'wc_get_page_id' ) ) {
+			global $wp_query;
+			if ( isset( $wp_query->tax_query ) && ! empty( $wp_query->tax_query->queries ) ) {
+				foreach ( $wp_query->tax_query->queries as $tax_query ) {
+					if ( isset( $tax_query['taxonomy'] ) ) {
+						if ( $tax_query['taxonomy'] === 'product_cat' ) {
+							return 'product_cat';
+						} elseif ( $tax_query['taxonomy'] === 'product_tag' ) {
+							return 'product_tag';
+						}
+					}
+				}
 			}
 		}
 
@@ -221,6 +243,19 @@ class EWM_General_Auto_Injection {
 			return false;
 		}
 
+		// NUEVO: Verificar si usa configuración global (auto-inyección)
+		$use_global_config = isset( $config['display_rules']['use_global_config'] ) ? $config['display_rules']['use_global_config'] : true;
+		error_log( "[EWM GENERAL AUTO-INJECTION] Modal {$modal_id} use global config: " . ( $use_global_config ? 'YES' : 'NO' ) );
+		if ( ! $use_global_config ) {
+			error_log( "[EWM GENERAL AUTO-INJECTION] Modal {$modal_id} SKIPPED: Global config disabled (shortcode only)" );
+			return false;
+		}
+
+		// NUEVO: Verificar restricciones específicas de WooCommerce
+		if ( ! $this->check_woocommerce_restrictions( $modal_id, $config ) ) {
+			return false;
+		}
+
 		// Verificar reglas de páginas
 		$page_rules_ok = $this->check_page_rules( $config );
 		error_log( "[EWM GENERAL AUTO-INJECTION] Modal {$modal_id} page rules OK: " . ( $page_rules_ok ? 'YES' : 'NO' ) );
@@ -250,6 +285,37 @@ class EWM_General_Auto_Injection {
 		}
 
 		error_log( "[EWM GENERAL AUTO-INJECTION] Modal {$modal_id} ALL CHECKS PASSED" );
+		return true;
+	}
+
+	/**
+	 * Verificar restricciones específicas de WooCommerce
+	 */
+	private function check_woocommerce_restrictions( $modal_id, $config ) {
+		// Si WooCommerce no está disponible, no aplicar restricciones
+		if ( ! function_exists( 'wc_get_page_id' ) ) {
+			error_log( "[EWM GENERAL AUTO-INJECTION] Modal {$modal_id} WooCommerce not available, skipping WC restrictions" );
+			return true;
+		}
+
+		// Verificar si debe omitir páginas de productos WooCommerce
+		// IMPORTANTE: Solo aplicar si está explícitamente configurado como true
+		$omit_wc_products = isset( $config['display_rules']['omit_wc_products'] ) && $config['display_rules']['omit_wc_products'] === true;
+		if ( $omit_wc_products && $this->current_page_type === 'product' ) {
+			error_log( "[EWM GENERAL AUTO-INJECTION] Modal {$modal_id} SKIPPED: Omit WC products enabled and current page is product" );
+			return false;
+		}
+
+		// Verificar si debe omitir páginas de categorías WooCommerce
+		// IMPORTANTE: Solo aplicar si está explícitamente configurado como true
+		$omit_wc_categories = isset( $config['display_rules']['omit_wc_categories'] ) && $config['display_rules']['omit_wc_categories'] === true;
+		if ( $omit_wc_categories && ( $this->current_page_type === 'product_cat' || $this->current_page_type === 'product_tag' ) ) {
+			error_log( "[EWM GENERAL AUTO-INJECTION] Modal {$modal_id} SKIPPED: Omit WC categories enabled and current page is category/tag" );
+			return false;
+		}
+
+		// Si no hay restricciones específicas o están vacías/false, permitir mostrar
+		error_log( "[EWM GENERAL AUTO-INJECTION] Modal {$modal_id} WC restrictions passed (omit_products: " . ($omit_wc_products ? 'true' : 'false') . ", omit_categories: " . ($omit_wc_categories ? 'true' : 'false') . ")" );
 		return true;
 	}
 

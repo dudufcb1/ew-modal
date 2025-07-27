@@ -304,11 +304,14 @@ private function validate_wc_integration( $config ) {
 	 * Validar reglas de visualización
 	 */
 	private function validate_display_rules( $config ) {
-		return array(
-			'enabled'    => ! empty( $config['enabled'] ),
-			'pages'      => array(
-			'include' => array_filter(array_map( [self::class, 'resolve_to_id'], $config['pages']['include'] ?? array() ), function($v){return $v !== null;}),
-			'exclude' => array_filter(array_map( [self::class, 'resolve_to_id'], $config['pages']['exclude'] ?? array() ), function($v){return $v !== null;}),
+		// Verificar si es un modal WooCommerce
+		$is_wc_modal = ! empty( $config['wc_integration_enabled'] );
+
+		$validated = array(
+			'enabled'           => ! empty( $config['enabled'] ),
+			'pages'             => array(
+				'include' => array_filter(array_map( [self::class, 'resolve_to_id'], $config['pages']['include'] ?? array() ), function($v){return $v !== null;}),
+				'exclude' => array_filter(array_map( [self::class, 'resolve_to_id'], $config['pages']['exclude'] ?? array() ), function($v){return $v !== null;}),
 			),
 			'user_roles' => array_map( 'sanitize_text_field', $config['user_roles'] ?? array() ),
 			'devices'    => array(
@@ -317,6 +320,20 @@ private function validate_wc_integration( $config ) {
 				'mobile'  => ! empty( $config['devices']['mobile'] ),
 			),
 		);
+
+		if ( $is_wc_modal ) {
+			// Para modales WooCommerce: forzar valores específicos
+			$validated['use_global_config'] = false; // WooCommerce no usa configuración global
+			$validated['omit_wc_products']  = false; // No aplica (WC maneja su propia lógica)
+			$validated['omit_wc_categories'] = false; // No aplica (WC maneja su propia lógica)
+		} else {
+			// Para modales normales: usar valores del formulario
+			$validated['use_global_config'] = ! empty( $config['use_global_config'] );
+			$validated['omit_wc_products']  = ! empty( $config['omit_wc_products'] );
+			$validated['omit_wc_categories'] = ! empty( $config['omit_wc_categories'] );
+		}
+
+		return $validated;
 	}
 
 	/**

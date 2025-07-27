@@ -398,8 +398,17 @@ function ewm_simulate_modal_detection() {
  * Obtener tipo de página actual (helper function)
  */
 function ewm_get_current_page_type() {
+	global $post;
+
+	// Método 1: Usar funciones condicionales de WordPress (funciona en frontend)
 	if ( is_front_page() ) {
 		return 'home';
+	} elseif ( function_exists( 'is_product' ) && is_product() ) {
+		return 'product';
+	} elseif ( function_exists( 'is_product_category' ) && is_product_category() ) {
+		return 'product_cat';
+	} elseif ( function_exists( 'is_product_tag' ) && is_product_tag() ) {
+		return 'product_tag';
 	} elseif ( is_page() ) {
 		return 'page';
 	} elseif ( is_single() ) {
@@ -414,9 +423,28 @@ function ewm_get_current_page_type() {
 		return 'search';
 	} elseif ( is_404() ) {
 		return '404';
-	} else {
-		return 'other';
 	}
+
+	// Método 2: Fallback basado en post_type (para contextos como WP-CLI)
+	if ( $post && is_object( $post ) ) {
+		switch ( $post->post_type ) {
+			case 'page':
+				// Verificar si es la página de inicio
+				$front_page_id = get_option( 'page_on_front' );
+				if ( $front_page_id && $post->ID == $front_page_id ) {
+					return 'home';
+				}
+				return 'page';
+			case 'post':
+				return 'post';
+			case 'product':
+				return 'product';
+			default:
+				return $post->post_type;
+		}
+	}
+
+	return 'other';
 }
 
 /**
@@ -426,6 +454,26 @@ function ewm_should_modal_show_on_page( $config, $page_type ) {
 	// Verificar si el modal está habilitado
 	if ( isset( $config['display_rules']['enabled'] ) && ! $config['display_rules']['enabled'] ) {
 		return false;
+	}
+
+	// NUEVO: Verificar si usa configuración global (auto-inyección)
+	$use_global_config = isset( $config['display_rules']['use_global_config'] ) ? $config['display_rules']['use_global_config'] : true;
+	if ( ! $use_global_config ) {
+		return false; // Solo funciona con shortcodes
+	}
+
+	// NUEVO: Verificar restricciones específicas de WooCommerce
+	// IMPORTANTE: Solo aplicar si WooCommerce está disponible y está explícitamente configurado como true
+	if ( function_exists( 'wc_get_page_id' ) ) {
+		$omit_wc_products = isset( $config['display_rules']['omit_wc_products'] ) && $config['display_rules']['omit_wc_products'] === true;
+		if ( $omit_wc_products && $page_type === 'product' ) {
+			return false;
+		}
+
+		$omit_wc_categories = isset( $config['display_rules']['omit_wc_categories'] ) && $config['display_rules']['omit_wc_categories'] === true;
+		if ( $omit_wc_categories && ( $page_type === 'product_cat' || $page_type === 'product_tag' ) ) {
+			return false;
+		}
 	}
 
 	// Verificar reglas de páginas
@@ -444,8 +492,8 @@ function ewm_should_modal_show_on_page( $config, $page_type ) {
 
 	// Si hay páginas incluidas, verificar que estemos en una de ellas
 	if ( ! empty( $include_pages ) ) {
-		// Si 'all' o -1 está en las páginas incluidas, mostrar en todas
-		if ( in_array( 'all', $include_pages, true ) || in_array( -1, $include_pages, true ) ) {
+		// Si 'all', -1 o "-1" está en las páginas incluidas, mostrar en todas
+		if ( in_array( 'all', $include_pages, true ) || in_array( -1, $include_pages, true ) || in_array( '-1', $include_pages, true ) ) {
 			return true;
 		}
 
