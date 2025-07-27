@@ -930,3 +930,398 @@ html body .ewm-modal.ewm-modal-visible {
 .ewm-modal-body::-webkit-scrollbar-thumb:hover {
     background: var(--ewm-text-muted);
 }
+
+/* ==========================================================================
+   Centralized Notifications System - Modern Design
+   ========================================================================== */
+
+.ewm-notifications-container {
+    position: relative;
+    margin-bottom: 20px;
+    z-index: 10;
+}
+
+.ewm-notification {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px 20px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    animation: ewmNotificationSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    border: 1px solid;
+    position: relative;
+    overflow: hidden;
+}
+
+.ewm-notification::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: currentColor;
+    border-radius: 2px 0 0 2px;
+}
+
+.ewm-notification-error {
+    background: linear-gradient(135deg, #fef2f2, #fee2e2);
+    border-color: #fecaca;
+    color: #991b1b;
+    animation: ewmNotificationSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1), ewmShakeAttention 0.6s ease-in-out 0.2s;
+}
+
+.ewm-notification-success {
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    border-color: #bbf7d0;
+    color: #166534;
+}
+
+.ewm-notification-warning {
+    background: linear-gradient(135deg, #fffbeb, #fef3c7);
+    border-color: #fde68a;
+    color: #92400e;
+}
+
+.ewm-notification-info {
+    background: linear-gradient(135deg, #eff6ff, #dbeafe);
+    border-color: #bfdbfe;
+    color: #1e40af;
+}
+
+.ewm-notification-icon {
+    font-size: 20px;
+    line-height: 1;
+    flex-shrink: 0;
+    margin-top: 2px;
+    animation: ewmIconBounce 0.6s ease-in-out 0.4s;
+}
+
+.ewm-notification-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.ewm-notification-title {
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 1.4;
+    margin-bottom: 4px;
+}
+
+.ewm-notification-message {
+    font-size: 13px;
+    line-height: 1.5;
+    opacity: 0.9;
+}
+
+.ewm-notification-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: var(--ewm-transition-smooth);
+    opacity: 0.7;
+    flex-shrink: 0;
+}
+
+.ewm-notification-close:hover {
+    background: rgba(0, 0, 0, 0.1);
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.ewm-notification-close:active {
+    transform: scale(0.9);
+}
+
+/* Notification animations */
+@keyframes ewmNotificationSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-16px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes ewmNotificationSlideOut {
+    from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        max-height: 120px;
+        margin-bottom: 16px;
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-16px) scale(0.9);
+        max-height: 0;
+        margin-bottom: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+}
+
+@keyframes ewmShakeAttention {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+    20%, 40%, 60%, 80% { transform: translateX(4px); }
+}
+
+@keyframes ewmIconBounce {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+
+.ewm-notification.ewm-notification-hiding {
+    animation: ewmNotificationSlideOut 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Field error styles for highlighting invalid fields */
+.ewm-field-input.ewm-error {
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
+    animation: ewmFieldErrorPulse 0.4s ease-in-out;
+}
+
+/* HTML5 native validation states */
+.ewm-field-input:invalid {
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1) !important;
+}
+
+.ewm-field-input:valid {
+    border-color: #10b981 !important;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1) !important;
+}
+
+/* Solo aplicar estilos de válido cuando el campo tiene contenido */
+.ewm-field-input:placeholder-shown {
+    border-color: var(--ewm-border-color) !important;
+    box-shadow: none !important;
+}
+
+/* Focused states override valid/invalid temporarily */
+.ewm-field-input:focus {
+    border-color: var(--ewm-border-focus) !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+}
+
+@keyframes ewmFieldErrorPulse {
+    0% { border-color: #e2e8f0; }
+    50% { border-color: #ef4444; }
+    100% { border-color: #ef4444; }
+}
+
+/* ==========================================================================
+   Notifications System
+   ========================================================================== */
+
+.ewm-notifications-container {
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 1000;
+}
+
+.ewm-notification {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+    border-radius: 12px;
+    font-family: var(--ewm-font-family);
+    font-size: 14px;
+    line-height: 1.5;
+    animation: ewmNotificationSlide 0.3s ease-out;
+    position: relative;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.ewm-notification.ewm-error {
+    background: linear-gradient(135deg, #fef2f2, #fee2e2);
+    border: 1px solid #fecaca;
+    color: #dc2626;
+}
+
+.ewm-notification.ewm-success {
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    border: 1px solid #bbf7d0;
+    color: #16a34a;
+}
+
+.ewm-notification.ewm-warning {
+    background: linear-gradient(135deg, #fffbeb, #fef3c7);
+    border: 1px solid #fed7aa;
+    color: #d97706;
+}
+
+.ewm-notification-text {
+    flex: 1;
+    font-weight: 500;
+}
+
+.ewm-notification-close {
+    background: none;
+    border: none;
+    font-size: 18px;
+    font-weight: bold;
+    color: currentColor;
+    opacity: 0.7;
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.ewm-notification-close:hover {
+    opacity: 1;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+@keyframes ewmNotificationSlide {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ==========================================================================
+   Success Step Styles
+   ========================================================================== */
+
+.ewm-success-step {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.ewm-success-content {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.ewm-success-content h3 {
+    color: #16a34a;
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0 0 16px 0;
+    font-family: var(--ewm-font-family);
+    line-height: 1.2;
+}
+
+.ewm-success-content p {
+    color: var(--ewm-text-secondary);
+    font-size: 16px;
+    line-height: 1.6;
+    margin: 0 0 32px 0;
+    font-family: var(--ewm-font-family);
+}
+
+.ewm-success-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #16a34a, #22c55e);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px auto;
+    color: white;
+    font-size: 36px;
+    font-weight: bold;
+    animation: ewmSuccessIconBounce 0.6s ease-out;
+    box-shadow: 0 8px 24px rgba(34, 197, 94, 0.3);
+}
+
+@keyframes ewmSuccessIconBounce {
+    0% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* ==========================================================================
+   Submit Button Loading State
+   ========================================================================== */
+
+.ewm-btn-submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    position: relative;
+}
+
+.ewm-btn-submit:disabled::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    margin: -8px 0 0 -8px;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: ewmButtonSpin 1s linear infinite;
+}
+
+@keyframes ewmButtonSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive design for notifications */
+@media (max-width: 480px) {
+    .ewm-notification {
+        padding: 12px 16px;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+    
+    .ewm-notification-text {
+        font-size: 13px;
+    }
+    
+    .ewm-success-content h3 {
+        font-size: 24px;
+    }
+    
+    .ewm-success-content p {
+        font-size: 14px;
+    }
+    
+    .ewm-success-icon {
+        width: 64px;
+        height: 64px;
+        font-size: 28px;
+        margin-bottom: 20px;
+    }
+}

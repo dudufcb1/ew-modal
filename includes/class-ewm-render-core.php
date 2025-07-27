@@ -387,6 +387,11 @@ class EWM_Render_Core {
 		?>
 		<div class="ewm-form-container" data-modal-id="<?php echo $modal_id; ?>">
 			
+			<!-- Contenedor de notificaciones centralizado -->
+			<div id="ewm-notifications-container" class="ewm-notifications-container" style="display: none;">
+				<!-- Las notificaciones se insertarán dinámicamente aquí -->
+			</div>
+			
 			<?php if ( $progress_bar['enabled'] ) : ?>
 			<div class="ewm-progress-bar" 
 				data-style="<?php echo esc_attr( $progress_bar['style'] ?? 'line' ); ?>"
@@ -550,8 +555,6 @@ class EWM_Render_Core {
 				
 				<?php echo $this->generate_field_input( $field ); ?>
 				
-				<div class="ewm-field-error" style="display: none;"></div>
-				
 			</div>
 			<?php
 		}
@@ -580,7 +583,27 @@ class EWM_Render_Core {
 			$attributes['required'] = 'required';
 		}
 
-		// Agregar atributos de validación
+		// Agregar patrones HTML5 nativos según el tipo de campo
+		switch ( $field_type ) {
+			case 'tel':
+				// Patrón para teléfonos: solo números, espacios, guiones, paréntesis y signo +
+				if ( ! isset( $attributes['pattern'] ) ) {
+					$attributes['pattern'] = '[+]?[0-9\s\-\(\)]+';
+				}
+				$attributes['inputmode'] = 'tel';
+				break;
+			case 'email':
+				$attributes['inputmode'] = 'email';
+				break;
+			case 'url':
+				$attributes['inputmode'] = 'url';
+				break;
+			case 'number':
+				$attributes['inputmode'] = 'numeric';
+				break;
+		}
+
+		// Agregar atributos de validación personalizados
 		if ( ! empty( $validation_rules ) ) {
 			if ( isset( $validation_rules['min_length'] ) ) {
 				$attributes['minlength'] = $validation_rules['min_length'];
@@ -589,6 +612,7 @@ class EWM_Render_Core {
 				$attributes['maxlength'] = $validation_rules['max_length'];
 			}
 			if ( isset( $validation_rules['pattern'] ) ) {
+				// Los patrones personalizados sobrescriben los automáticos
 				$attributes['pattern'] = $validation_rules['pattern'];
 			}
 			// Para campos de rango (range)
@@ -875,8 +899,8 @@ class EWM_Render_Core {
 			array(
 				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
 				'restUrl' => rest_url( 'ewm/v1/' ),
-				// Generar nonce específico para las peticiones AJAX del modal (debe coincidir con check_ajax_referer en el handler)
-				'nonce'   => wp_create_nonce( 'ewm_modal_nonce' ),
+				// Para endpoints públicos REST, usar wp_rest nonce solo si el usuario está logueado
+				'nonce'   => is_user_logged_in() ? wp_create_nonce( 'wp_rest' ) : '',
 				'debug'   => defined( 'WP_DEBUG' ) && WP_DEBUG,
 				'frequencyDebug' => ( get_option( 'ewm_debug_frequency_enabled', '0' ) === '1' ),
 				'strings' => array(

@@ -273,6 +273,9 @@ class EWM_REST_API {
 			)
 		);
 
+		error_log( 'EWM Debug: Submit form route registered: ' . ( $submit_form_route_registered ? 'SUCCESS' : 'FAILED' ) );
+		error_log( 'EWM Debug: Submit form endpoint URL: ' . rest_url( self::NAMESPACE . '/submit-form' ) );
+
 
 
 		// Endpoint para vista previa de modales
@@ -544,7 +547,13 @@ class EWM_REST_API {
 	public function submit_form( $request ) {
 		$start_time = microtime( true );
 
-
+		error_log( 'EWM Debug: === FORM SUBMISSION RECEIVED IN BACKEND ===' );
+		error_log( 'EWM Debug: Request method: ' . $request->get_method() );
+		error_log( 'EWM Debug: Request URL: ' . $request->get_route() );
+		error_log( 'EWM Debug: User logged in: ' . ( is_user_logged_in() ? 'YES' : 'NO' ) );
+		error_log( 'EWM Debug: Current user ID: ' . get_current_user_id() );
+		error_log( 'EWM Debug: Request headers: ' . print_r( $request->get_headers(), true ) );
+		error_log( 'EWM Debug: Raw request body: ' . $request->get_body() );
 
 		try {
 			$modal_id  = (int) $request->get_param( 'modal_id' );
@@ -552,15 +561,13 @@ class EWM_REST_API {
 			$step_data = $request->get_param( 'step_data' );
 
 			// Debug logging detallado
-			error_log( 'EWM Debug: === FORM SUBMISSION RECEIVED IN BACKEND ===' );
 			error_log( 'EWM Debug: Modal ID: ' . $modal_id );
 			error_log( 'EWM Debug: Form Data: ' . print_r( $form_data, true ) );
 			error_log( 'EWM Debug: Step Data: ' . print_r( $step_data, true ) );
-			error_log( 'EWM Debug: Raw Request Body: ' . $request->get_body() );
 
 			// Validar modal ID
 			if ( ! $modal_id || ! get_post( $modal_id ) ) {
-			
+				error_log( 'EWM Debug: Invalid modal ID: ' . $modal_id );
 
 				return new WP_Error(
 					'ewm_invalid_modal',
@@ -571,6 +578,7 @@ class EWM_REST_API {
 
 			// Validar datos del formulario
 			if ( empty( $form_data ) ) {
+				error_log( 'EWM Debug: Empty form data received' );
 
 				return new WP_Error(
 					'ewm_empty_form_data',
@@ -579,16 +587,20 @@ class EWM_REST_API {
 				);
 			}
 
+			error_log( 'EWM Debug: Attempting to process form submission...' );
+
 			// Procesar envío del formulario
 			$submission_id = $this->process_form_submission( $modal_id, $form_data, $step_data );
 
 			if ( is_wp_error( $submission_id ) ) {
-
+				error_log( 'EWM Debug: Form submission processing failed: ' . $submission_id->get_error_message() );
 				return $submission_id;
 			}
 
 			$execution_time = microtime( true ) - $start_time;
 
+			error_log( 'EWM Debug: Form submission successful! Submission ID: ' . $submission_id );
+			error_log( 'EWM Debug: Execution time: ' . $execution_time . ' seconds' );
 
 			// Trigger action hook para integraciones
 			do_action( 'ewm_form_submitted', $submission_id, $modal_id, $form_data );
@@ -602,10 +614,12 @@ class EWM_REST_API {
 			);
 
 		} catch ( Exception $e ) {
+			error_log( 'EWM Debug: Exception caught: ' . $e->getMessage() );
+			error_log( 'EWM Debug: Exception trace: ' . $e->getTraceAsString() );
 
 			return new WP_Error(
 				'ewm_submit_form_error',
-				'Failed to submit form',
+				'Failed to submit form: ' . $e->getMessage(),
 				array( 'status' => 500 )
 			);
 		}
@@ -1539,13 +1553,18 @@ class EWM_REST_API {
 	 * Procesar envío de formulario
 	 */
 	private function process_form_submission( $modal_id, $form_data, $step_data ) {
+		error_log( 'EWM Debug: process_form_submission called' );
+		error_log( 'EWM Debug: Calling EWM_Submission_CPT::create_submission...' );
 	
 		$submission_id = EWM_Submission_CPT::create_submission( $modal_id, $form_data, $step_data );
 
 		if ( is_wp_error( $submission_id ) ) {
+			error_log( 'EWM Debug: create_submission returned WP_Error: ' . $submission_id->get_error_message() );
 			return $submission_id;
 		}
-			return $submission_id;
+
+		error_log( 'EWM Debug: create_submission successful, ID: ' . $submission_id );
+		return $submission_id;
 	}
 
 	/**

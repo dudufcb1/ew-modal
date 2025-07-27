@@ -242,6 +242,9 @@
                 prevBtn.addEventListener('click', () => this.prevStep());
             }
             
+            // NUEVO: Manejo de envío de formulario
+            this.bindFormSubmit();
+            
             // Escape key
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape' && this.isVisible) {
@@ -250,6 +253,333 @@
             });
             
             console.log('EWM Modal Frontend: Events bound');
+        }
+
+        /**
+         * Vincular eventos de envío de formulario
+         */
+        bindFormSubmit() {
+            if (!this.modal) return;
+
+            // Buscar todos los botones de submit
+            const submitButtons = this.modal.querySelectorAll('.ewm-btn-submit');
+            const form = this.modal.querySelector('.ewm-multi-step-form');
+
+            if (!form) {
+                console.log('EWM Modal Frontend: No form found in modal');
+                return;
+            }
+
+            // Event listener para botones submit
+            submitButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.handleFormSubmit(e);
+                });
+            });
+
+            // Event listener para submit del formulario
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.handleFormSubmit(e);
+            });
+
+            console.log(`EWM Modal Frontend: Form submit events bound (${submitButtons.length} buttons)`);
+        }
+
+        /**
+         * Manejar envío de formulario
+         */
+        async handleFormSubmit(e) {
+            e.preventDefault();
+            
+            console.log('EWM Modal Frontend: Form submit initiated');
+            console.log('EWM Modal Frontend: Modal ID:', this.config.modal_id);
+            console.log('EWM Modal Frontend: Window ewmModal config:', window.ewmModal);
+
+            const submitButton = e.target.closest('.ewm-btn-submit') || e.target;
+            
+            // Deshabilitar botón durante envío
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.textContent = 'Enviando...';
+            }
+
+            try {
+                // Recopilar datos del formulario
+                const formData = this.collectFormData();
+                console.log('EWM Modal Frontend: Form data collected:', formData);
+
+                // Validar datos básicos
+                if (!formData || Object.keys(formData).length === 0) {
+                    throw new Error('No se pudieron recopilar los datos del formulario');
+                }
+
+                // Enviar al backend
+                console.log('EWM Modal Frontend: Attempting to submit form data...');
+                const response = await this.submitFormData(formData);
+                console.log('EWM Modal Frontend: Form submitted successfully:', response);
+
+                // Mostrar paso de éxito
+                this.showSuccessStep();
+
+                // Auto-cerrar después de 3 segundos
+                setTimeout(() => {
+                    this.hide();
+                }, 3000);
+
+            } catch (error) {
+                console.error('EWM Modal Frontend: Form submission error:', error);
+                console.error('EWM Modal Frontend: Error details:', {
+                    message: error.message,
+                    stack: error.stack,
+                    name: error.name
+                });
+                this.showErrorMessage(error.message || 'Error al enviar el formulario');
+                
+                // Rehabilitar botón
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Enviar';
+                }
+            }
+        }
+
+        /**
+         * Recopilar datos del formulario multi-paso
+         */
+        collectFormData() {
+            const form = this.modal.querySelector('.ewm-multi-step-form');
+            if (!form) {
+                console.error('EWM Modal Frontend: Form not found');
+                return {};
+            }
+
+            const formData = {};
+            const stepData = [];
+
+            // Recopilar datos de todos los pasos
+            const steps = form.querySelectorAll('.ewm-form-step');
+            steps.forEach((step, index) => {
+                if (step.classList.contains('ewm-success-step')) {
+                    return; // Skip success step
+                }
+
+                const stepId = step.dataset.step || `step_${index + 1}`;
+                const fields = step.querySelectorAll('.ewm-field-input');
+                const stepFields = {};
+
+                fields.forEach(field => {
+                    const name = field.name || field.id;
+                    if (!name) return;
+
+                    let value = '';
+                    
+                    if (field.type === 'checkbox') {
+                        if (field.name.endsWith('[]')) {
+                            // Multiple checkboxes
+                            const baseName = field.name.replace('[]', '');
+                            if (!stepFields[baseName]) stepFields[baseName] = [];
+                            if (field.checked) {
+                                stepFields[baseName].push(field.value);
+                            }
+                        } else {
+                            // Single checkbox
+                            value = field.checked ? (field.value || '1') : '';
+                        }
+                    } else if (field.type === 'radio') {
+                        if (field.checked) {
+                            value = field.value;
+                        } else {
+                            return; // Skip unchecked radios
+                        }
+                    } else {
+                        // Text, email, tel, etc.
+                        value = field.value.trim();
+                    }
+
+                    if (value !== '' && !field.name.endsWith('[]')) {
+                        stepFields[name] = value;
+                        formData[name] = value; // Also add to flat structure
+                    }
+                });
+
+                if (Object.keys(stepFields).length > 0) {
+                    stepData.push({
+                        step_id: stepId,
+                        fields: stepFields
+                    });
+                }
+            });
+
+            console.log('EWM Modal Frontend: Collected step data:', stepData);
+            console.log('EWM Modal Frontend: Collected form data:', formData);
+
+            return {
+                form_data: formData,
+                step_data: stepData,
+                modal_id: this.config.modal_id
+            };
+        }
+
+        /**
+         * Enviar datos al backend via REST API
+         */
+        async submitFormData(data) {
+            const restUrl = (window.ewmModal && window.ewmModal.restUrl) ? 
+                window.ewmModal.restUrl : '/wp-json/ewm/v1/';
+
+            console.log('EWM Modal Frontend: REST URL:', restUrl);
+            console.log('EWM Modal Frontend: Full submit URL:', restUrl + 'submit-form');
+
+            // Para modales públicos, NUNCA usar nonce (evita rest_cookie_invalid_nonce)
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+
+            console.log('EWM Modal Frontend: No nonce sent (public endpoint)');
+            console.log('EWM Modal Frontend: Request headers:', headers);
+            console.log('EWM Modal Frontend: Request data:', data);
+
+            const requestOptions = {
+                method: 'POST',
+                headers: headers,
+                credentials: 'same-origin',
+                body: JSON.stringify(data)
+            };
+
+            console.log('EWM Modal Frontend: Full request options:', requestOptions);
+
+            try {
+                console.log('EWM Modal Frontend: Making fetch request...');
+                const response = await fetch(restUrl + 'submit-form', requestOptions);
+                
+                console.log('EWM Modal Frontend: Response received:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    ok: response.ok,
+                    headers: Array.from(response.headers.entries())
+                });
+
+                if (!response.ok) {
+                    let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+                    
+                    try {
+                        const responseText = await response.text();
+                        console.log('EWM Modal Frontend: Error response text:', responseText);
+                        
+                        const errorData = JSON.parse(responseText);
+                        console.log('EWM Modal Frontend: Parsed error data:', errorData);
+                        
+                        if (errorData && errorData.message) {
+                            errorMessage = errorData.message;
+                        } else if (errorData && errorData.code) {
+                            errorMessage = `Error ${errorData.code}: ${errorData.message || 'Request failed'}`;
+                        }
+                    } catch (parseError) {
+                        console.log('EWM Modal Frontend: Could not parse error response:', parseError);
+                        console.log('EWM Modal Frontend: Raw error response:', responseText || 'No response text');
+                    }
+                    
+                    throw new Error(errorMessage);
+                }
+
+                const responseText = await response.text();
+                console.log('EWM Modal Frontend: Success response text:', responseText);
+                
+                const result = JSON.parse(responseText);
+                console.log('EWM Modal Frontend: Parsed success result:', result);
+                
+                return result;
+
+            } catch (fetchError) {
+                console.error('EWM Modal Frontend: Fetch error:', fetchError);
+                console.error('EWM Modal Frontend: Fetch error type:', fetchError.constructor.name);
+                throw fetchError;
+            }
+        }
+
+        /**
+         * Mostrar paso de éxito
+         */
+        showSuccessStep() {
+            const form = this.modal.querySelector('.ewm-multi-step-form');
+            if (!form) return;
+
+            // Ocultar todos los pasos
+            const steps = form.querySelectorAll('.ewm-form-step');
+            steps.forEach(step => {
+                step.style.display = 'none';
+            });
+
+            // Mostrar paso de éxito
+            let successStep = form.querySelector('.ewm-success-step');
+            if (successStep) {
+                successStep.style.display = 'block';
+            } else {
+                // Crear paso de éxito si no existe
+                successStep = document.createElement('div');
+                successStep.className = 'ewm-form-step ewm-success-step';
+                successStep.innerHTML = `
+                    <div class="ewm-success-content">
+                        <h3>¡Gracias!</h3>
+                        <p>Tu información ha sido enviada exitosamente.</p>
+                        <div class="ewm-success-icon">✓</div>
+                    </div>
+                `;
+                form.appendChild(successStep);
+            }
+
+            console.log('EWM Modal Frontend: Success step shown');
+        }
+
+        /**
+         * Mostrar mensaje de error
+         */
+        showErrorMessage(message) {
+            // Buscar o crear contenedor de notificaciones
+            let notificationContainer = this.modal.querySelector('.ewm-notifications-container');
+            if (!notificationContainer) {
+                notificationContainer = document.createElement('div');
+                notificationContainer.className = 'ewm-notifications-container';
+                const modalBody = this.modal.querySelector('.ewm-modal-body');
+                if (modalBody) {
+                    modalBody.insertBefore(notificationContainer, modalBody.firstChild);
+                }
+            }
+
+            // Crear mensaje de error
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'ewm-notification ewm-error';
+            errorDiv.innerHTML = `
+                <span class="ewm-notification-text">${message}</span>
+                <button type="button" class="ewm-notification-close">&times;</button>
+            `;
+
+            // Limpiar notificaciones previas y agregar nueva
+            notificationContainer.innerHTML = '';
+            notificationContainer.appendChild(errorDiv);
+            notificationContainer.style.display = 'block';
+
+            // Cerrar notificación al hacer clic
+            errorDiv.querySelector('.ewm-notification-close').addEventListener('click', () => {
+                errorDiv.remove();
+                if (notificationContainer.children.length === 0) {
+                    notificationContainer.style.display = 'none';
+                }
+            });
+
+            // Auto-cerrar después de 5 segundos
+            setTimeout(() => {
+                if (errorDiv.parentNode) {
+                    errorDiv.remove();
+                    if (notificationContainer.children.length === 0) {
+                        notificationContainer.style.display = 'none';
+                    }
+                }
+            }, 5000);
+
+            console.log('EWM Modal Frontend: Error message shown:', message);
         }
 
         /**

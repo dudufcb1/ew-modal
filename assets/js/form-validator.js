@@ -26,7 +26,39 @@
             const value = this.getFieldValue(field);
             const errors = [];
 
-            // Validar cada regla
+            // Primero verificar validación HTML5 nativa
+            if (field.checkValidity && !field.checkValidity()) {
+                // Usar mensaje de validación nativo del navegador si está disponible
+                const nativeMessage = field.validationMessage;
+                if (nativeMessage) {
+                    errors.push(nativeMessage);
+                } else {
+                    // Fallback a mensaje personalizado basado en el tipo de campo
+                    const fieldName = this.getFieldName(field);
+                    switch (field.type) {
+                        case 'tel':
+                            errors.push(`${fieldName} debe contener solo números y caracteres válidos para teléfono`);
+                            break;
+                        case 'email':
+                            errors.push(`${fieldName} debe ser un email válido`);
+                            break;
+                        case 'url':
+                            errors.push(`${fieldName} debe ser una URL válida`);
+                            break;
+                        default:
+                            errors.push(`${fieldName} no tiene un formato válido`);
+                    }
+                }
+                // Si falla la validación nativa, no continuar con validaciones personalizadas
+                return {
+                    isValid: false,
+                    errors: errors,
+                    field: field,
+                    value: value
+                };
+            }
+
+            // Si pasa la validación nativa, continuar con validaciones personalizadas
             Object.keys(rules).forEach(ruleName => {
                 const ruleValue = rules[ruleName];
                 const validator = this.rules[ruleName];
@@ -45,12 +77,15 @@
         }
 
         /**
-         * Validar un formulario completo
+         * Validar un formulario completo con notificaciones centralizadas
          */
         validateForm(form) {
             const fields = form.querySelectorAll('input, select, textarea');
             const results = [];
             let isFormValid = true;
+
+            // Limpiar notificaciones anteriores
+            this.clearNotifications();
 
             fields.forEach(field => {
                 const rules = this.getFieldRules(field);
@@ -60,11 +95,17 @@
                 
                 if (!result.isValid) {
                     isFormValid = false;
-                    this.showFieldError(field, result.errors[0]);
+                    field.classList.add('ewm-error');
                 } else {
-                    this.clearFieldError(field);
+                    field.classList.remove('ewm-error');
                 }
             });
+
+            // Mostrar notificación centralizada si hay errores
+            if (!isFormValid) {
+                const errors = results.filter(r => !r.isValid);
+                this.showNotification('error', 'Error de validación', this.buildErrorMessage(errors));
+            }
 
             return {
                 isValid: isFormValid,
@@ -74,12 +115,14 @@
         }
 
         /**
-         * Validar paso del modal
+         * Validar paso del modal con notificaciones centralizadas
          */
         validateStep(stepElement) {
             const fields = stepElement.querySelectorAll('input, select, textarea');
             let isStepValid = true;
             const errors = [];
+
+            // No limpiar notificaciones al inicio para mantener feedback visual
 
             fields.forEach(field => {
                 const rules = this.getFieldRules(field);
@@ -88,11 +131,27 @@
                 if (!result.isValid) {
                     isStepValid = false;
                     errors.push(result);
-                    this.showFieldError(field, result.errors[0]);
+                    // Marcar el campo como error y mostrar notificación inmediatamente
+                    field.classList.add('ewm-error');
                 } else {
-                    this.clearFieldError(field);
+                    field.classList.remove('ewm-error');
                 }
             });
+
+            // Mostrar notificación centralizada si hay errores
+            if (!isStepValid) {
+                const firstError = errors[0];
+                this.showNotification('error', 'Error de validación', firstError.errors[0]);
+                
+                // Hacer focus al primer campo con error para mejor UX
+                const firstErrorField = errors[0].field;
+                if (firstErrorField && typeof firstErrorField.focus === 'function') {
+                    setTimeout(() => firstErrorField.focus(), 100);
+                }
+            } else {
+                // Solo limpiar notificaciones si no hay errores
+                this.clearNotifications();
+            }
 
             return {
                 isValid: isStepValid,
@@ -230,10 +289,27 @@
         }
 
         /**
+         * Obtener nombre del campo para mensajes de error
+         */
+        getFieldName(field) {
+            // Buscar label asociado al campo
+            const label = field.closest('.ewm-field')?.querySelector('.ewm-field-label');
+            if (label) {
+                return label.textContent.replace('*', '').trim();
+            } else if (field.dataset.label) {
+                return field.dataset.label;
+            } else if (field.name && field.name !== field.id) {
+                return field.name;
+            }
+            return 'Este campo';
+        }
+
+        /**
          * Obtener mensaje de error
          */
         getErrorMessage(ruleName, ruleValue, field) {
-            const fieldName = field.dataset.label || field.placeholder || field.name || 'Este campo';
+            // Priorizar label del campo, luego nombre, después placeholder como último recurso
+            let fieldName = this.getFieldName(field);
             
             const messages = {
                 required: `${fieldName} es obligatorio`,
@@ -250,72 +326,174 @@
         }
 
         /**
-         * Mostrar error en el campo
+         * Construir mensaje de error consolidado
          */
-        showFieldError(field, message) {
-            this.clearFieldError(field);
-            
-            field.classList.add('ewm-field-error');
-            
-            const errorElement = document.createElement('div');
-            errorElement.className = 'ewm-field-error-message';
-            errorElement.textContent = message;
-            
-            const wrapper = field.closest('.ewm-field-wrapper') || field.parentNode;
-            wrapper.appendChild(errorElement);
-        }
-
-        /**
-         * Limpiar error del campo
-         */
-        clearFieldError(field) {
-            field.classList.remove('ewm-field-error');
-            
-            const wrapper = field.closest('.ewm-field-wrapper') || field.parentNode;
-            const errorElement = wrapper.querySelector('.ewm-field-error-message');
-            
-            if (errorElement) {
-                errorElement.remove();
+        buildErrorMessage(errors) {
+            if (errors.length === 1) {
+                return errors[0].errors[0];
             }
-        }
-
-        /**
-         * Limpiar todos los errores del formulario
-         */
-        clearFormErrors(form) {
-            const errorFields = form.querySelectorAll('.ewm-field-error');
-            const errorMessages = form.querySelectorAll('.ewm-field-error-message');
             
-            errorFields.forEach(field => field.classList.remove('ewm-field-error'));
-            errorMessages.forEach(message => message.remove());
+            const errorList = errors.map(error => `• ${error.errors[0]}`).join('\n');
+            return `Se encontraron ${errors.length} errores:\n${errorList}`;
         }
 
         /**
-         * Validación en tiempo real
+         * Mostrar notificación centralizada
+         */
+        showNotification(type = 'error', title = '', message = '') {
+            const container = document.getElementById('ewm-notifications-container');
+            if (!container) {
+                console.warn('EWM Validator: Notification container not found');
+                return;
+            }
+
+            // Evitar duplicados - verificar si ya existe una notificación con el mismo mensaje
+            const existingNotification = container.querySelector('.ewm-notification-message');
+            if (existingNotification && existingNotification.textContent.includes(message)) {
+                return; // No mostrar duplicado
+            }
+
+            // Limpiar notificaciones existentes del mismo tipo
+            const existingOfSameType = container.querySelector(`.ewm-notification-${type}`);
+            if (existingOfSameType) {
+                this.hideNotification(existingOfSameType);
+            }
+
+            // Crear notificación
+            const notification = document.createElement('div');
+            notification.className = `ewm-notification ewm-notification-${type}`;
+            
+            // Iconos según el tipo
+            const icons = {
+                error: '⚠️',
+                success: '✅',
+                warning: '⚠️',
+                info: 'ℹ️'
+            };
+
+            notification.innerHTML = `
+                <div class="ewm-notification-icon">${icons[type] || icons.error}</div>
+                <div class="ewm-notification-content">
+                    <div class="ewm-notification-title">${title}</div>
+                    <div class="ewm-notification-message">${message.replace(/\n/g, '<br>')}</div>
+                </div>
+                <button type="button" class="ewm-notification-close" aria-label="Cerrar notificación">&times;</button>
+            `;
+
+            // Agregar al contenedor
+            container.appendChild(notification);
+            container.style.display = 'block';
+
+            // Configurar botón de cerrar
+            const closeBtn = notification.querySelector('.ewm-notification-close');
+            closeBtn.addEventListener('click', () => {
+                this.hideNotification(notification);
+            });
+
+            // Auto-cerrar después de 8 segundos para notificaciones no críticas
+            if (type !== 'error') {
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        this.hideNotification(notification);
+                    }
+                }, 8000);
+            }
+
+            // Hacer scroll hacia la notificación si no está visible
+            container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        /**
+         * Ocultar notificación específica
+         */
+        hideNotification(notification) {
+            notification.classList.add('ewm-notification-hiding');
+            
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                    
+                    // Ocultar contenedor si no hay más notificaciones
+                    const container = document.getElementById('ewm-notifications-container');
+                    if (container && container.children.length === 0) {
+                        container.style.display = 'none';
+                    }
+                }
+            }, 300);
+        }
+
+        /**
+         * Limpiar todas las notificaciones
+         */
+        clearNotifications() {
+            const container = document.getElementById('ewm-notifications-container');
+            if (container) {
+                container.innerHTML = '';
+                container.style.display = 'none';
+            }
+            
+            // También limpiar estados de error en campos
+            const errorFields = document.querySelectorAll('.ewm-error');
+            errorFields.forEach(field => field.classList.remove('ewm-error'));
+        }
+
+        /**
+         * Validación en tiempo real con notificaciones centralizadas
          */
         enableRealTimeValidation(form) {
             const fields = form.querySelectorAll('input, select, textarea');
             
             fields.forEach(field => {
-                // Validar al perder el foco
+                let validationTimeout;
+
+                // Validar al perder el foco (inmediato)
                 field.addEventListener('blur', () => {
-                    const rules = this.getFieldRules(field);
-                    const result = this.validateField(field, rules);
-                    
-                    if (!result.isValid) {
-                        this.showFieldError(field, result.errors[0]);
-                    } else {
-                        this.clearFieldError(field);
-                    }
+                    this.validateFieldRealTime(field, form);
                 });
 
-                // Limpiar error al escribir
+                // Validar al escribir con delay para evitar spam de notificaciones
                 field.addEventListener('input', () => {
-                    if (field.classList.contains('ewm-field-error')) {
-                        this.clearFieldError(field);
+                    // Limpiar error visual inmediatamente al escribir
+                    if (field.classList.contains('ewm-error')) {
+                        field.classList.remove('ewm-error');
                     }
+
+                    // Cancelar validación pendiente
+                    if (validationTimeout) {
+                        clearTimeout(validationTimeout);
+                    }
+
+                    // Validar después de 1 segundo de inactividad
+                    validationTimeout = setTimeout(() => {
+                        this.validateFieldRealTime(field, form);
+                    }, 1000);
+                });
+
+                // Validar inmediatamente al presionar Enter o cambiar valor (para selects)
+                field.addEventListener('change', () => {
+                    this.validateFieldRealTime(field, form);
                 });
             });
+        }
+
+        /**
+         * Validar campo individual en tiempo real
+         */
+        validateFieldRealTime(field, form) {
+            const rules = this.getFieldRules(field);
+            const result = this.validateField(field, rules);
+            
+            if (!result.isValid) {
+                field.classList.add('ewm-error');
+                // Mostrar notificación inmediatamente
+                this.showNotification('error', 'Error de validación', result.errors[0]);
+            } else {
+                field.classList.remove('ewm-error');
+                // Si no hay más campos con error, limpiar notificaciones
+                if (!form.querySelector('.ewm-error')) {
+                    this.clearNotifications();
+                }
+            }
         }
     }
 

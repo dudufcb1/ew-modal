@@ -648,13 +648,22 @@ class EWM_Submission_CPT {
 	 * Crear nuevo lead de formulario
 	 */
 	public static function create_submission( $modal_id, $form_data, $step_data = array() ) {
+		error_log( 'EWM Debug: EWM_Submission_CPT::create_submission called' );
+		error_log( 'EWM Debug: Modal ID: ' . $modal_id );
+		error_log( 'EWM Debug: Form data: ' . print_r( $form_data, true ) );
+		error_log( 'EWM Debug: Step data: ' . print_r( $step_data, true ) );
+
 		// Obtener información de la página de origen
 		$referer_url = $_SERVER['HTTP_REFERER'] ?? '';
 		$page_name   = __( 'Página desconocida', 'ewm-modal-cta' );
 
+		error_log( 'EWM Debug: Referer URL: ' . $referer_url );
+
 		if ( $referer_url ) {
 			$page_name = self::detect_page_name_from_url( $referer_url );
 		}
+
+		error_log( 'EWM Debug: Detected page name: ' . $page_name );
 
 		// Crear título en formato: "Lead obtenido de: nombre_de_la_pagina fecha"
 		$current_date = date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ) );
@@ -664,28 +673,36 @@ class EWM_Submission_CPT {
 			$current_date
 		);
 
-		$submission_id = wp_insert_post(
-			array(
-				'post_type'   => self::POST_TYPE,
-				'post_status' => 'private',
-				'post_title'  => $title,
-				'meta_input'  => array(
-					'modal_id'        => $modal_id,
-					'form_data'       => wp_json_encode( $form_data ),
-					'step_data'       => wp_json_encode( $step_data ),
-					'submission_time' => current_time( 'mysql' ),
-					'ip_address'      => $_SERVER['REMOTE_ADDR'] ?? '',
-					'user_agent'      => $_SERVER['HTTP_USER_AGENT'] ?? '',
-					'referer_url'     => $_SERVER['HTTP_REFERER'] ?? '',
-					'user_id'         => get_current_user_id() ?: '',
-					'session_id'      => session_id() ?: '',
-					'status'          => 'new',
-				),
-			)
+		error_log( 'EWM Debug: Post title: ' . $title );
+
+		$post_data = array(
+			'post_type'   => self::POST_TYPE,
+			'post_status' => 'private',
+			'post_title'  => $title,
+			'meta_input'  => array(
+				'modal_id'        => $modal_id,
+				'form_data'       => wp_json_encode( $form_data ),
+				'step_data'       => wp_json_encode( $step_data ),
+				'submission_time' => current_time( 'mysql' ),
+				'ip_address'      => $_SERVER['REMOTE_ADDR'] ?? '',
+				'user_agent'      => $_SERVER['HTTP_USER_AGENT'] ?? '',
+				'referer_url'     => $_SERVER['HTTP_REFERER'] ?? '',
+				'user_id'         => get_current_user_id() ?: '',
+				'session_id'      => session_id() ?: '',
+				'status'          => 'new',
+			),
 		);
 
-		if ( ! is_wp_error( $submission_id ) ) {
+		error_log( 'EWM Debug: About to call wp_insert_post with data: ' . print_r( $post_data, true ) );
 
+		$submission_id = wp_insert_post( $post_data );
+
+		error_log( 'EWM Debug: wp_insert_post result: ' . print_r( $submission_id, true ) );
+
+		if ( ! is_wp_error( $submission_id ) ) {
+			error_log( 'EWM Debug: Post created successfully with ID: ' . $submission_id );
+		} else {
+			error_log( 'EWM Debug: wp_insert_post failed: ' . $submission_id->get_error_message() );
 		}
 
 		return $submission_id;
