@@ -134,11 +134,11 @@ class EWM_Shortcodes {
 		// Usar el motor de renderizado universal
 		$output = ewm_render_modal_core( $modal_id, $render_config );
 
-		
+		// Notificar que este modal fue renderizado via shortcode (para evitar duplicados en auto-inyección)
+		do_action( 'ewm_modal_rendered_via_shortcode', $modal_id );
 
 		$execution_time = microtime( true ) - $start_time;
-
-		
+		error_log( "[EWM SHORTCODE DEBUG] Modal {$modal_id} rendered in {$execution_time}s" );
 
 		return $output;
 	}
@@ -289,47 +289,11 @@ class EWM_Shortcodes {
 			   return true;
 	   }
 
-	   // --- 1. VALIDACIÓN DE PÁGINAS ---
-	   if ( ! empty( $display_rules['pages'] ) ) {
-		   $current_page_id = get_queried_object_id();
-		   $map_fn = [ 'EWM_Meta_Fields', 'resolve_to_id' ];
-
-		   // EMERGENCY DEBUG: Capturar situación exacta
-		   error_log( "[EWM EMERGENCY DEBUG] Modal $modal_id: current_page_id = " . $current_page_id );
-		   error_log( "[EWM EMERGENCY DEBUG] Modal $modal_id: display_rules_pages = " . wp_json_encode( $display_rules['pages'] ) );
-		   error_log( "[EWM EMERGENCY DEBUG] Modal $modal_id: include raw = " . wp_json_encode( $display_rules['pages']['include'] ?? array() ) );
-		   error_log( "[EWM EMERGENCY DEBUG] Modal $modal_id: exclude raw = " . wp_json_encode( $display_rules['pages']['exclude'] ?? array() ) );
-
-		   // Defensive error handling for array_map callback
-		   if ( ! is_callable( $map_fn ) ) {
-			   error_log( "[EWM SHORTCODE ERROR] Modal $modal_id: resolve_to_id method not callable" );
-			   return false;
-		   }
-
-		   $include_ids = array_filter( array_map( $map_fn, $display_rules['pages']['include'] ?? array() ), function($v){return $v !== null;});
-		   $exclude_ids = array_filter( array_map( $map_fn, $display_rules['pages']['exclude'] ?? array() ), function($v){return $v !== null;});
-		   
-		   // EMERGENCY DEBUG: Mostrar conversiones
-		   error_log( "[EWM EMERGENCY DEBUG] Modal $modal_id: include_ids converted = " . wp_json_encode( $include_ids ) );
-		   error_log( "[EWM EMERGENCY DEBUG] Modal $modal_id: exclude_ids converted = " . wp_json_encode( $exclude_ids ) );
-		   
-		   // VALIDACIÓN DE EXCLUSIÓN 
-		   if ( ! empty( $exclude_ids ) && in_array( $current_page_id, $exclude_ids ) ) {
-			   error_log( "[EWM EMERGENCY DEBUG] Modal $modal_id: EXCLUDE CHECK - current_page_id($current_page_id) in exclude_ids: " . (in_array( $current_page_id, $exclude_ids ) ? 'YES' : 'NO') );
-			   error_log( "[EWM MODAL DECISION] Modal $modal_id: BLOCK (page $current_page_id in exclude list)" );
-			   return false;
-		   }
-		   
-		   // VALIDACIÓN DE INCLUSIÓN
-		   $has_minus_one = in_array( -1, $include_ids );
-		   $has_current_page = in_array( $current_page_id, $include_ids );
-		   error_log( "[EWM EMERGENCY DEBUG] Modal $modal_id: INCLUDE CHECK - has -1: " . ($has_minus_one ? 'YES' : 'NO') . ", has current_page($current_page_id): " . ($has_current_page ? 'YES' : 'NO') );
-		   
-		   if ( ! $has_minus_one && ! empty( $include_ids ) && ! $has_current_page ) {
-			   error_log( "[EWM MODAL DECISION] Modal $modal_id: BLOCK (page $current_page_id not in include list)" );
-			   return false;
-		   }
-	   }
+	   // --- 1. VALIDACIÓN DE PÁGINAS ELIMINADA PARA SHORTCODES ---
+	   // Los shortcodes no deben tener restricciones de páginas ya que el usuario
+	   // decide conscientemente dónde insertarlos. Las restricciones de páginas
+	   // son para el sistema de auto-inyección.
+	   error_log( "[EWM SHORTCODE DEBUG] Modal $modal_id: Skipping page validation for shortcode" );
 
 	   // --- 2. VALIDACIÓN DE ROLES DE USUARIO ---
 	   if ( ! empty( $display_rules['user_roles'] ) ) {

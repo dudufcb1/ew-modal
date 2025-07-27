@@ -39,6 +39,7 @@ require_once EWM_PLUGIN_DIR . 'includes/class-ewm-shortcodes.php';
 require_once EWM_PLUGIN_DIR . 'includes/class-ewm-admin-page.php';
 require_once EWM_PLUGIN_DIR . 'includes/class-ewm-woocommerce.php';
 require_once EWM_PLUGIN_DIR . 'includes/class-ewm-wc-auto-injection.php';
+require_once EWM_PLUGIN_DIR . 'includes/class-ewm-general-auto-injection.php';
 require_once EWM_PLUGIN_DIR . 'includes/class-ewm-performance.php';
 
 // Incluir página de testing (solo en admin)
@@ -287,6 +288,12 @@ function ewm_has_modal_shortcode() {
 		}
 	}
 
+	// NUEVO: Verificar si hay modales configurados para auto-inyección en esta página
+	if ( ewm_has_auto_injectable_modals() ) {
+		error_log( '🔍 DETECTION DEBUG: Auto-injectable modals found, loading assets' );
+		return true;
+	}
+
 	error_log( '🔍 DETECTION DEBUG: Post content length = ' . strlen( $post->post_content ) );
 
 	// Verificar en contenido raw
@@ -320,4 +327,170 @@ function ewm_has_modal_shortcode() {
 
 	error_log( '🔍 DETECTION DEBUG: No shortcode found, returning FALSE' );
 	return false;
+}
+
+/**
+ * Verificar si hay modales configurados para auto-inyección en la página actual
+ */
+function ewm_has_auto_injectable_modals() {
+	// Simular la detección de página (sin ejecutar la inyección real)
+	$detected_modals = ewm_simulate_modal_detection();
+
+	error_log( '🔍 AUTO-INJECT DEBUG: Found ' . count( $detected_modals ) . ' auto-injectable modals' );
+
+	return ! empty( $detected_modals );
+}
+
+/**
+ * Simular detección de modales para la página actual (para encolado de assets)
+ */
+function ewm_simulate_modal_detection() {
+	global $post;
+
+	if ( ! $post ) {
+		return array();
+	}
+
+	// Determinar tipo de página
+	$page_type = ewm_get_current_page_type();
+
+	// Buscar todos los modales publicados
+	$all_modals = get_posts( array(
+		'post_type'      => 'ew_modal',
+		'post_status'    => 'publish',
+		'posts_per_page' => -1,
+	) );
+
+	if ( empty( $all_modals ) ) {
+		return array();
+	}
+
+	$applicable_modals = array();
+
+	foreach ( $all_modals as $modal ) {
+		// Intentar obtener configuración unificada primero
+		$config = get_post_meta( $modal->ID, 'ewm_modal_config', true );
+
+		// Si no existe, construir desde campos separados
+		if ( ! $config || ! is_array( $config ) ) {
+			$config = ewm_build_config_from_separate_fields( $modal->ID );
+		}
+
+		if ( ! $config || ! is_array( $config ) ) {
+			continue;
+		}
+
+		// Verificar si es modal WooCommerce (esos los maneja otro sistema)
+		if ( isset( $config['wc_integration']['enabled'] ) && $config['wc_integration']['enabled'] ) {
+			continue;
+		}
+
+		// Verificar si el modal debe mostrarse en esta página
+		if ( ewm_should_modal_show_on_page( $config, $page_type ) ) {
+			$applicable_modals[] = $modal->ID;
+		}
+	}
+
+	return $applicable_modals;
+}
+
+/**
+ * Obtener tipo de página actual (helper function)
+ */
+function ewm_get_current_page_type() {
+	if ( is_front_page() ) {
+		return 'home';
+	} elseif ( is_page() ) {
+		return 'page';
+	} elseif ( is_single() ) {
+		return 'post';
+	} elseif ( is_category() ) {
+		return 'category';
+	} elseif ( is_tag() ) {
+		return 'tag';
+	} elseif ( is_archive() ) {
+		return 'archive';
+	} elseif ( is_search() ) {
+		return 'search';
+	} elseif ( is_404() ) {
+		return '404';
+	} else {
+		return 'other';
+	}
+}
+
+/**
+ * Verificar si un modal debe mostrarse en la página actual (helper function)
+ */
+function ewm_should_modal_show_on_page( $config, $page_type ) {
+	// Verificar si el modal está habilitado
+	if ( isset( $config['display_rules']['enabled'] ) && ! $config['display_rules']['enabled'] ) {
+		return false;
+	}
+
+	// Verificar reglas de páginas
+	if ( ! isset( $config['display_rules']['pages'] ) ) {
+		return true; // Sin restricciones = mostrar en todas
+	}
+
+	$page_rules = $config['display_rules']['pages'];
+	$include_pages = $page_rules['include'] ?? array();
+	$exclude_pages = $page_rules['exclude'] ?? array();
+
+	// Si hay páginas excluidas, verificar que no estemos en una de ellas
+	if ( ! empty( $exclude_pages ) && in_array( $page_type, $exclude_pages, true ) ) {
+		return false;
+	}
+
+	// Si hay páginas incluidas, verificar que estemos en una de ellas
+	if ( ! empty( $include_pages ) ) {
+		// Si 'all' o -1 está en las páginas incluidas, mostrar en todas
+		if ( in_array( 'all', $include_pages, true ) || in_array( -1, $include_pages, true ) ) {
+			return true;
+		}
+
+		return in_array( $page_type, $include_pages, true );
+	}
+
+	// Sin reglas específicas = mostrar
+	return true;
+}
+
+/**
+ * Construir configuración desde campos separados (para compatibilidad)
+ */
+function ewm_build_config_from_separate_fields( $modal_id ) {
+	$display_rules = get_post_meta( $modal_id, 'ewm_display_rules', true );
+	$wc_integration = get_post_meta( $modal_id, 'ewm_wc_integration', true );
+	$trigger_config = get_post_meta( $modal_id, 'ewm_trigger_config', true );
+	$design_config = get_post_meta( $modal_id, 'ewm_design_config', true );
+	$steps_config = get_post_meta( $modal_id, 'ewm_steps_config', true );
+
+	// Decodificar JSON si es necesario
+	if ( is_string( $display_rules ) ) {
+		$display_rules = json_decode( $display_rules, true );
+	}
+	if ( is_string( $wc_integration ) ) {
+		$wc_integration = json_decode( $wc_integration, true );
+	}
+	if ( is_string( $trigger_config ) ) {
+		$trigger_config = json_decode( $trigger_config, true );
+	}
+	if ( is_string( $design_config ) ) {
+		$design_config = json_decode( $design_config, true );
+	}
+	if ( is_string( $steps_config ) ) {
+		$steps_config = json_decode( $steps_config, true );
+	}
+
+	// Construir configuración unificada
+	$config = array(
+		'display_rules'  => $display_rules ?: array(),
+		'wc_integration' => $wc_integration ?: array(),
+		'triggers'       => $trigger_config ?: array(),
+		'design'         => $design_config ?: array(),
+		'steps'          => $steps_config ?: array(),
+	);
+
+	return $config;
 }

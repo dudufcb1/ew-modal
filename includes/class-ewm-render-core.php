@@ -78,8 +78,12 @@ class EWM_Render_Core {
 			return '';
 		}
 
-		// Evitar renderizado duplicado (solo shortcodes ahora)
-		if ( in_array( $modal_id, $this->rendered_modals ) ) {
+		// Evitar renderizado duplicado
+		if ( isset( $this->rendered_modals[ $modal_id ] ) ) {
+			$previous_source = $this->rendered_modals[ $modal_id ]['source'] ?? 'unknown';
+			$current_source = $config['source'] ?? 'shortcode';
+
+			error_log( "[EWM RENDER DEBUG] Modal {$modal_id} already rendered via {$previous_source}, skipping {$current_source}" );
 			return '';
 		}
 
@@ -974,10 +978,17 @@ class EWM_Render_Core {
 	}
 
 	/**
-	 * Obtener modales renderizados
+	 * Obtener modales renderizados (solo IDs)
 	 */
 	public function get_rendered_modals() {
 		return array_keys( $this->rendered_modals );
+	}
+
+	/**
+	 * Obtener información completa de modales renderizados
+	 */
+	public function get_rendered_modals_info() {
+		return $this->rendered_modals;
 	}
 }
 
