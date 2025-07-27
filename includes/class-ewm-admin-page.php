@@ -822,8 +822,11 @@ class EWM_Admin_Page {
 								<option value="always" <?php selected($frequency_type, 'always'); ?>>
 									<?php _e('Siempre', 'ewm-modal-cta'); ?>
 								</option>
+								<option value="page_load" <?php selected($frequency_type, 'page_load'); ?>>
+									<?php _e('Una vez por carga de página', 'ewm-modal-cta'); ?>
+								</option>
 								<option value="session" <?php selected($frequency_type, 'session'); ?>>
-									<?php _e('Una vez por sesión', 'ewm-modal-cta'); ?>
+									<?php _e('Una vez por sesión (30 minutos)', 'ewm-modal-cta'); ?>
 								</option>
 								<option value="daily" <?php selected($frequency_type, 'daily'); ?>>
 									<?php _e('Una vez por día', 'ewm-modal-cta'); ?>

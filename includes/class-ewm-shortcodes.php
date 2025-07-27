@@ -766,6 +766,8 @@ class EWM_Shortcodes {
 				return WEEK_IN_SECONDS;
 			case 'session':
 				return 30 * MINUTE_IN_SECONDS; // 30 minutos para sesión
+			case 'page_load':
+				return 0; // No persiste entre refreshes - solo durante la carga actual
 			default:
 				return 0; // Sin expiración
 		}

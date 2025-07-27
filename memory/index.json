@@ -364,13 +364,13 @@
     "title": "Corregir error fatal crítico en ewm-modal-cta.php: 'Call to undefined function w..."
   },
   "MODAL_RENDERING_DEBUG_PERMISSIONS": {
-    "snapshot_id": "60c8d691-954a-4989-a643-e5d93c18189e",
+    "snapshot_id": "25b67ae2-d37a-4175-87e7-4c86fa4c416f",
     "task_id": "MODAL_RENDERING_DEBUG_PERMISSIONS",
-    "revision": 1,
-    "status": "doing",
+    "revision": 2,
+    "status": "done",
     "group_id": "GENERAL",
     "can_agent_set_done": true,
-    "timestamp": "2025-07-26T21:21:24.450331Z",
+    "timestamp": "2025-07-27T00:26:29.682797Z",
     "rolled_back": false,
     "rollback_from": null,
     "last_modified_by": "debug_agent",

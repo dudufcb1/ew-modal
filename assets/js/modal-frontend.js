@@ -44,6 +44,7 @@
             this.formData = {};
             this.modal = null;
             this.isVisible = false;
+            this.shownInThisPageLoad = false; // Flag para evitar re-mostrar en la misma carga de página
             this.triggers = config.triggers || {};
             
             this.init();
@@ -262,7 +263,9 @@
             if (this.triggers.time_delay?.enabled) {
                 const delay = this.triggers.time_delay.delay || 5000;
                 setTimeout(() => {
-                    this.show();
+                    if (!this.shownInThisPageLoad) { // Solo mostrar si no se ha mostrado
+                        this.show();
+                    }
                 }, delay);
             }
 
@@ -284,7 +287,8 @@
          */
         initExitIntent() {
             document.addEventListener('mouseleave', (e) => {
-                if (e.clientY <= 0 && !this.isVisible) {
+                // Solo mostrar si: mouse sale por arriba, modal no visible Y no se ha mostrado en esta carga
+                if (e.clientY <= 0 && !this.isVisible && !this.shownInThisPageLoad) {
                     this.show();
                 }
             });
@@ -299,7 +303,8 @@
             window.addEventListener('scroll', () => {
                 const scrolled = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
                 
-                if (scrolled >= percentage && !this.isVisible) {
+                // Solo mostrar si se alcanza porcentaje, no está visible Y no se ha mostrado
+                if (scrolled >= percentage && !this.isVisible && !this.shownInThisPageLoad) {
                     this.show();
                 }
             });
@@ -438,6 +443,7 @@
 
             this.modal.style.display = 'flex';
             this.isVisible = true;
+            this.shownInThisPageLoad = true; // Marcar como mostrado en esta carga de página
             document.body.style.overflow = 'hidden'; // Evitar scroll de la página de fondo
 
             // Poblar campos automáticamente con datos del usuario
