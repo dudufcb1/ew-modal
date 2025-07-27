@@ -46,16 +46,6 @@ if ( is_admin() ) {
 	require_once EWM_PLUGIN_DIR . 'admin/class-ewm-testing-page.php';
 }
 
-// Incluir test del endpoint de modales activos (con verificación tardía de permisos)
-if ( is_admin() ) {
-	// Mover la verificación de permisos a un hook tardío para evitar el error de wp_get_current_user()
-	add_action( 'init', function() {
-		if ( current_user_can( 'manage_options' ) ) {
-			require_once EWM_PLUGIN_DIR . 'tests/test-active-modals-endpoint.php';
-		}
-	}, 10 );
-}
-
 /**
  * Initialize core components
  */
@@ -74,6 +64,12 @@ add_action( 'init', 'ewm_init_core_components', 5 );
 // FIX: Inicializar EWM_Admin_Page antes de admin_menu
 add_action( 'plugins_loaded', function() {
 	EWM_Admin_Page::get_instance();
+	
+	// Inicializar página de limpieza legacy solo en admin
+	if ( is_admin() ) {
+		require_once plugin_dir_path( __FILE__ ) . 'admin/class-ewm-legacy-cleanup-admin.php';
+		EWM_Legacy_Cleanup_Admin::get_instance();
+	}
 }, 1 );
 
 /**
@@ -303,10 +299,8 @@ function ewm_has_modal_shortcode() {
 
 	// Verificar en contenido procesado (para bloques de Gutenberg)
 	$has_ew = has_shortcode( $post->post_content, 'ew_modal' );
-	$has_ewm = has_shortcode( $post->post_content, 'ewm_modal' );
 	error_log( '🔍 DETECTION DEBUG: has_shortcode(ew_modal) = ' . ( $has_ew ? 'TRUE' : 'FALSE' ) );
-	error_log( '🔍 DETECTION DEBUG: has_shortcode(ewm_modal) = ' . ( $has_ewm ? 'TRUE' : 'FALSE' ) );
-	if ( $has_ew || $has_ewm ) {
+	if ( $has_ew ) {
 		error_log( '🔍 DETECTION DEBUG: Found via has_shortcode, returning TRUE' );
 		return true;
 	}
@@ -315,8 +309,8 @@ function ewm_has_modal_shortcode() {
 	$has_wp_shortcode = strpos( $post->post_content, '<!-- wp:shortcode -->' ) !== false;
 	error_log( '🔍 DETECTION DEBUG: Has wp:shortcode blocks = ' . ( $has_wp_shortcode ? 'TRUE' : 'FALSE' ) );
 	if ( $has_wp_shortcode ) {
-		// Extraer contenido de bloques shortcode
-		preg_match_all( '/<!-- wp:shortcode -->\s*\[(?:ew_modal|ewm_modal)[^\]]*\]\s*<!-- \/wp:shortcode -->/', $post->post_content, $matches );
+		// Extraer contenido de bloques shortcode (solo ew_modal actual)
+		preg_match_all( '/<!-- wp:shortcode -->\s*\[ew_modal[^\]]*\]\s*<!-- \/wp:shortcode -->/', $post->post_content, $matches );
 		error_log( '🔍 DETECTION DEBUG: Regex matches = ' . count( $matches[0] ) );
 		if ( ! empty( $matches[0] ) ) {
 			error_log( '🔍 DETECTION DEBUG: Found via regex, returning TRUE' );

@@ -66,8 +66,8 @@ class EWM_Performance {
 	 * Configurar sistema de cache
 	 */
 	public function setup_caching() {
-		// Configurar transients para cache de configuraciones
-		add_filter( 'ewm_modal_configuration', array( $this, 'cache_modal_config' ), 10, 2 );
+		// Configurar transients para cache de configuraciones (solo sistema actual)
+		add_filter( 'ew_modal_configuration', array( $this, 'cache_modal_config' ), 10, 2 );
 	}
 
 	/**
@@ -318,7 +318,7 @@ class EWM_Performance {
 	 * Cache de configuración de modal
 	 */
 	public function cache_modal_config( $config, $modal_id ) {
-		$cache_key = "ewm_modal_config_{$modal_id}";
+		$cache_key = "ew_modal_config_{$modal_id}";
 
 		// Verificar cache
 		$cached_config = get_transient( $cache_key );
@@ -340,7 +340,7 @@ class EWM_Performance {
 			return;
 		}
 
-		$cache_key = "ewm_modal_config_{$post_id}";
+		$cache_key = "ew_modal_config_{$post_id}";
 		delete_transient( $cache_key );
 
 		// Limpiar cache relacionado
@@ -382,13 +382,13 @@ class EWM_Performance {
 			function () {
 				global $wpdb;
 
-				// Verificar si los índices existen
-				$indexes = $wpdb->get_results( "SHOW INDEX FROM {$wpdb->postmeta} WHERE Key_name LIKE 'ewm_%'" );
+				// Verificar si los índices existen (solo para sistema actual)
+				$indexes = $wpdb->get_results( "SHOW INDEX FROM {$wpdb->postmeta} WHERE Key_name LIKE 'ew_%'" );
 
 				if ( empty( $indexes ) ) {
-					// Crear índices para meta queries frecuentes
-					$wpdb->query( "ALTER TABLE {$wpdb->postmeta} ADD INDEX ewm_modal_mode (meta_key(20), meta_value(10))" );
-					$wpdb->query( "ALTER TABLE {$wpdb->postmeta} ADD INDEX ewm_wc_integration (meta_key(20), meta_value(20))" );
+					// Crear índices para meta queries frecuentes (solo sistema actual)
+					$wpdb->query( "ALTER TABLE {$wpdb->postmeta} ADD INDEX ew_steps_config (meta_key(20), meta_value(20))" );
+					$wpdb->query( "ALTER TABLE {$wpdb->postmeta} ADD INDEX ew_wc_integration (meta_key(20), meta_value(20))" );
 				}
 			}
 		);

@@ -22,7 +22,7 @@ class EWM_Render_Core {
 	private static $instance = null;
 
 	/**
-	 * Modales renderizados en la página actual
+	 * Modales renderizados en la página actual con sus configuraciones
 	 */
 	private $rendered_modals = array();
 
@@ -103,8 +103,8 @@ class EWM_Render_Core {
 		// Generar HTML del modal
 		$html = $this->generate_modal_html( $modal_id, $render_config );
 
-		// Registrar modal como renderizado
-		$this->rendered_modals[] = $modal_id;
+		// Registrar modal como renderizado con su configuración para JavaScript
+		$this->rendered_modals[ $modal_id ] = $render_config;
 
 		return $html;
 	}
@@ -174,9 +174,9 @@ class EWM_Render_Core {
 		$config['modal_id'] = $modal_id;
 		$config['title'] = get_the_title( $modal_id );
 
-		// Mantener compatibilidad con mode por separado
+		// Asegurar que existe un modo por defecto
 		if ( ! isset( $config['mode'] ) || empty( $config['mode'] ) ) {
-			$config['mode'] = get_post_meta( $modal_id, 'ewm_modal_mode', true ) ?: 'formulario';
+			$config['mode'] = 'formulario';
 		}
 
 		// Mantener compatibilidad con custom_css por separado
@@ -210,9 +210,8 @@ class EWM_Render_Core {
 		// Aplicar valores por defecto
 		$config = $this->apply_default_config( $config );
 
-		// BYPASS TEMPORAL: Deshabilitar filtro que corrompe configuración
-		// return apply_filters( 'ewm_modal_configuration', $config, $modal_id );
-		return $config;
+		// Aplicar filtros para el sistema actual
+		return apply_filters( 'ew_modal_configuration', $config, $modal_id );
 	}
 
 	/**
@@ -341,11 +340,11 @@ class EWM_Render_Core {
 	   $html_output .= "
 	   <script>
 	   // Auto-inicializar modal {$modal_id}
-	   if (typeof window.ewm_modal_configs === 'undefined') {
-		   window.ewm_modal_configs = [];
+	   if (typeof window.ew_modal_configs === 'undefined') {
+		   window.ew_modal_configs = [];
 	   }
 
-	   window.ewm_modal_configs.push(" . wp_json_encode( $config ) . ");
+	   window.ew_modal_configs.push(" . wp_json_encode( $config ) . ");
 	   </script>";
 
 		return $html_output;
@@ -806,6 +805,7 @@ class EWM_Render_Core {
 		// DEBUGGING: Log de configuración antes de generar data-config
 		error_log( 'EWM DATA-CONFIG FINAL - Modal ' . $modal_id . ' triggers: ' . json_encode( $config['triggers'] ?? 'MISSING' ) );
 		error_log( 'EWM DATA-CONFIG FINAL - Modal ' . $modal_id . ' display_rules: ' . json_encode( $config['display_rules'] ?? 'MISSING' ) );
+		error_log( 'EWM DATA-CONFIG COMPLETE - Modal ' . $modal_id . ' FULL CONFIG: ' . json_encode( $config, JSON_PRETTY_PRINT ) );
 
 		// Determinar si WooCommerce está habilitado
 		$is_woocommerce = isset( $config['wc_integration']['enabled'] ) && $config['wc_integration']['enabled'] === true;
@@ -907,12 +907,29 @@ class EWM_Render_Core {
 			return;
 		}
 
+		// Preparar configuraciones para JavaScript
+		$modal_configs = array();
+		foreach ( $this->rendered_modals as $modal_id => $config ) {
+			$modal_configs[] = array(
+				'modal_id'       => $modal_id,
+				'triggers'       => $config['triggers'] ?? array(),
+				'design'         => $config['design'] ?? array(),
+				'steps'          => $config['steps'] ?? array(),
+				'wc_integration' => $config['wc_integration'] ?? array(),
+				'display_rules'  => $config['display_rules'] ?? array(),
+				'title'          => $config['title'] ?? '',
+				'mode'           => $config['mode'] ?? 'formulario'
+			);
+		}
+
 		?>
 		<script type="text/javascript">
+		// Configuraciones de modales para JavaScript
+		window.ewm_modal_configs = <?php echo wp_json_encode( $modal_configs ); ?>;
+
 		document.addEventListener('DOMContentLoaded', function() {
 			if (typeof EWMModalFrontend !== 'undefined') {
-				<?php foreach ( $this->rendered_modals as $modal_id ) : ?>
-				// Los modales se auto-inicializan con la nueva arquitectura
+				<?php foreach ( array_keys( $this->rendered_modals ) as $modal_id ) : ?>
 				console.log('Modal <?php echo $modal_id; ?> ready for auto-initialization');
 				<?php endforeach; ?>
 			}
@@ -936,7 +953,7 @@ class EWM_Render_Core {
 	 * Obtener modales renderizados
 	 */
 	public function get_rendered_modals() {
-		return $this->rendered_modals;
+		return array_keys( $this->rendered_modals );
 	}
 }
 

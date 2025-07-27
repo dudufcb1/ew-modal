@@ -77,7 +77,7 @@ class EWM_REST_API {
 		if ( ! $modal_post || $modal_post->post_type !== 'ew_modal' ) {
 			return rest_ensure_response( array( 'result' => 'will not show', 'reason' => 'modal not found' ) );
 		}
-		$config_json = get_post_meta( $modal_id, 'ewm_modal_config', true );
+		$config_json = get_post_meta( $modal_id, 'ewm_steps_config', true );
 		if ( empty( $config_json ) ) {
 			$config = array();
 		} else {
@@ -432,12 +432,12 @@ class EWM_REST_API {
 				return new WP_Error( 'modal_not_found', __( 'Modal no encontrado.', 'ewm-modal-cta' ), array( 'status' => 404 ) );
 			}
 
-			// REFACTORIZACIÓN: SOLO leer de ewm_modal_config (API-Only)
-			$config_json = get_post_meta( $modal_id, 'ewm_modal_config', true );
-			error_log( '🔍 EWM LOAD DEBUG: ewm_modal_config contenido: ' . $config_json );
+			// Cargar configuración usando el sistema actual
+			$config_json = get_post_meta( $modal_id, 'ewm_steps_config', true );
+			error_log( '🔍 EWM LOAD DEBUG: ewm_steps_config contenido: ' . $config_json );
 
 			if ( empty( $config_json ) ) {
-				error_log( '🔍 EWM LOAD DEBUG: ewm_modal_config vacío, devolviendo configuración por defecto' );
+				error_log( '🔍 EWM LOAD DEBUG: ewm_steps_config vacío, devolviendo configuración por defecto' );
 				$config = $this->get_default_config();
 			} else {
 				$config = json_decode( $config_json, true );
@@ -504,11 +504,13 @@ class EWM_REST_API {
 					'post_title'  => $title,
 					'post_type'   => 'ew_modal',
 					'post_status' => 'publish',
-					'meta_input'  => array(
-						'ewm_modal_config' => wp_json_encode( $config ),
-					),
 				)
 			);
+
+			if ( ! is_wp_error( $post_id ) ) {
+				// Guardar configuración usando el sistema actual
+				EWM_Modal_CPT::save_modal_config( $post_id, $config );
+			}
 
 
 			if ( is_wp_error( $post_id ) ) {
@@ -664,7 +666,7 @@ class EWM_REST_API {
 			error_log( 'EWM DEBUG: update_modal - checking config: ' . ( ! empty( $config ) ? 'NOT EMPTY' : 'EMPTY' ) );
 
 			if ( ! empty( $config ) ) {
-				error_log( '🔍 EWM SAVE DEBUG: REFACTORIZACIÓN - API-Only guardando solo en ewm_modal_config' );
+				error_log( '🔍 EWM SAVE DEBUG: Configuración guardada usando sistema actual' );
 				error_log( '🔍 EWM SAVE DEBUG: Config a guardar: ' . wp_json_encode( $config ) );
 				error_log( '🔍 EWM SAVE DEBUG: Config size: ' . strlen( wp_json_encode( $config ) ) . ' bytes' );
 
@@ -673,21 +675,14 @@ class EWM_REST_API {
 					$config['schema_version'] = '2.0.0';
 				}
 
-				// VERIFICAR ESTADO ANTES DEL GUARDADO
-				$before_save = get_post_meta( $modal_id, 'ewm_modal_config', true );
-				error_log( '🔍 EWM SAVE DEBUG: Estado ANTES del guardado: ' . $before_save );
+				// Guardar usando el sistema actual
+				EWM_Modal_CPT::save_modal_config( $modal_id, $config );
+				error_log( '🔍 EWM SAVE DEBUG: Configuración guardada usando sistema actual' );
 
-				// REFACTORIZACIÓN: SOLO guardar en ewm_modal_config (API-Only)
-				$meta_result = update_post_meta( $modal_id, 'ewm_modal_config', wp_json_encode( $config ) );
-				error_log( '🔍 EWM SAVE DEBUG: update_post_meta result: ' . var_export( $meta_result, true ) );
+				// Verificar que se guardó correctamente
+				$saved_config = EWM_Modal_CPT::get_modal_config( $modal_id );
+				error_log( '🔍 EWM SAVE DEBUG: Configuración verificada: ' . wp_json_encode( $saved_config ) );
 
-				// VERIFICAR ESTADO DESPUÉS DEL GUARDADO
-				$after_save = get_post_meta( $modal_id, 'ewm_modal_config', true );
-				error_log( '🔍 EWM SAVE DEBUG: Estado DESPUÉS del guardado: ' . $after_save );
-				error_log( '🔍 EWM SAVE DEBUG: Datos guardados correctamente: ' . ( $after_save === wp_json_encode( $config ) ? 'SÍ' : 'NO' ) );
-
-				$saved_config = get_post_meta( $modal_id, 'ewm_modal_config', true );
-			
 			}
 
 			$execution_time = microtime( true ) - $start_time;
@@ -995,32 +990,22 @@ class EWM_REST_API {
 			'post_type'      => 'ew_modal',
 			'post_status'    => 'publish',
 			'posts_per_page' => -1, // Obtener todos los modales
-			'meta_query'     => array(
-				array(
-					'key'     => 'ewm_modal_config',
-					'compare' => 'EXISTS',
-				),
-			),
 		);
 
 		$query  = new WP_Query( $args );
 		$modals = array();
 
 		foreach ( $query->posts as $post ) {
-			$config_json = get_post_meta( $post->ID, 'ewm_modal_config', true );
+			$config = EWM_Modal_CPT::get_modal_config( $post->ID );
 			
-			if ( ! empty( $config_json ) ) {
-				$config = json_decode( $config_json, true );
-				
-				if ( json_last_error() === JSON_ERROR_NONE && $config ) {
-					$modals[] = array(
-						'id'           => $post->ID,
-						'title'        => $post->post_title,
-						'config'       => $config,
-						'created_date' => $post->post_date,
-						'modified_date'=> $post->post_modified,
-					);
-				}
+			if ( ! empty( $config ) ) {
+				$modals[] = array(
+					'id'           => $post->ID,
+					'title'        => $post->post_title,
+					'config'       => $config,
+					'created_date' => $post->post_date,
+					'modified_date'=> $post->post_modified,
+				);
 			}
 		}
 
@@ -1536,12 +1521,12 @@ class EWM_REST_API {
 	 * Preparar modal para respuesta
 	 */
 	private function prepare_modal_for_response( $post ) {
-		$config = get_post_meta( $post->ID, 'ewm_modal_config', true );
+		$config = EWM_Modal_CPT::get_modal_config( $post->ID );
 
 		return array(
 			'id'       => $post->ID,
 			'title'    => $post->post_title,
-			'config'   => $config ? json_decode( $config, true ) : array(),
+			'config'   => $config,
 			'created'  => $post->post_date,
 			'modified' => $post->post_modified,
 		);

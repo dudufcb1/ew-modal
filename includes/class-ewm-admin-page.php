@@ -313,7 +313,7 @@ class EWM_Admin_Page {
 				$modal_data = array(
 					'id'             => $modal_id,
 					'title'          => $modal_post->post_title,
-					'mode'           => get_post_meta($modal_id, 'ewm_modal_mode', true) ?: 'formulario',
+					'mode'           => 'formulario', // Modo por defecto del sistema actual
 					'steps'          => $steps_json ? json_decode($steps_json, true) : array(),
 					'design'         => $design_json ? json_decode($design_json, true) : array(),
 					'triggers'       => $triggers_json ? json_decode($triggers_json, true) : array(),
@@ -1060,7 +1060,7 @@ class EWM_Admin_Page {
 			$modal_data = array(
 				'id'             => $modal_id,
 				'title'          => $modal_post->post_title,
-				'mode'           => get_post_meta($modal_id, 'ewm_modal_mode', true) ?: 'formulario',
+				'mode'           => 'formulario', // Modo por defecto del sistema actual
 				'steps'          => $steps_json ? json_decode($steps_json, true) : array(),
 				'design'         => $design_json ? json_decode($design_json, true) : array(),
 				'triggers'       => $triggers_json ? json_decode($triggers_json, true) : array(),
@@ -1118,9 +1118,6 @@ class EWM_Admin_Page {
 				'post_type'   => 'ew_modal',
 				'post_title'  => sanitize_text_field($modal_data['title'] ?? __('Nuevo Modal', 'ewm-modal-cta')),
 				'post_status' => 'publish',
-				'meta_input'  => array(
-					'ewm_modal_mode' => sanitize_text_field($modal_data['mode'] ?? 'formulario'),
-				),
 			)
 		);
 
@@ -1148,8 +1145,6 @@ class EWM_Admin_Page {
 		if (is_wp_error($result)) {
 			throw new Exception(__('Error al actualizar el modal.', 'ewm-modal-cta'));
 		}
-
-		update_post_meta($modal_id, 'ewm_modal_mode', sanitize_text_field($modal_data['mode'] ?? 'formulario'));
 
 		$this->save_modal_meta($modal_id, $modal_data);
 

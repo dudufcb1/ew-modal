@@ -108,9 +108,7 @@ class EWM_Shortcodes {
 
 		if ( ! $modal_id ) {
 			error_log( "[EWM SHORTCODE DEBUG] ABORTING: Invalid modal ID" );
-
-			// TEMPORAL: Forzar mensaje de error para debug
-			return '<div class="ewm-error">Error: Modal ID inválido o modal no encontrado. ID proporcionado: ' . esc_html( $atts['id'] ) . '</div>';
+			return '';
 		}
 
 		
@@ -122,8 +120,7 @@ class EWM_Shortcodes {
 
 		if ( ! $can_display ) {
 			error_log( "[EWM SHORTCODE DEBUG] ABORTING: Cannot display modal" );
-			// TEMPORAL: Forzar mensaje de error para debug
-			return '<div class="ewm-error">Error: Permisos insuficientes para mostrar el modal.</div>';
+			return '';
 		}
 
 		
@@ -297,6 +294,12 @@ class EWM_Shortcodes {
 		   $current_page_id = get_queried_object_id();
 		   $map_fn = [ 'EWM_Meta_Fields', 'resolve_to_id' ];
 
+		   // EMERGENCY DEBUG: Capturar situación exacta
+		   error_log( "[EWM EMERGENCY DEBUG] Modal $modal_id: current_page_id = " . $current_page_id );
+		   error_log( "[EWM EMERGENCY DEBUG] Modal $modal_id: display_rules_pages = " . wp_json_encode( $display_rules['pages'] ) );
+		   error_log( "[EWM EMERGENCY DEBUG] Modal $modal_id: include raw = " . wp_json_encode( $display_rules['pages']['include'] ?? array() ) );
+		   error_log( "[EWM EMERGENCY DEBUG] Modal $modal_id: exclude raw = " . wp_json_encode( $display_rules['pages']['exclude'] ?? array() ) );
+
 		   // Defensive error handling for array_map callback
 		   if ( ! is_callable( $map_fn ) ) {
 			   error_log( "[EWM SHORTCODE ERROR] Modal $modal_id: resolve_to_id method not callable" );
@@ -305,11 +308,24 @@ class EWM_Shortcodes {
 
 		   $include_ids = array_filter( array_map( $map_fn, $display_rules['pages']['include'] ?? array() ), function($v){return $v !== null;});
 		   $exclude_ids = array_filter( array_map( $map_fn, $display_rules['pages']['exclude'] ?? array() ), function($v){return $v !== null;});
+		   
+		   // EMERGENCY DEBUG: Mostrar conversiones
+		   error_log( "[EWM EMERGENCY DEBUG] Modal $modal_id: include_ids converted = " . wp_json_encode( $include_ids ) );
+		   error_log( "[EWM EMERGENCY DEBUG] Modal $modal_id: exclude_ids converted = " . wp_json_encode( $exclude_ids ) );
+		   
+		   // VALIDACIÓN DE EXCLUSIÓN 
 		   if ( ! empty( $exclude_ids ) && in_array( $current_page_id, $exclude_ids ) ) {
+			   error_log( "[EWM EMERGENCY DEBUG] Modal $modal_id: EXCLUDE CHECK - current_page_id($current_page_id) in exclude_ids: " . (in_array( $current_page_id, $exclude_ids ) ? 'YES' : 'NO') );
 			   error_log( "[EWM MODAL DECISION] Modal $modal_id: BLOCK (page $current_page_id in exclude list)" );
 			   return false;
 		   }
-		   if ( ! in_array( -1, $include_ids ) && ! empty( $include_ids ) && ! in_array( $current_page_id, $include_ids ) ) {
+		   
+		   // VALIDACIÓN DE INCLUSIÓN
+		   $has_minus_one = in_array( -1, $include_ids );
+		   $has_current_page = in_array( $current_page_id, $include_ids );
+		   error_log( "[EWM EMERGENCY DEBUG] Modal $modal_id: INCLUDE CHECK - has -1: " . ($has_minus_one ? 'YES' : 'NO') . ", has current_page($current_page_id): " . ($has_current_page ? 'YES' : 'NO') );
+		   
+		   if ( ! $has_minus_one && ! empty( $include_ids ) && ! $has_current_page ) {
 			   error_log( "[EWM MODAL DECISION] Modal $modal_id: BLOCK (page $current_page_id not in include list)" );
 			   return false;
 		   }
@@ -429,10 +445,15 @@ class EWM_Shortcodes {
 		$user_id = get_current_user_id();
 		$user_ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
 
+		// Obtener la configuración de frecuencia ACTUAL del modal
+		$frequency_config = $this->get_modal_frequency_config( $modal_id );
+		$frequency_type = $frequency_config['type'] ?? 'session';
+
 		// Usar user_id si está logueado, sino usar hash de IP
 		$identifier = $user_id ? "user_{$user_id}" : "ip_" . md5( $user_ip );
 
-		return "ewm_modal_{$modal_id}_{$identifier}";
+		// La clave ahora incluye el tipo de frecuencia, aislando el estado
+		return "ewm_modal_{$modal_id}_{$frequency_type}_{$identifier}";
 	}
 
 	/**

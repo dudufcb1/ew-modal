@@ -30,7 +30,6 @@ class EWM_Modal_CPT {
 	 * Meta fields del modal
 	 */
 	private $meta_fields = array(
-		'ewm_modal_mode',           // 'formulario' | 'anuncio'
 		'ewm_steps_config',         // JSON con configuración de pasos (Opción A)
 		'ewm_steps_serialized',     // String serializado para casos complejos (Opción B)
 		'ewm_use_serialized',       // Boolean: true = usar serialized, false = usar JSON
@@ -176,29 +175,10 @@ class EWM_Modal_CPT {
 	public function render_config_meta_box( $post ) {
 		wp_nonce_field( 'ewm_modal_meta_box', 'ewm_modal_meta_box_nonce' );
 
-		$modal_mode     = get_post_meta( $post->ID, 'ewm_modal_mode', true ) ?: 'formulario';
 		$use_serialized = get_post_meta( $post->ID, 'ewm_use_serialized', true );
 
 		?>
 		<table class="form-table">
-			<tr>
-				<th scope="row">
-					<label for="ewm_modal_mode"><?php _e( 'Modo del Modal', 'ewm-modal-cta' ); ?></label>
-				</th>
-				<td>
-					<select name="ewm_modal_mode" id="ewm_modal_mode">
-						<option value="formulario" <?php selected( $modal_mode, 'formulario' ); ?>>
-							<?php _e( 'Formulario Multi-Paso', 'ewm-modal-cta' ); ?>
-						</option>
-						<option value="anuncio" <?php selected( $modal_mode, 'anuncio' ); ?>>
-							<?php _e( 'Anuncio/Notificación', 'ewm-modal-cta' ); ?>
-						</option>
-					</select>
-					<p class="description">
-						<?php _e( 'Selecciona el tipo de modal que deseas crear.', 'ewm-modal-cta' ); ?>
-					</p>
-				</td>
-			</tr>
 			<tr>
 				<th scope="row">
 					<label for="ewm_use_serialized"><?php _e( 'Tipo de Almacenamiento', 'ewm-modal-cta' ); ?></label>
@@ -275,12 +255,8 @@ class EWM_Modal_CPT {
 		}
 
 		// Guardar campos
-		$modal_mode = sanitize_text_field( $_POST['ewm_modal_mode'] ?? 'formulario' );
-		update_post_meta( $post_id, 'ewm_modal_mode', $modal_mode );
-
 		$use_serialized = isset( $_POST['ewm_use_serialized'] ) ? '1' : '0';
 		update_post_meta( $post_id, 'ewm_use_serialized', $use_serialized );
-
 
 	}
 
@@ -291,7 +267,6 @@ class EWM_Modal_CPT {
 		$new_columns               = array();
 		$new_columns['cb']         = $columns['cb'];
 		$new_columns['title']      = $columns['title'];
-		$new_columns['modal_mode'] = __( 'Modo', 'ewm-modal-cta' );
 		$new_columns['shortcode']  = __( 'Shortcode', 'ewm-modal-cta' );
 		$new_columns['date']       = $columns['date'];
 
@@ -303,13 +278,6 @@ class EWM_Modal_CPT {
 	 */
 	public function custom_column_content( $column, $post_id ) {
 		switch ( $column ) {
-			case 'modal_mode':
-				$mode = get_post_meta( $post_id, 'ewm_modal_mode', true ) ?: 'formulario';
-				echo $mode === 'formulario' ?
-					__( 'Formulario', 'ewm-modal-cta' ) :
-					__( 'Anuncio', 'ewm-modal-cta' );
-				break;
-
 			case 'shortcode':
 				if ( get_post_status( $post_id ) === 'publish' ) {
 					echo '<code>[ew_modal id="' . $post_id . '"]</code>';
