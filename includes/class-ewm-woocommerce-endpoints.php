@@ -17,7 +17,6 @@ class EWM_WooCommerce_Endpoints {
     }
 
     public static function register_routes() {
-        error_log('[EWM DEBUG] Ejecutando register_routes de EWM_WooCommerce_Endpoints');
         register_rest_route('ewm/v1', '/coupons', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'get_coupons'],

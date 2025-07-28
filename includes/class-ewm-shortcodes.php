@@ -79,7 +79,6 @@ class EWM_Shortcodes {
 	 * Renderizar shortcode principal [ew_modal]
 	 */
 	public function render_modal_shortcode( $atts, $content = null ) {
-		error_log( "[EWM SHORTCODE DEBUG] render_modal_shortcode called with atts: " . wp_json_encode( $atts ) );
 		$start_time = microtime( true );
 
 		
@@ -104,22 +103,16 @@ class EWM_Shortcodes {
 		// Validar ID del modal
 		$modal_id = $this->validate_modal_id( $atts['id'] );
 
-		error_log( "[EWM SHORTCODE DEBUG] validate_modal_id result: " . ( $modal_id ?: 'FALSE' ) );
-
 		if ( ! $modal_id ) {
-			error_log( "[EWM SHORTCODE DEBUG] ABORTING: Invalid modal ID" );
 			return '';
 		}
 
 		
 
 		// Verificar permisos de visualización
-		error_log( "[EWM SHORTCODE DEBUG] Checking can_display_modal for modal {$modal_id}" );
 		$can_display = $this->can_display_modal( $modal_id );
-		error_log( "[EWM SHORTCODE DEBUG] can_display_modal result: " . ( $can_display ? 'TRUE' : 'FALSE' ) );
 
 		if ( ! $can_display ) {
-			error_log( "[EWM SHORTCODE DEBUG] ABORTING: Cannot display modal" );
 			return '';
 		}
 
@@ -138,7 +131,6 @@ class EWM_Shortcodes {
 		do_action( 'ewm_modal_rendered_via_shortcode', $modal_id );
 
 		$execution_time = microtime( true ) - $start_time;
-		error_log( "[EWM SHORTCODE DEBUG] Modal {$modal_id} rendered in {$execution_time}s" );
 
 		return $output;
 	}
@@ -285,7 +277,6 @@ class EWM_Shortcodes {
 
 	   // Si no hay reglas, permitir siempre.
 	   if ( empty( $display_rules ) ) {
-			   error_log( "[EWM MODAL DECISION] Modal $modal_id: ALLOW (no display rules)" );
 			   return true;
 	   }
 
@@ -293,14 +284,12 @@ class EWM_Shortcodes {
 	   // Los shortcodes no deben tener restricciones de páginas ya que el usuario
 	   // decide conscientemente dónde insertarlos. Las restricciones de páginas
 	   // son para el sistema de auto-inyección.
-	   error_log( "[EWM SHORTCODE DEBUG] Modal $modal_id: Skipping page validation for shortcode" );
 
 	   // --- 2. VALIDACIÓN DE ROLES DE USUARIO ---
 	   if ( ! empty( $display_rules['user_roles'] ) ) {
 		   $user       = wp_get_current_user();
 		   $user_roles = ! empty( $user->roles ) ? $user->roles : array( 'guest' );
 		   if ( ! in_array( 'all', $display_rules['user_roles'] ) && count( array_intersect( $user_roles, $display_rules['user_roles'] ) ) === 0 ) {
-			   error_log( "[EWM MODAL DECISION] Modal $modal_id: BLOCK (user role not allowed)" );
 			   return false;
 		   }
 	   }
@@ -314,7 +303,6 @@ class EWM_Shortcodes {
 									  $devices_config['tablet'] === false &&
 									  $devices_config['mobile'] === false );
 			   if ( ! $all_devices_false ) {
-				   error_log( "[EWM MODAL DECISION] Modal $modal_id: BLOCK (device $device not allowed)" );
 				   return false;
 			   }
 		   }
@@ -323,17 +311,14 @@ class EWM_Shortcodes {
 		// --- 4. VALIDACIÓN DE FRECUENCIA CON TRANSIENTS ---
 	   $frequency_config = $this->get_modal_frequency_config( $modal_id );
 	   if ( $frequency_config['type'] === 'always' ) {
-		   error_log( "[EWM MODAL DECISION] Modal $modal_id: ALLOW (frequency always)" );
 		   return true;
 	   }
 	   $transient_key = $this->get_modal_transient_key( $modal_id );
 	   $view_count = intval( get_transient( $transient_key ) ?: 0 );
 	   $limit = intval( $frequency_config['limit'] ?? 1 );
 	   if ( $view_count >= $limit ) {
-		   error_log( "[EWM MODAL DECISION] Modal $modal_id: BLOCK (frequency limit reached: $view_count/$limit)" );
 		   return false;
 	   }
-	   error_log( "[EWM MODAL DECISION] Modal $modal_id: ALLOW (all checks passed)" );
 	   return true;
 	}
 
@@ -577,8 +562,6 @@ class EWM_Shortcodes {
 		$expiration = $this->get_transient_expiration( $frequency_config['type'] );
 		set_transient( $transient_key, $new_count, $expiration );
 
-		error_log( "[EWM DEBUG] TRANSIENT REGISTERED - Key: {$transient_key}, Count: {$new_count}, Expiration: {$expiration}" );
-
 		wp_send_json_success( array(
 			'count' => $new_count,
 			'key' => $transient_key
@@ -612,8 +595,6 @@ class EWM_Shortcodes {
 			'_transient_ewm_modal_' . $modal_id . '_%'
 		) );
 
-		error_log( "[EWM DEBUG] TRANSIENTS CLEARED - Modal ID: {$modal_id}, Deleted: {$deleted}" );
-
 		wp_send_json_success( array(
 			'deleted' => $deleted,
 			'message' => "Cleared {$deleted} transient records for modal {$modal_id}"
@@ -624,15 +605,11 @@ class EWM_Shortcodes {
 	 * NUEVO MÉTODO: Obtener configuración completa del modal desde campos separados actuales
 	 */
 	private function get_current_modal_config( $modal_id ) {
-		error_log( "[EWM CONFIG DEBUG] Getting config for modal {$modal_id}" );
-
 		// Leer todos los campos separados que usa el sistema actual
 		$triggers_json = get_post_meta( $modal_id, 'ewm_trigger_config', true );
 		$display_rules_json = get_post_meta( $modal_id, 'ewm_display_rules', true );
 		$content_json = get_post_meta( $modal_id, 'ewm_content_config', true );
 		$design_json = get_post_meta( $modal_id, 'ewm_design_config', true );
-
-		error_log( "[EWM CONFIG DEBUG] Raw JSON lengths - triggers: " . strlen( $triggers_json ) . ", display_rules: " . strlen( $display_rules_json ) );
 
 		// Decodificar cada configuración
 		$triggers = json_decode( $triggers_json, true ) ?: array();
@@ -657,8 +634,6 @@ class EWM_Shortcodes {
 		$config = $this->get_current_modal_config( $modal_id );
 		$frequency = $config['triggers']['frequency'] ?? array( 'type' => 'always', 'limit' => 0 );
 
-		error_log( "[EWM FREQUENCY DEBUG] Modal {$modal_id} - Frequency: " . wp_json_encode( $frequency ) );
-
 		return $frequency;
 	}
 
@@ -680,8 +655,6 @@ class EWM_Shortcodes {
 		$frequency_config = $this->get_modal_frequency_config( $modal_id );
 		$frequency_type = $frequency_config['type'] ?? 'always';
 
-		error_log( "[EWM FREQUENCY CHECK] Modal {$modal_id} - Type: {$frequency_type}, Config: " . wp_json_encode( $frequency_config ) );
-
 		// Si es tipo 'always', permitir siempre
 		if ( $frequency_type === 'always' ) {
 			wp_send_json_success( array(
@@ -695,8 +668,6 @@ class EWM_Shortcodes {
 		$transient_key = $this->get_modal_transient_key( $modal_id );
 		$view_count = intval( get_transient( $transient_key ) ?: 0 );
 		$limit = intval( $frequency_config['limit'] ?? 1 );
-
-		error_log( "[EWM FREQUENCY CHECK] Modal {$modal_id} - Current count: {$view_count}, Limit: {$limit}" );
 
 		// Si ya se alcanzó el límite, no mostrar
 		if ( $view_count >= $limit ) {

@@ -273,11 +273,6 @@ class EWM_REST_API {
 			)
 		);
 
-		error_log( 'EWM Debug: Submit form route registered: ' . ( $submit_form_route_registered ? 'SUCCESS' : 'FAILED' ) );
-		error_log( 'EWM Debug: Submit form endpoint URL: ' . rest_url( self::NAMESPACE . '/submit-form' ) );
-
-
-
 		// Endpoint para vista previa de modales
 		$preview_route_registered = register_rest_route(
 			self::NAMESPACE,
@@ -422,12 +417,6 @@ class EWM_REST_API {
 		$start_time = microtime( true );
 		$modal_id   = intval( $request['id'] );
 
-		error_log( '🔍 EWM LOAD DEBUG: ===== get_modal method called =====' );
-		error_log( '🔍 EWM LOAD DEBUG: Modal ID: ' . $modal_id );
-		error_log( '🔍 EWM LOAD DEBUG: User ID: ' . get_current_user_id() );
-
-	
-
 		try {
 			// Verificar que el modal existe
 			$modal_post = get_post( $modal_id );
@@ -437,15 +426,12 @@ class EWM_REST_API {
 
 			// Cargar configuración usando el sistema actual
 			$config_json = get_post_meta( $modal_id, 'ewm_steps_config', true );
-			error_log( '🔍 EWM LOAD DEBUG: ewm_steps_config contenido: ' . $config_json );
 
 			if ( empty( $config_json ) ) {
-				error_log( '🔍 EWM LOAD DEBUG: ewm_steps_config vacío, devolviendo configuración por defecto' );
 				$config = $this->get_default_config();
 			} else {
 				$config = json_decode( $config_json, true );
 				if ( json_last_error() !== JSON_ERROR_NONE ) {
-					error_log( '🔍 EWM LOAD DEBUG: Error al decodificar JSON: ' . json_last_error_msg() );
 					$config = $this->get_default_config();
 				}
 			}
@@ -456,11 +442,7 @@ class EWM_REST_API {
 				'config' => $config,
 			);
 
-			error_log( '🔍 EWM LOAD DEBUG: Modal data preparado (REFACTORIZADO): ' . wp_json_encode( $modal_data ) );
-
 			$execution_time = microtime( true ) - $start_time;
-
-	
 
 			// Restaurar error reporting
 			error_reporting( $old_error_reporting );
@@ -547,28 +529,13 @@ class EWM_REST_API {
 	public function submit_form( $request ) {
 		$start_time = microtime( true );
 
-		error_log( 'EWM Debug: === FORM SUBMISSION RECEIVED IN BACKEND ===' );
-		error_log( 'EWM Debug: Request method: ' . $request->get_method() );
-		error_log( 'EWM Debug: Request URL: ' . $request->get_route() );
-		error_log( 'EWM Debug: User logged in: ' . ( is_user_logged_in() ? 'YES' : 'NO' ) );
-		error_log( 'EWM Debug: Current user ID: ' . get_current_user_id() );
-		error_log( 'EWM Debug: Request headers: ' . print_r( $request->get_headers(), true ) );
-		error_log( 'EWM Debug: Raw request body: ' . $request->get_body() );
-
 		try {
 			$modal_id  = (int) $request->get_param( 'modal_id' );
 			$form_data = $request->get_param( 'form_data' );
 			$step_data = $request->get_param( 'step_data' );
 
-			// Debug logging detallado
-			error_log( 'EWM Debug: Modal ID: ' . $modal_id );
-			error_log( 'EWM Debug: Form Data: ' . print_r( $form_data, true ) );
-			error_log( 'EWM Debug: Step Data: ' . print_r( $step_data, true ) );
-
 			// Validar modal ID
 			if ( ! $modal_id || ! get_post( $modal_id ) ) {
-				error_log( 'EWM Debug: Invalid modal ID: ' . $modal_id );
-
 				return new WP_Error(
 					'ewm_invalid_modal',
 					'Invalid modal ID',
@@ -578,8 +545,6 @@ class EWM_REST_API {
 
 			// Validar datos del formulario
 			if ( empty( $form_data ) ) {
-				error_log( 'EWM Debug: Empty form data received' );
-
 				return new WP_Error(
 					'ewm_empty_form_data',
 					'Form data is required',
@@ -587,20 +552,14 @@ class EWM_REST_API {
 				);
 			}
 
-			error_log( 'EWM Debug: Attempting to process form submission...' );
-
 			// Procesar envío del formulario
 			$submission_id = $this->process_form_submission( $modal_id, $form_data, $step_data );
 
 			if ( is_wp_error( $submission_id ) ) {
-				error_log( 'EWM Debug: Form submission processing failed: ' . $submission_id->get_error_message() );
 				return $submission_id;
 			}
 
 			$execution_time = microtime( true ) - $start_time;
-
-			error_log( 'EWM Debug: Form submission successful! Submission ID: ' . $submission_id );
-			error_log( 'EWM Debug: Execution time: ' . $execution_time . ' seconds' );
 
 			// Trigger action hook para integraciones
 			do_action( 'ewm_form_submitted', $submission_id, $modal_id, $form_data );
@@ -614,9 +573,6 @@ class EWM_REST_API {
 			);
 
 		} catch ( Exception $e ) {
-			error_log( 'EWM Debug: Exception caught: ' . $e->getMessage() );
-			error_log( 'EWM Debug: Exception trace: ' . $e->getTraceAsString() );
-
 			return new WP_Error(
 				'ewm_submit_form_error',
 				'Failed to submit form: ' . $e->getMessage(),
@@ -632,13 +588,8 @@ class EWM_REST_API {
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function update_modal( $request ) {
-		// LOGGING DETALLADO: Inicio del método
-		error_log( '🔍 EWM SAVE DEBUG: ===== update_modal method called =====' );
-		error_log( '🔍 EWM SAVE DEBUG: Timestamp: ' . date('Y-m-d H:i:s') );
-
 		$start_time = microtime( true );
 		$modal_id   = intval( $request['id'] );
-
 
 		try {
 			// Verificar que el modal existe
@@ -672,18 +623,11 @@ class EWM_REST_API {
 
 			// Verificar que hay configuración válida
 			if ( empty( $config ) ) {
-				error_log( '🔧 EWM DEBUG: Config vacío, no hay datos para procesar' );
 				return new WP_Error( 'empty_config', 'No configuration data provided', array( 'status' => 400 ) );
 			}
 
 			// Actualizar configuración si hay config
-			error_log( 'EWM DEBUG: update_modal - checking config: ' . ( ! empty( $config ) ? 'NOT EMPTY' : 'EMPTY' ) );
-
 			if ( ! empty( $config ) ) {
-				error_log( '🔍 EWM SAVE DEBUG: Configuración guardada usando sistema actual' );
-				error_log( '🔍 EWM SAVE DEBUG: Config a guardar: ' . wp_json_encode( $config ) );
-				error_log( '🔍 EWM SAVE DEBUG: Config size: ' . strlen( wp_json_encode( $config ) ) . ' bytes' );
-
 				// Asegurar schema version
 				if ( ! isset( $config['schema_version'] ) ) {
 					$config['schema_version'] = '2.0.0';
@@ -691,12 +635,9 @@ class EWM_REST_API {
 
 				// Guardar usando el sistema actual
 				EWM_Modal_CPT::save_modal_config( $modal_id, $config );
-				error_log( '🔍 EWM SAVE DEBUG: Configuración guardada usando sistema actual' );
 
 				// Verificar que se guardó correctamente
 				$saved_config = EWM_Modal_CPT::get_modal_config( $modal_id );
-				error_log( '🔍 EWM SAVE DEBUG: Configuración verificada: ' . wp_json_encode( $saved_config ) );
-
 			}
 
 			$execution_time = microtime( true ) - $start_time;
@@ -984,8 +925,6 @@ class EWM_REST_API {
 			return rest_ensure_response( $response_data );
 
 		} catch ( Exception $e ) {
-			error_log( 'EWM Active Modals Error: ' . $e->getMessage() );
-			
 			return new WP_Error(
 				'ewm_active_modals_error',
 				'Failed to retrieve active modals: ' . $e->getMessage(),
@@ -1553,17 +1492,12 @@ class EWM_REST_API {
 	 * Procesar envío de formulario
 	 */
 	private function process_form_submission( $modal_id, $form_data, $step_data ) {
-		error_log( 'EWM Debug: process_form_submission called' );
-		error_log( 'EWM Debug: Calling EWM_Submission_CPT::create_submission...' );
-	
 		$submission_id = EWM_Submission_CPT::create_submission( $modal_id, $form_data, $step_data );
 
 		if ( is_wp_error( $submission_id ) ) {
-			error_log( 'EWM Debug: create_submission returned WP_Error: ' . $submission_id->get_error_message() );
 			return $submission_id;
 		}
 
-		error_log( 'EWM Debug: create_submission successful, ID: ' . $submission_id );
 		return $submission_id;
 	}
 

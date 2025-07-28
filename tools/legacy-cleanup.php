@@ -92,8 +92,6 @@ class EWM_Legacy_Cleanup {
 					'post_content' => $cleaned_content
 				) );
 				$cleaned++;
-				
-				error_log( "✅ Limpiado shortcode legacy en post ID: {$post->ID}" );
 			}
 		}
 		
@@ -122,7 +120,6 @@ class EWM_Legacy_Cleanup {
 			
 			if ( $deleted !== false ) {
 				$cleaned += $deleted;
-				error_log( "✅ Eliminados {$deleted} registros de meta_key: {$meta_key}" );
 			}
 		}
 		
@@ -140,10 +137,6 @@ class EWM_Legacy_Cleanup {
 			WHERE option_name LIKE %s 
 			OR option_name LIKE %s
 		", '_transient_ewm_modal_%', '_transient_timeout_ewm_modal_%' ) );
-		
-		if ( $deleted > 0 ) {
-			error_log( "✅ Eliminados {$deleted} transients legacy ewm_modal_*" );
-		}
 		
 		return $deleted;
 	}
@@ -163,7 +156,6 @@ class EWM_Legacy_Cleanup {
 					var name = eqPos > -1 ? c.substr(0, eqPos).trim() : c.trim();
 					if (name.indexOf('ewm_modal_') === 0) {
 						document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
-						console.log('🧹 Cookie legacy eliminada:', name);
 					}
 				});
 				
@@ -171,7 +163,6 @@ class EWM_Legacy_Cleanup {
 				Object.keys(localStorage).forEach(function(key) {
 					if (key.indexOf('ewm_modal_') === 0) {
 						localStorage.removeItem(key);
-						console.log('🧹 localStorage legacy eliminado:', key);
 					}
 				});
 			})();

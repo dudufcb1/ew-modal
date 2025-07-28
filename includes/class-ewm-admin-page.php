@@ -49,17 +49,15 @@ class EWM_Admin_Page {
 		   if ($value === 'all') return -1;
 		   if ($value === 'home') {
 			   $id = (int) get_option('page_on_front');
-			   error_log('[EWM LOG] resolve_to_id("home"): get_option("page_on_front")=' . $id);
 			   if ($id <= 0) {
-				   error_log('[EWM LOG] ¡No hay página de inicio configurada en Ajustes > Lectura!');
+				   // No hay página de inicio configurada en Ajustes > Lectura
 			   }
 			   return $id > 0 ? $id : null;
 		   }
 		   if ($value === 'blog') {
 			   $id = (int) get_option('page_for_posts');
-			   error_log('[EWM LOG] resolve_to_id("blog"): get_option("page_for_posts")=' . $id);
 			   if ($id <= 0) {
-				   error_log('[EWM LOG] ¡No hay página de blog configurada en Ajustes > Lectura!');
+				   // No hay página de blog configurada en Ajustes > Lectura
 			   }
 			   return $id > 0 ? $id : null;
 		   }
@@ -129,7 +127,6 @@ class EWM_Admin_Page {
 
 		// LOG: admin_menu hook
 		add_action('admin_menu', function () {
-			error_log('[EWM DEBUG] admin_menu hook triggered');
 		}, 1);
 		// Nuevo: manejador para guardar las configuraciones globales (incl. modo debug frecuencia)
 		add_action('admin_post_ewm_save_settings', array($this, 'save_global_settings'));
@@ -141,7 +138,6 @@ class EWM_Admin_Page {
 	public function add_admin_menu()
 	{
 		// Página principal bajo el menú de modales
-		error_log('[EWM DEBUG] Antes de add_submenu_page Modal Builder');
 		add_submenu_page(
 			'edit.php?post_type=ew_modal',
 			__('Modal Builder', 'ewm-modal-cta'),
@@ -150,7 +146,6 @@ class EWM_Admin_Page {
 			'ewm-modal-builder',
 			array($this, 'render_modal_builder_page')
 		);
-		error_log('[EWM DEBUG] Después de add_submenu_page Modal Builder');
 
 		// Página de configuraciones
 		add_submenu_page(
@@ -275,24 +270,12 @@ class EWM_Admin_Page {
 	public function render_modal_builder_page()
 	{
 		$current_user = wp_get_current_user();
-		error_log('[EWM DEBUG] INTENTO ACCESO render_modal_builder_page: Usuario=' . $current_user->user_login . ' Roles=' . implode(',', $current_user->roles) . ' ID=' . $current_user->ID);
-
-		// LOG: Capabilities for debugging
-		error_log('[EWM DEBUG] Capabilities: can_manage_modals=' . (EWM_Capabilities::current_user_can_manage_modals() ? 'SI' : 'NO') .
-			' can_edit_posts=' . (current_user_can('edit_posts') ? 'SI' : 'NO') .
-			' can_edit_ew_modals=' . (current_user_can('edit_ew_modals') ? 'SI' : 'NO'));
 
 		$can_manage = EWM_Capabilities::current_user_can_manage_modals();
 		$can_edit_posts = current_user_can('edit_posts');
 		$can_edit_ew_modals = current_user_can('edit_ew_modals');
-		error_log("EWM DEBUG PERMISOS - Usuario: " . $current_user->user_login . " (ID: " . $current_user->ID . ")");
-		error_log("EWM DEBUG PERMISOS - Roles: " . implode(', ', $current_user->roles));
-		error_log("EWM DEBUG PERMISOS - can_manage_modals: " . ($can_manage ? 'SÍ' : 'NO'));
-		error_log("EWM DEBUG PERMISOS - can_edit_posts: " . ($can_edit_posts ? 'SÍ' : 'NO'));
-		error_log("EWM DEBUG PERMISOS - can_edit_ew_modals: " . ($can_edit_ew_modals ? 'SÍ' : 'NO'));
 
 		// Verificar permisos - usar fallback temporal
-		error_log('[EWM DEBUG] ACCESO DENEGADO render_modal_builder_page: Usuario=' . $current_user->user_login . ' Roles=' . implode(',', $current_user->roles) . ' can_manage_modals=' . ($can_manage ? 'SI' : 'NO') . ' can_edit_posts=' . ($can_edit_posts ? 'SI' : 'NO'));
 		if (! $can_manage && ! $can_edit_posts) {
 			wp_die(__('No tienes permisos para acceder a esta página.', 'ewm-modal-cta'));
 		}
@@ -493,7 +476,6 @@ class EWM_Admin_Page {
 											   echo '</option>';
 										   }
 									   }
-									   error_log('[EWM LOG] Opciones especiales para incluir (select): ' . print_r($specials_log, true));
 									   $pages = get_pages();
 									   $pages_log = [];
 									   foreach ($pages as $page) {
@@ -506,7 +488,6 @@ class EWM_Admin_Page {
 										   echo esc_html($page->post_title);
 										   echo '</option>';
 									   }
-									   error_log('[EWM LOG] Opciones de páginas normales para incluir (select): ' . print_r($pages_log, true));
 										?>
 									</select>
 									<p class="description"><?php _e('Mantén Ctrl/Cmd presionado para seleccionar múltiples páginas', 'ewm-modal-cta'); ?></p>
@@ -539,7 +520,6 @@ class EWM_Admin_Page {
 											   echo '</option>';
 										   }
 									   }
-									   error_log('[EWM LOG] Opciones especiales para excluir (select): ' . print_r($specials_ex_log, true));
 									   $pages_ex_log = [];
 									   foreach ($pages as $page) {
 										   $selected = in_array($page->ID, $exclude_selected_ids);
@@ -551,7 +531,6 @@ class EWM_Admin_Page {
 										   echo esc_html($page->post_title);
 										   echo '</option>';
 									   }
-									   error_log('[EWM LOG] Opciones de páginas normales para excluir (select): ' . print_r($pages_ex_log, true));
 										?>
 									</select>
 									<p class="description"><?php _e('Páginas donde NO se mostrará el modal', 'ewm-modal-cta'); ?></p>
@@ -991,7 +970,6 @@ class EWM_Admin_Page {
 	{
 		check_ajax_referer('ewm_admin_nonce', 'nonce');
 
-		error_log('[EWM DEBUG] ACCESO DENEGADO save_modal_builder: Usuario=' . wp_get_current_user()->user_login . ' Roles=' . implode(',', wp_get_current_user()->roles));
 		if (! EWM_Capabilities::current_user_can_manage_modals()) {
 			wp_send_json_error(__('No tienes permisos para realizar esta acción.', 'ewm-modal-cta'));
 		}
@@ -1004,14 +982,9 @@ class EWM_Admin_Page {
 		}
 
 		// LOG TEMPORAL: Datos recibidos del frontend al guardar (modal-enabled y enable-manual-trigger)
-		error_log('[EWM TEST LOG] Frontend → Servidor: modal_data.display_rules.enabled=' . (isset($modal_data['display_rules']['enabled']) ? var_export($modal_data['display_rules']['enabled'], true) : 'NO DEFINIDO'));
-		error_log('[EWM TEST LOG] Frontend → Servidor: modal_data.triggers.manual.enabled=' . (isset($modal_data['triggers']['manual']['enabled']) ? var_export($modal_data['triggers']['manual']['enabled'], true) : 'NO DEFINIDO'));
-		error_log('[EWM TEST LOG] Frontend → Servidor: modal_data=' . wp_json_encode($modal_data));
 
 		// 📋 CAPTURAR ESTRUCTURA EXACTA DEL SHORTCODE (FORMATO QUE FUNCIONA)
-		error_log('📋 SHORTCODE FORMAT - Modal data structure: ' . wp_json_encode($modal_data));
 		if (isset($modal_data['steps'])) {
-			error_log('📋 SHORTCODE FORMAT - Steps structure: ' . wp_json_encode($modal_data['steps']));
 		}
 
 		try {
@@ -1066,7 +1039,6 @@ class EWM_Admin_Page {
 
 		check_ajax_referer('ewm_admin_nonce', 'nonce');
 
-		error_log('[EWM DEBUG] ACCESO DENEGADO load_modal_builder: Usuario=' . wp_get_current_user()->user_login . ' Roles=' . implode(',', wp_get_current_user()->roles));
 		if (! EWM_Capabilities::current_user_can_manage_modals()) {
 			wp_send_json_error(__('No tienes permisos para realizar esta acción.', 'ewm-modal-cta'));
 		}
@@ -1104,9 +1076,6 @@ class EWM_Admin_Page {
 			);
 
 			// LOG TEMPORAL: Datos enviados del servidor al frontend (modal-enabled y enable-manual-trigger)
-			error_log('[EWM TEST LOG] Servidor → Frontend: modal_data.display_rules.enabled=' . (isset($modal_data['display_rules']['enabled']) ? var_export($modal_data['display_rules']['enabled'], true) : 'NO DEFINIDO'));
-			error_log('[EWM TEST LOG] Servidor → Frontend: modal_data.triggers.manual.enabled=' . (isset($modal_data['triggers']['manual']['enabled']) ? var_export($modal_data['triggers']['manual']['enabled'], true) : 'NO DEFINIDO'));
-			error_log('[EWM TEST LOG] Servidor → Frontend: modal_data=' . wp_json_encode($modal_data));
 
 			wp_send_json_success($modal_data);
 		} catch (Exception $e) {
@@ -1121,7 +1090,6 @@ class EWM_Admin_Page {
 	{
 		check_ajax_referer('ewm_admin_nonce', 'nonce');
 
-		error_log('[EWM DEBUG] ACCESO DENEGADO preview_modal: Usuario=' . wp_get_current_user()->user_login . ' Roles=' . implode(',', wp_get_current_user()->roles));
 		if (! EWM_Capabilities::current_user_can_manage_modals()) {
 			wp_send_json_error(__('No tienes permisos para realizar esta acción.', 'ewm-modal-cta'));
 		}
@@ -1191,14 +1159,10 @@ class EWM_Admin_Page {
 	private function save_modal_meta($modal_id, $modal_data)
 	{
 		// CORREGIR: Usar update_post_meta directo para evitar sobrescritura por EWM_Meta_Fields
-		error_log('EWM DEBUG: save_modal_meta EJECUTÁNDOSE para modal_id: ' . $modal_id);
-		error_log('EWM DEBUG: save_modal_meta - modal_data keys: ' . implode(', ', array_keys($modal_data)));
 
 		// Guardar configuración de pasos
 		if (isset($modal_data['steps'])) {
-			error_log('EWM DEBUG: save_modal_meta - guardando steps: ' . wp_json_encode($modal_data['steps']));
 			$result = update_post_meta($modal_id, 'ewm_steps_config', wp_json_encode($modal_data['steps']));
-			error_log('EWM DEBUG: save_modal_meta - steps result: ' . var_export($result, true));
 		}
 
 		// Guardar configuración de diseño
@@ -1227,7 +1191,6 @@ class EWM_Admin_Page {
 	 */
 	private function generate_preview_html($modal_data)
 	{
-		error_log('[EWM DEBUG] generate_preview_html: modal_data=' . print_r($modal_data, true));
 
 		// Generar preview estático específico para admin
 		return $this->generate_static_preview($modal_data);
@@ -1615,7 +1578,6 @@ class EWM_Admin_Page {
 add_action('admin_init', function () {
 	if (isset($_GET['ewm_force_caps']) && current_user_can('manage_options')) {
 		EWM_Capabilities::get_instance()->setup_capabilities();
-		error_log('[EWM DEBUG] Capabilities re-assigned via ewm_force_caps');
 		wp_die('Capabilities re-assigned. Remove ?ewm_force_caps=1 from URL.');
 	}
 });

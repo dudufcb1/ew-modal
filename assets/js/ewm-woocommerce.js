@@ -8,8 +8,6 @@
 (function() {
     'use strict';
     
-    console.log('[EWM WooCommerce] Initializing WooCommerce modal functionality');
-    
     // Inicializar cuando el DOM esté listo
     document.addEventListener('DOMContentLoaded', function() {
         initWooCommerceModals();
@@ -27,8 +25,6 @@
             initCTAButtons(modal);
             initTimers(modal);
         });
-        
-        console.log('[EWM WooCommerce] Initialized', wcModals.length, 'WooCommerce modals');
     }
     
     /**
@@ -147,8 +143,6 @@
      * Aplicar cupón automáticamente
      */
     function applyCoupon(couponCode, button) {
-        console.log('[EWM WooCommerce] Applying coupon:', couponCode);
-        
         // Cambiar estado del botón
         const originalText = button.textContent;
         button.textContent = 'Aplicando...';

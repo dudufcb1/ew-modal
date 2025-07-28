@@ -67,13 +67,6 @@ class EWM_Render_Core {
 
 		// Validar modal
 		$is_valid = $this->validate_modal( $modal_id );
-		error_log( 'EWM RENDER DEBUG - validate_modal result: modal_id=' . $modal_id . ', valid=' . ( $is_valid ? 'true' : 'false' ) );
-		if ( get_post( $modal_id ) ) {
-			error_log( 'EWM RENDER DEBUG - post exists: type=' . get_post( $modal_id )->post_type . ', status=' . get_post( $modal_id )->post_status );
-		} else {
-			error_log( 'EWM RENDER DEBUG - post does NOT exist for modal_id=' . $modal_id );
-		}
-
 		if ( ! $is_valid ) {
 			return '';
 		}
@@ -83,18 +76,13 @@ class EWM_Render_Core {
 			$previous_source = $this->rendered_modals[ $modal_id ]['source'] ?? 'unknown';
 			$current_source = $config['source'] ?? 'shortcode';
 
-			error_log( "[EWM RENDER DEBUG] Modal {$modal_id} already rendered via {$previous_source}, skipping {$current_source}" );
 			return '';
 		}
 
 		// Obtener configuración del modal
 		$modal_config = $this->get_modal_configuration( $modal_id );
 
-		error_log( "[EWM RENDER DEBUG] Modal {$modal_id} - Config empty: " . ( empty( $modal_config ) ? 'YES' : 'NO' ) );
-		error_log( "[EWM RENDER DEBUG] Modal {$modal_id} - Config keys: " . implode( ', ', array_keys( $modal_config ) ) );
-
 		if ( empty( $modal_config ) ) {
-			error_log( "[EWM RENDER DEBUG] Modal {$modal_id} - ABORTING: Empty config" );
 			return '';
 		}
 
@@ -148,11 +136,9 @@ class EWM_Render_Core {
 		}
 
 		// DEBUGGING PROFUNDO según recomendación del consultor
-		error_log( 'EWM CORE DEBUG: get_modal_configuration called. Passed modal_id: ' . $modal_id . '. Global post ID: ' . ( get_the_ID() ?: 'none' ) );
 
 		// Validación robusta del ID según consultor
 		if ( ! is_numeric( $modal_id ) || $modal_id <= 0 ) {
-			error_log( 'EWM CORE DEBUG: Invalid modal_id provided. Returning empty array.' );
 			return array();
 		}
 
@@ -163,10 +149,6 @@ class EWM_Render_Core {
 		$wc_json = get_post_meta( $modal_id, 'ewm_wc_integration', true );
 		$rules_json = get_post_meta( $modal_id, 'ewm_display_rules', true );
 
-		error_log( 'EWM FRONTEND DEBUG: Reading from separate fields' );
-		error_log( 'EWM FRONTEND DEBUG: steps_json length: ' . strlen( $steps_json ) );
-		error_log( 'EWM FRONTEND DEBUG: design_json length: ' . strlen( $design_json ) );
-
 		// Unificar datos en memoria para el frontend
 		$config = array(
 			'steps' => json_decode( $steps_json, true ) ?: array(),
@@ -175,9 +157,6 @@ class EWM_Render_Core {
 			'wc_integration' => json_decode( $wc_json, true ) ?: array(),
 			'display_rules' => json_decode( $rules_json, true ) ?: array(),
 		);
-
-		error_log( 'EWM FRONTEND DEBUG: Unified config created' );
-		error_log( 'EWM FRONTEND DEBUG: steps count: ' . count( $config['steps']['steps'] ?? array() ) );
 
 		// Agregar datos básicos del modal
 		$config['modal_id'] = $modal_id;
@@ -193,29 +172,6 @@ class EWM_Render_Core {
 			$config['custom_css'] = get_post_meta( $modal_id, 'ewm_custom_css', true ) ?: '';
 		}
 
-		error_log( 'EWM ARQUITECTURA UNIFICADA: Configuración cargada' );
-		error_log( 'EWM CONFIG KEYS: ' . implode( ', ', array_keys( $config ) ) );
-
-		// DEBUGGING: Log de configuración RAW antes de apply_default_config
-		error_log( 'EWM CONFIG RAW - Modal ' . $modal_id . ' triggers: ' . json_encode( $config['triggers'] ) );
-		error_log( 'EWM CONFIG RAW - Modal ' . $modal_id . ' display_rules: ' . json_encode( $config['display_rules'] ) );
-
-		// Log de la configuración obtenida ANTES de devolverla (según consultor)
-		error_log( 'EWM CORE DEBUG: Config loaded. Steps empty? ' . ( empty( $config['steps'] ) ? 'YES' : 'NO' ) );
-		if ( ! empty( $config['steps'] ) ) {
-			error_log( 'EWM CORE DEBUG: Steps content preview: ' . substr( json_encode( $config['steps'] ), 0, 200 ) );
-		} else {
-			error_log( 'EWM CORE DEBUG: Steps config is EMPTY - this is the problem!' );
-		}
-
-		// DEBUGGING: Log de configuración cargada
-		error_log( 'EWM RENDER DEBUG - get_modal_configuration: ' . json_encode( $config['steps'] ) );
-		if ( isset( $config['steps']['steps'] ) && is_array( $config['steps']['steps'] ) ) {
-			foreach ( $config['steps']['steps'] as $index => $step ) {
-				error_log( "EWM RENDER DEBUG - Step $index: title='" . ( $step['title'] ?? 'none' ) . "', content='" . ( $step['content'] ?? 'none' ) . "'" );
-			}
-		}
-
 		// Aplicar valores por defecto
 		$config = $this->apply_default_config( $config );
 
@@ -227,9 +183,6 @@ class EWM_Render_Core {
 	 * Aplicar configuración por defecto
 	 */
 	private function apply_default_config( $config ) {
-		// DEBUGGING CRÍTICO: Log antes y después
-		error_log( 'EWM APPLY_DEFAULT_CONFIG - ANTES triggers: ' . json_encode( $config['triggers'] ?? 'MISSING' ) );
-		error_log( 'EWM APPLY_DEFAULT_CONFIG - ANTES display_rules: ' . json_encode( $config['display_rules'] ?? 'MISSING' ) );
 		// Configuración de diseño por defecto
 		if ( ! is_array( $config['design'] ?? null ) ) {
 			$config['design'] = array();
@@ -298,10 +251,6 @@ class EWM_Render_Core {
 		}
 		// Si ya hay configuración, mantenerla intacta
 
-		// DEBUGGING CRÍTICO: Log después
-		error_log( 'EWM APPLY_DEFAULT_CONFIG - DESPUÉS triggers: ' . json_encode( $config['triggers'] ?? 'MISSING' ) );
-		error_log( 'EWM APPLY_DEFAULT_CONFIG - DESPUÉS display_rules: ' . json_encode( $config['display_rules'] ?? 'MISSING' ) );
-
 		return $config;
 	}
 
@@ -318,7 +267,6 @@ class EWM_Render_Core {
 			class="<?php echo esc_attr( $modal_class ); ?>"
 			<?php echo $modal_data; ?>
 			style="display: none;">
-			<?php error_log( 'EWM HTML MODAL GENERADO - ID: ewm-modal-' . $modal_id . ', Class: ' . $modal_class ); ?>
 			
 			<div class="ewm-modal-backdrop"></div>
 			
@@ -363,9 +311,6 @@ class EWM_Render_Core {
 	 * Generar contenido del modal según el modo
 	 */
 	private function generate_modal_content( $modal_id, $config ) {
-		error_log( 'EWM RENDER DEBUG - generate_modal_content started: mode=' . ( $config['mode'] ?? 'none' ) );
-		error_log( 'EWM RENDER DEBUG - steps data: ' . json_encode( $config['steps'] ?? array() ) );
-
 		switch ( $config['mode'] ) {
 			case 'formulario':
 				return $this->generate_form_content( $modal_id, $config );
@@ -384,11 +329,7 @@ class EWM_Render_Core {
 		$final_step   = $config['steps']['final_step'] ?? array();
 		$progress_bar = $config['steps']['progressBar'] ?? array( 'enabled' => true );
 
-		error_log( 'EWM RENDER DEBUG - generate_form_content: steps_count=' . count( $steps ) );
-		error_log( 'EWM RENDER DEBUG - steps detail: ' . json_encode( $steps ) );
-
 		if ( empty( $steps ) ) {
-			error_log( 'EWM RENDER DEBUG - NO STEPS FOUND - returning empty content' );
 			return '<div class="ewm-error">No hay pasos configurados para este modal.</div>';
 		}
 
@@ -723,17 +664,10 @@ class EWM_Render_Core {
 		// Verificar si es un modal WooCommerce
 		$is_woocommerce = isset( $config['is_woocommerce'] ) && $config['is_woocommerce'] === true;
 
-		error_log( "[EWM RENDER DEBUG] generate_announcement_content - Modal {$modal_id}" );
-		error_log( "[EWM RENDER DEBUG] Config keys: " . implode( ', ', array_keys( $config ) ) );
-		error_log( "[EWM RENDER DEBUG] is_woocommerce value: " . var_export( $config['is_woocommerce'] ?? 'NOT_SET', true ) );
-		error_log( "[EWM RENDER DEBUG] is_woocommerce boolean: " . ( $is_woocommerce ? 'TRUE' : 'FALSE' ) );
-
 		if ( $is_woocommerce ) {
-			error_log( "[EWM RENDER DEBUG] Using WooCommerce content generation" );
 			return $this->generate_woocommerce_content( $modal_id, $config );
 		}
 
-		error_log( "[EWM RENDER DEBUG] Using generic announcement content" );
 		// Contenido de anuncio genérico
 		return $this->generate_generic_announcement_content( $modal_id, $config );
 	}
@@ -835,11 +769,6 @@ class EWM_Render_Core {
 	 * Obtener atributos data del modal
 	 */
 	private function get_modal_data_attributes( $modal_id, $config ) {
-		// DEBUGGING: Log de configuración antes de generar data-config
-		error_log( 'EWM DATA-CONFIG FINAL - Modal ' . $modal_id . ' triggers: ' . json_encode( $config['triggers'] ?? 'MISSING' ) );
-		error_log( 'EWM DATA-CONFIG FINAL - Modal ' . $modal_id . ' display_rules: ' . json_encode( $config['display_rules'] ?? 'MISSING' ) );
-		error_log( 'EWM DATA-CONFIG COMPLETE - Modal ' . $modal_id . ' FULL CONFIG: ' . json_encode( $config, JSON_PRETTY_PRINT ) );
-
 		// Determinar si WooCommerce está habilitado
 		$is_woocommerce = isset( $config['wc_integration']['enabled'] ) && $config['wc_integration']['enabled'] === true;
 
@@ -962,9 +891,7 @@ class EWM_Render_Core {
 
 		document.addEventListener('DOMContentLoaded', function() {
 			if (typeof EWMModalFrontend !== 'undefined') {
-				<?php foreach ( array_keys( $this->rendered_modals ) as $modal_id ) : ?>
-				console.log('Modal <?php echo $modal_id; ?> ready for auto-initialization');
-				<?php endforeach; ?>
+				// Modales listos para auto-inicialización
 			}
 		});
 		</script>

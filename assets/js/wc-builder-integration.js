@@ -19,12 +19,10 @@
          * Inicializar funcionalidad
          */
         init() {
-            console.log('EWM WC Builder: Initializing...');
             
             this.bindEvents();
             this.loadCoupons();
             
-            console.log('EWM WC Builder: Initialized');
         }
 
         /**
@@ -88,7 +86,6 @@
          * Cargar cupones disponibles
          */
         async loadCoupons(callback) {
-            console.log('EWM WC Builder: Loading coupons...');
 
             // Verificar que ewmModal esté disponible
             if (typeof ewmModal === 'undefined') {
@@ -99,28 +96,19 @@
 
             try {
                 // Usar REST API directamente (más eficiente y ya está funcionando)
-                console.log('EWM WC Builder: Using REST API method');
-                console.log('EWM WC Builder: REST URL:', ewmModal.restUrl);
-                console.log('EWM WC Builder: Full URL:', ewmModal.restUrl + 'coupons');
-                console.log('EWM WC Builder: Rest Nonce:', ewmModal.restNonce);
 
                 const response = await $.ajax({
                     url: ewmModal.restUrl + 'coupons',
                     method: 'GET',
                     beforeSend: function(xhr) {
-                        console.log('EWM WC Builder: Setting nonce header:', ewmModal.restNonce);
                         xhr.setRequestHeader('X-WP-Nonce', ewmModal.restNonce);
                     }
                 });
 
-                console.log('EWM WC Builder: Raw response:', response);
-                console.log('EWM WC Builder: Response type:', typeof response);
-                console.log('EWM WC Builder: Response length:', Array.isArray(response) ? response.length : 'Not array');
 
                 // El endpoint REST API devuelve directamente el array de cupones
                 this.coupons = response || [];
                 this.populateCouponSelect();
-                console.log('EWM WC Builder: Loaded', this.coupons.length, 'coupons via REST API');
 
                 // Ejecutar callback si se proporciona
                 if (callback && typeof callback === 'function') {
@@ -200,7 +188,6 @@
 
             if (this.selectedCoupon) {
                 this.showCouponDetails(this.selectedCoupon);
-                console.log('EWM WC Builder: Selected coupon:', couponCode);
             } else {
                 console.warn('EWM WC Builder: Coupon not found:', couponCode);
                 this.clearCouponSelection();
@@ -388,12 +375,10 @@
     $(document).ready(function() {
         // Solo inicializar si estamos en la página del builder
         if ($('#wc-integration-enabled').length > 0 || $('.ewm-modal-builder').length > 0) {
-            console.log('EWM WC Builder: Page detected, initializing integration...');
             
             // Verificar ewmModal con retry para casos de carga asíncrona
             const initWithRetry = (attempts = 0) => {
                 if (typeof ewmModal !== 'undefined') {
-                    console.log('EWM WC Builder: ewmModal available, creating instance...');
                     window.EWMWCBuilderIntegration = new EWMWCBuilderIntegration();
 
                     // Inicializar estado basado en checkbox actual si existe
@@ -403,7 +388,6 @@
                         window.EWMWCBuilderIntegration.loadCoupons();
                     }
                 } else if (attempts < 20) { // 2 segundos máximo
-                    console.log('EWM WC Builder: ewmModal not ready, retrying...', attempts + 1);
                     setTimeout(() => initWithRetry(attempts + 1), 100);
                 } else {
                     console.warn('EWM WC Builder: ewmModal not available after retries, WooCommerce integration disabled');
@@ -412,7 +396,6 @@
             
             initWithRetry();
         } else {
-            console.log('EWM WC Builder: Not on builder page, skipping initialization');
         }
     });
 

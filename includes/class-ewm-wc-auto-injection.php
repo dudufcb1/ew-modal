@@ -56,15 +56,10 @@ class EWM_WC_Auto_Injection {
 	 * Inicializar la clase
 	 */
 	public function init() {
-		error_log( "[EWM WC AUTO-INJECTION] Initializing auto-injection system" );
-
 		// Solo activar si WooCommerce está disponible
 		if ( ! $this->is_woocommerce_available() ) {
-			error_log( "[EWM WC AUTO-INJECTION] WooCommerce not available, skipping initialization" );
 			return;
 		}
-
-		error_log( "[EWM WC AUTO-INJECTION] WooCommerce available, setting up hooks" );
 
 		// Hook para detectar páginas de producto
 		add_action( 'wp', array( $this, 'detect_product_page' ), 10 );
@@ -74,8 +69,6 @@ class EWM_WC_Auto_Injection {
 
 		// Registrar scripts necesarios
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
-
-		error_log( "[EWM WC AUTO-INJECTION] Hooks registered successfully" );
 	}
 
 	/**
@@ -103,33 +96,22 @@ class EWM_WC_Auto_Injection {
 	 * Detectar si estamos en una página de producto y obtener modales aplicables
 	 */
 	public function detect_product_page() {
-		error_log( "[EWM WC AUTO-INJECTION] detect_product_page() called" );
-
 		// Solo procesar en páginas de producto
 		if ( ! $this->is_product_page() ) {
-			error_log( "[EWM WC AUTO-INJECTION] Not a product page, skipping" );
 			return;
 		}
 
 		global $post;
 		if ( ! $post || $post->post_type !== 'product' ) {
-			error_log( "[EWM WC AUTO-INJECTION] No product post found, skipping" );
 			return;
 		}
 
 		$this->current_product_id = $post->ID;
 
-		error_log( "[EWM WC AUTO-INJECTION] Detected product page: ID {$this->current_product_id} ({$post->post_title})" );
-
 		// Buscar modales WooCommerce aplicables
 		$this->detected_modals = $this->find_applicable_wc_modals( $this->current_product_id );
 
-		error_log( "[EWM WC AUTO-INJECTION] Found " . count( $this->detected_modals ) . " applicable modals" );
-
 		if ( ! empty( $this->detected_modals ) ) {
-			foreach ( $this->detected_modals as $modal ) {
-				error_log( "[EWM WC AUTO-INJECTION] - Modal {$modal['id']}: {$modal['title']}" );
-			}
 		}
 	}
 
@@ -165,8 +147,6 @@ class EWM_WC_Auto_Injection {
 					'title'  => $modal->post_title,
 					'config' => $this->get_modal_wc_config( $modal->ID ),
 				);
-
-				error_log( "[EWM WC AUTO-INJECTION] Modal {$modal->ID} ({$modal->post_title}) is applicable for product {$product_id}" );
 			}
 		}
 
@@ -187,7 +167,6 @@ class EWM_WC_Auto_Injection {
 		) );
 
 		if ( is_wp_error( $response ) ) {
-			error_log( "[EWM WC AUTO-INJECTION] HTTP Error testing modal {$modal_id}: " . $response->get_error_message() );
 			return false;
 		}
 
@@ -195,7 +174,6 @@ class EWM_WC_Auto_Injection {
 		$data = json_decode( $body, true );
 
 		if ( json_last_error() !== JSON_ERROR_NONE ) {
-			error_log( "[EWM WC AUTO-INJECTION] JSON Error testing modal {$modal_id}: " . json_last_error_msg() );
 			return false;
 		}
 
@@ -215,7 +193,6 @@ class EWM_WC_Auto_Injection {
 		$wc_config = json_decode( $wc_config_json, true );
 		
 		if ( json_last_error() !== JSON_ERROR_NONE ) {
-			error_log( "[EWM WC AUTO-INJECTION] JSON decode error for modal {$modal_id}: " . json_last_error_msg() );
 			return array();
 		}
 
@@ -226,16 +203,9 @@ class EWM_WC_Auto_Injection {
 	 * Inyectar modales WooCommerce en el footer
 	 */
 	public function inject_wc_modals() {
-		error_log( "[EWM WC AUTO-INJECTION] inject_wc_modals() called" );
-		error_log( "[EWM WC AUTO-INJECTION] Detected modals count: " . count( $this->detected_modals ) );
-		error_log( "[EWM WC AUTO-INJECTION] Current product ID: " . ( $this->current_product_id ?: 'none' ) );
-
 		if ( empty( $this->detected_modals ) || ! $this->current_product_id ) {
-			error_log( "[EWM WC AUTO-INJECTION] No modals to inject, skipping" );
 			return;
 		}
-
-		error_log( "[EWM WC AUTO-INJECTION] Injecting " . count( $this->detected_modals ) . " modals" );
 
 		foreach ( $this->detected_modals as $modal_data ) {
 			$this->render_wc_modal( $modal_data );
@@ -252,8 +222,6 @@ class EWM_WC_Auto_Injection {
 		$modal_id = $modal_data['id'];
 		$wc_config = $modal_data['config'];
 
-		error_log( "[EWM WC AUTO-INJECTION] Rendering modal {$modal_id}" );
-
 		// Usar el sistema de renderizado existente pero con configuración WooCommerce
 		$render_config = array(
 			'modal_id'       => $modal_id,
@@ -263,8 +231,6 @@ class EWM_WC_Auto_Injection {
 			'wc_config'      => $wc_config,
 			'is_woocommerce' => true, // IMPORTANTE: Marcar como modal WooCommerce
 		);
-
-		error_log( "[EWM WC AUTO-INJECTION] Render config: " . wp_json_encode( $render_config ) );
 
 		// Renderizar usando el motor existente
 		echo ewm_render_modal_core( $modal_id, $render_config );
@@ -278,8 +244,6 @@ class EWM_WC_Auto_Injection {
 		<script>
 		(function() {
 			'use strict';
-			
-			console.log('[EWM WC Auto-Injection] Initializing WooCommerce triggers');
 			
 			// Configuración de triggers WooCommerce
 			const wcTriggers = {
@@ -298,7 +262,6 @@ class EWM_WC_Auto_Injection {
 				const timeOnPage = Date.now() - pageStartTime;
 				
 				if (timeOnPage >= wcTriggers.productViewTime && !triggersActivated) {
-					console.log('[EWM WC Auto-Injection] Product view time threshold reached');
 					triggerWCModals('product_view_time');
 				}
 			}
@@ -311,7 +274,6 @@ class EWM_WC_Auto_Injection {
 				
 				if (scrollPercent >= wcTriggers.scrollThreshold) {
 					hasScrolledEnough = true;
-					console.log('[EWM WC Auto-Injection] Scroll threshold reached');
 					triggerWCModals('scroll_threshold');
 				}
 			}
@@ -320,16 +282,11 @@ class EWM_WC_Auto_Injection {
 			function triggerWCModals(triggerType) {
 				if (triggersActivated) return;
 
-				console.log('[EWM WC Auto-Injection] Triggering modals:', triggerType);
-
 				// Buscar modales WooCommerce inyectados
 				const wcModals = document.querySelectorAll('[data-trigger="wc_auto"]');
-				console.log('[EWM WC Auto-Injection] Found WC modals:', wcModals.length);
 
 				wcModals.forEach(modal => {
 					const modalId = modal.getAttribute('data-modal-id');
-					console.log('[EWM WC Auto-Injection] Activating modal:', modalId);
-					console.log('[EWM WC Auto-Injection] Modal current display:', modal.style.display);
 
 					// Mostrar modal directamente con múltiples métodos
 					modal.style.display = 'block';
@@ -338,9 +295,6 @@ class EWM_WC_Auto_Injection {
 					modal.classList.add('ewm-modal-active');
 					modal.classList.remove('ewm-modal-hidden');
 
-					console.log('[EWM WC Auto-Injection] Modal display after changes:', modal.style.display);
-					console.log('[EWM WC Auto-Injection] Modal classes:', modal.className);
-
 					// También intentar con el sistema existente
 					if (window.EWMModalFrontend) {
 						const modalConfig = JSON.parse(modal.getAttribute('data-config') || '{}');
@@ -348,16 +302,13 @@ class EWM_WC_Auto_Injection {
 						modalConfig.trigger_type = triggerType;
 						modalConfig.force_show = true; // Forzar mostrar
 
-						console.log('[EWM WC Auto-Injection] Creating EWMModalFrontend instance');
 						const modalInstance = new window.EWMModalFrontend(modalConfig);
 
 						// Intentar mostrar directamente
 						if (modalInstance && typeof modalInstance.show === 'function') {
-							console.log('[EWM WC Auto-Injection] Calling modalInstance.show()');
 							modalInstance.show();
 						}
 					} else {
-						console.log('[EWM WC Auto-Injection] EWMModalFrontend not available, showing modal directly');
 					}
 
 					// Forzar visibilidad con timeout adicional
@@ -365,7 +316,6 @@ class EWM_WC_Auto_Injection {
 						modal.style.display = 'block';
 						modal.style.visibility = 'visible';
 						modal.style.opacity = '1';
-						console.log('[EWM WC Auto-Injection] Final visibility check - display:', modal.style.display);
 					}, 100);
 				});
 
@@ -380,7 +330,6 @@ class EWM_WC_Auto_Injection {
 			
 			// Trigger inmediato para modales WooCommerce (siempre se activan)
 			document.addEventListener('DOMContentLoaded', function() {
-				console.log('[EWM WC Auto-Injection] DOM loaded, triggering WC modals immediately');
 				setTimeout(() => {
 					triggerWCModals('immediate');
 				}, 2000); // 2 segundos para asegurar que todo esté cargado
@@ -419,8 +368,6 @@ class EWM_WC_Auto_Injection {
 			EWM_VERSION,
 			true
 		);
-
-		error_log( "[EWM WC AUTO-INJECTION] WooCommerce assets enqueued" );
 	}
 
 	/**

@@ -414,7 +414,6 @@ class EWM_WooCommerce {
 			document.addEventListener('DOMContentLoaded', function() {
 				if (window.EWMModalFrontend) {
 					// Los modales se auto-inicializan, no necesitamos llamar open() manualmente
-					console.log('EWM WooCommerce: Modal <?php echo $modal_id; ?> ready for upsell');
 				}
 			});
 			</script>

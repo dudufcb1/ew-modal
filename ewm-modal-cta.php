@@ -166,15 +166,10 @@ add_action( 'plugins_loaded', 'ewm_modal_cta_load_textdomain' );
  * Enqueue frontend assets
  */
 function ewm_modal_cta_enqueue_frontend_assets() {
-	// DEBUG: Log para frontend
 	global $post;
-	error_log( '🌐 FRONTEND DEBUG: ewm_modal_cta_enqueue_frontend_assets called' );
-	error_log( '🌐 FRONTEND DEBUG: Post ID = ' . ( $post ? $post->ID : 'NULL' ) );
-	error_log( '🌐 FRONTEND DEBUG: Post title = ' . ( $post ? $post->post_title : 'NULL' ) );
 
 	// Cargar en frontend si hay modales en la página (solo shortcodes)
 	$should_load_frontend = ewm_has_modal_shortcode();
-	error_log( '🌐 FRONTEND DEBUG: should_load_frontend = ' . ( $should_load_frontend ? 'TRUE' : 'FALSE' ) );
 
 	// Cargar DevPipe para logging en desarrollo
 	if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
@@ -252,20 +247,13 @@ add_action( 'admin_enqueue_scripts', 'ewm_modal_cta_enqueue_admin_devpipe' );
 function ewm_has_modal_shortcode() {
 	global $post;
 
-	// DEBUG: Log para detección
-	error_log( '🔍 DETECTION DEBUG: ewm_has_modal_shortcode called' );
-	error_log( '🔍 DETECTION DEBUG: Post = ' . ( $post ? 'EXISTS (ID: ' . $post->ID . ')' : 'NULL' ) );
-
 	// Si no hay post, no hay shortcode
 	if ( ! $post ) {
-		error_log( '🔍 DETECTION DEBUG: No post, returning FALSE' );
 		return false;
 	}
 
 	// NUEVO: Verificar si es página de producto WooCommerce con modales WC configurados
 	if ( $post->post_type === 'product' && class_exists( 'WooCommerce' ) ) {
-		error_log( '🔍 DETECTION DEBUG: Product page detected, checking for WC modals' );
-
 		// Buscar si existen modales WooCommerce configurados (sin validar aplicabilidad específica)
 		$wc_modals = get_posts( array(
 			'post_type'      => 'ew_modal',
@@ -281,51 +269,37 @@ function ewm_has_modal_shortcode() {
 		) );
 
 		if ( ! empty( $wc_modals ) ) {
-			error_log( '🔍 DETECTION DEBUG: WC modals exist in system, loading assets for product page' );
 			return true;
-		} else {
-			error_log( '🔍 DETECTION DEBUG: No WC modals configured in system' );
 		}
 	}
 
 	// NUEVO: Verificar si hay modales configurados para auto-inyección en esta página
 	if ( ewm_has_auto_injectable_modals() ) {
-		error_log( '🔍 DETECTION DEBUG: Auto-injectable modals found, loading assets' );
 		return true;
 	}
 
-	error_log( '🔍 DETECTION DEBUG: Post content length = ' . strlen( $post->post_content ) );
-
 	// Verificar en contenido raw
 	$raw_check = EWM_Shortcodes::has_modal_shortcode( $post->post_content );
-	error_log( '🔍 DETECTION DEBUG: Raw content check = ' . ( $raw_check ? 'TRUE' : 'FALSE' ) );
 	if ( $raw_check ) {
-		error_log( '🔍 DETECTION DEBUG: Found via raw content, returning TRUE' );
 		return true;
 	}
 
 	// Verificar en contenido procesado (para bloques de Gutenberg)
 	$has_ew = has_shortcode( $post->post_content, 'ew_modal' );
-	error_log( '🔍 DETECTION DEBUG: has_shortcode(ew_modal) = ' . ( $has_ew ? 'TRUE' : 'FALSE' ) );
 	if ( $has_ew ) {
-		error_log( '🔍 DETECTION DEBUG: Found via has_shortcode, returning TRUE' );
 		return true;
 	}
 
 	// Verificar patrones dentro de bloques wp:shortcode
 	$has_wp_shortcode = strpos( $post->post_content, '<!-- wp:shortcode -->' ) !== false;
-	error_log( '🔍 DETECTION DEBUG: Has wp:shortcode blocks = ' . ( $has_wp_shortcode ? 'TRUE' : 'FALSE' ) );
 	if ( $has_wp_shortcode ) {
 		// Extraer contenido de bloques shortcode (solo ew_modal actual)
 		preg_match_all( '/<!-- wp:shortcode -->\s*\[ew_modal[^\]]*\]\s*<!-- \/wp:shortcode -->/', $post->post_content, $matches );
-		error_log( '🔍 DETECTION DEBUG: Regex matches = ' . count( $matches[0] ) );
 		if ( ! empty( $matches[0] ) ) {
-			error_log( '🔍 DETECTION DEBUG: Found via regex, returning TRUE' );
 			return true;
 		}
 	}
 
-	error_log( '🔍 DETECTION DEBUG: No shortcode found, returning FALSE' );
 	return false;
 }
 
@@ -335,8 +309,6 @@ function ewm_has_modal_shortcode() {
 function ewm_has_auto_injectable_modals() {
 	// Simular la detección de página (sin ejecutar la inyección real)
 	$detected_modals = ewm_simulate_modal_detection();
-
-	error_log( '🔍 AUTO-INJECT DEBUG: Found ' . count( $detected_modals ) . ' auto-injectable modals' );
 
 	return ! empty( $detected_modals );
 }
