@@ -1,0 +1,68 @@
+{
+  "schema_version": "2.0.0",
+  "meta": {
+    "date": "2025-07-28T00:00:00Z",
+    "project": "ewm-modal-cta",
+    "author": "augment_agent",
+    "task_id": "SPRINT2_FRONTEND_BACKEND_INTEGRATION",
+    "status": "todo",
+    "revision": 1,
+    "snapshot_id": "a7919421-6ffc-4395-8ada-b036f689e345",
+    "group_id": "wc_modal_inteligente_implementacion",
+    "can_agent_set_done": true,
+    "timestamp": "2025-07-28T01:20:26.246873Z",
+    "rolled_back": false,
+    "group_md": "groups/wc_modal_inteligente_implementacion/group.md"
+  },
+  "scope": {
+    "files": [
+      "includes/class-ewm-rest-api.php",
+      "assets/js/ewm-coupon-modal.js",
+      "assets/js/ewm-coupon-handler.js"
+    ],
+    "components": [
+      "AJAX Endpoints",
+      "Frontend-Backend Communication",
+      "Data Validation",
+      "Error Synchronization"
+    ]
+  },
+  "problem": {
+    "user_request": "Conectar JavaScript frontend con endpoints PHP backend y validar flujo completo end-to-end",
+    "business_goal": "Asegurar comunicación robusta entre frontend y backend",
+    "constraints": [
+      "Validación en ambos lados",
+      "Manejo de errores sincronizado",
+      "Performance óptimo"
+    ]
+  },
+  "implementation_plan": {
+    "steps": [
+      {
+        "step": "Conectar JavaScript con endpoints PHP",
+        "status": "todo",
+        "estimated_time": "2h"
+      },
+      {
+        "step": "Validar flujo completo end-to-end",
+        "status": "todo",
+        "estimated_time": "2h"
+      },
+      {
+        "step": "Debugging y optimización",
+        "status": "todo",
+        "estimated_time": "2h"
+      },
+      {
+        "step": "Cross-browser testing",
+        "status": "todo",
+        "estimated_time": "1h 30min"
+      }
+    ]
+  },
+  "next_actions": [
+    "Configurar endpoints AJAX",
+    "Validar comunicación bidireccional",
+    "Optimizar performance de requests"
+  ]
+}

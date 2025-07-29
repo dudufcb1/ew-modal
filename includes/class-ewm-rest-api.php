@@ -110,9 +110,11 @@ class EWM_REST_API {
 		// Aquí se pueden agregar más reglas: páginas, roles, etc.
 
 		// Lógica de producto/cupón
-		$filtered = $this->filter_modals_by_wc_context( array( $modal_struct ), array( 'product_id' => $product_id ) );
-		if ( empty( $filtered ) ) {
-			$reasons[] = 'product/coupon restriction';
+		$wc_filter_result = $this->filter_modals_by_wc_context( array( $modal_struct ), array( 'product_id' => $product_id ) );
+		if ( empty( $wc_filter_result ) ) {
+			// Obtener razón específica del filtro WooCommerce
+			$wc_reason = $this->get_last_wc_filter_reason();
+			$reasons[] = $wc_reason ? $wc_reason : 'product/coupon restriction';
 		}
 
 		if ( empty($reasons) ) {
@@ -166,6 +168,13 @@ class EWM_REST_API {
 	 * @var EWM_REST_API|null
 	 */
 	private static $instance = null;
+
+	/**
+	 * Almacena la última razón por la que el filtro WC rechazó un modal
+	 *
+	 * @var string|null
+	 */
+	private $last_wc_filter_reason = null;
 
 	/**
 	 * Constructor privado para singleton
@@ -294,6 +303,61 @@ class EWM_REST_API {
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'get_wc_coupons' ),
 				'permission_callback' => array( $this, 'check_permissions' ),
+			)
+		);
+
+		// Endpoint para debugging del carrito
+		register_rest_route(
+			self::NAMESPACE,
+			'/debug-cart',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'debug_cart_status' ),
+				'permission_callback' => '__return_true',
+			)
+		);
+
+		// Endpoint para verificar cupón específico
+		register_rest_route(
+			self::NAMESPACE,
+			'/check-coupon/(?P<coupon_code>[a-zA-Z0-9_-]+)',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'check_coupon_applied' ),
+				'permission_callback' => '__return_true',
+			)
+		);
+
+		// Endpoint SOLO LECTURA para información del carrito
+		register_rest_route(
+			self::NAMESPACE,
+			'/cart-info-readonly',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'get_cart_info_endpoint' ),
+				'permission_callback' => '__return_true',
+			)
+		);
+
+		// Endpoint para intentar diferentes estrategias de acceso al carrito
+		register_rest_route(
+			self::NAMESPACE,
+			'/cart-strategies',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'try_cart_access_strategies' ),
+				'permission_callback' => '__return_true',
+			)
+		);
+
+		// Endpoint simple para probar detección de cupones
+		register_rest_route(
+			self::NAMESPACE,
+			'/test-coupon-detection',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'test_coupon_detection' ),
+				'permission_callback' => '__return_true',
 			)
 		);
 
@@ -1109,41 +1173,42 @@ class EWM_REST_API {
 	 */
 	private function filter_modals_by_wc_context( $modals, $context ) {
 		$product_id = $context['product_id'];
-		
-		// Si no hay WooCommerce o no es una página de producto, no filtrar
-		// Cargar WooCommerce si no está cargado
-		if ( ! class_exists( 'WooCommerce' ) ) {
-			if ( file_exists( WP_PLUGIN_DIR . '/woocommerce/woocommerce.php' ) ) {
-				include_once WP_PLUGIN_DIR . '/woocommerce/woocommerce.php';
-			}
-		}
-		if ( ! function_exists( 'wc_get_product' ) || ! $product_id ) {
+
+		// Limpiar razón anterior
+		$this->last_wc_filter_reason = null;
+
+		// Verificar WooCommerce
+		if ( ! $this->ensure_woocommerce_loaded() ) {
+			$this->set_wc_filter_reason( 'WooCommerce not available' );
 			return $modals;
 		}
+
+		if ( ! function_exists( 'wc_get_product' ) || ! $product_id ) {
+			$this->set_wc_filter_reason( 'Invalid product or WC functions not available' );
+			return $modals;
+		}
+
 		$product = wc_get_product( $product_id );
 		if ( ! $product ) {
+			$this->set_wc_filter_reason( 'Product not found' );
 			return $modals;
 		}
-		
-	   // Caching de cupones para eficiencia
-	   static $coupon_cache = array();
+
+		// Asegurar inicialización completa del carrito
+		$this->ensure_cart_session();
+
+		// Caching de cupones para eficiencia
+		static $coupon_cache = array();
 
 	   return array_filter( $modals, function( $modal ) use ( $product, $product_id, &$coupon_cache ) {
 		   $config = $modal['config'];
 
-		   // Compatibilidad: buscar integración WooCommerce en config o en el meta ewm_wc_integration
+		   // Obtener configuración WooCommerce del modal
 		   $wc_config = null;
 		   if ( isset( $config['woocommerce'] ) ) {
 			   $wc_config = $config['woocommerce'];
 		   } else {
-			   // Intentar cargar del meta ewm_wc_integration
-			   $integration = get_post_meta( $modal['id'], 'ewm_wc_integration', true );
-			   if ( $integration ) {
-				   $integration = is_array($integration) ? $integration : json_decode($integration, true);
-				   if ( is_array($integration) ) {
-					   $wc_config = $integration;
-				   }
-			   }
+			   $wc_config = $this->get_modal_wc_config( $modal['id'] );
 		   }
 
 		   if ( ! $wc_config || ! isset( $wc_config['enabled'] ) || ! $wc_config['enabled'] ) {
@@ -1155,6 +1220,12 @@ class EWM_REST_API {
 			   // Si no hay código de cupón, mostrar el modal (no hay restricción)
 			   return true;
 		   }
+
+		// NUEVA VERIFICACIÓN: Si el cupón ya está aplicado, no mostrar el modal
+		if ( $this->is_coupon_applied_to_cart( $discount_code ) ) {
+			$this->set_wc_filter_reason( "coupon '{$discount_code}' already applied to cart" );
+			return false;
+		}
 
 		   // Obtener el objeto WC_Coupon usando caché
 		   if ( isset( $coupon_cache[ $discount_code ] ) ) {
@@ -1173,6 +1244,7 @@ class EWM_REST_API {
 
 		   // Si el cupón no existe o es inválido, no mostrar el modal
 		   if ( ! $coupon->get_id() ) {
+			   $this->set_wc_filter_reason( "coupon '{$discount_code}' does not exist or is invalid" );
 			   return false;
 		   }
 
@@ -1181,6 +1253,7 @@ class EWM_REST_API {
 		   $pid = (int) $product_id;
 		   if ( ! empty( $excluded_product_ids ) && in_array( $pid, $excluded_product_ids, true ) ) {
 			   // Si el producto está excluido, siempre retorna false, aunque esté en permitidos
+			   $this->set_wc_filter_reason( "product {$product_id} is excluded from coupon '{$discount_code}'" );
 			   return false;
 		   }
 
@@ -1188,17 +1261,20 @@ class EWM_REST_API {
 		   $excluded_category_ids = $coupon->get_excluded_product_categories();
 		   $product_category_ids = $product->get_category_ids();
 		   if ( ! empty( $excluded_category_ids ) && ! empty( array_intersect( $product_category_ids, $excluded_category_ids ) ) ) {
+			   $this->set_wc_filter_reason( "product {$product_id} category is excluded from coupon '{$discount_code}'" );
 			   return false;
 		   }
 
 		   // 3. Permitidos: solo si no está excluido
 		   $allowed_product_ids = $coupon->get_product_ids();
 		   if ( ! empty( $allowed_product_ids ) && ! in_array( $product_id, $allowed_product_ids, true ) ) {
+			   $this->set_wc_filter_reason( "product {$product_id} is not in allowed products for coupon '{$discount_code}'" );
 			   return false;
 		   }
 
 		   $allowed_category_ids = $coupon->get_product_categories();
 		   if ( ! empty( $allowed_category_ids ) && empty( array_intersect( $product_category_ids, $allowed_category_ids ) ) ) {
+			   $this->set_wc_filter_reason( "product {$product_id} category is not in allowed categories for coupon '{$discount_code}'" );
 			   return false;
 		   }
 
@@ -1591,6 +1667,793 @@ class EWM_REST_API {
 				'type'     => 'object',
 			),
 		);
+	}
+
+	/**
+	 * Endpoint para debugging del estado del carrito
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 * @return WP_REST_Response
+	 */
+	public function debug_cart_status( $request ) {
+		// Asegurar que WooCommerce esté cargado
+		if ( ! $this->ensure_woocommerce_loaded() ) {
+			return rest_ensure_response( array(
+				'error' => 'WooCommerce not available',
+				'wc_class_exists' => class_exists( 'WooCommerce' ),
+				'wc_function_exists' => function_exists( 'WC' ),
+			) );
+		}
+
+		// Asegurar inicialización del carrito
+		$this->ensure_cart_session();
+
+		$debug_info = array(
+			'timestamp' => current_time( 'mysql' ),
+			'woocommerce_status' => array(
+				'class_exists' => class_exists( 'WooCommerce' ),
+				'function_exists' => function_exists( 'WC' ),
+				'wc_instance' => WC() ? 'available' : 'not available',
+			),
+			'cart_status' => array(),
+			'session_status' => array(),
+			'applied_coupons' => array(),
+		);
+
+		// Verificar estado del carrito
+		if ( function_exists( 'WC' ) && WC() ) {
+			$debug_info['cart_status'] = array(
+				'cart_exists' => WC()->cart ? 'yes' : 'no',
+				'cart_class' => WC()->cart ? get_class( WC()->cart ) : 'null',
+				'cart_empty' => WC()->cart ? ( WC()->cart->is_empty() ? 'yes' : 'no' ) : 'unknown',
+				'cart_contents_count' => WC()->cart ? WC()->cart->get_cart_contents_count() : 0,
+			);
+
+			// Verificar sesión
+			$debug_info['session_status'] = array(
+				'session_exists' => WC()->session ? 'yes' : 'no',
+				'session_class' => WC()->session ? get_class( WC()->session ) : 'null',
+			);
+
+			// Obtener cupones aplicados usando diferentes métodos
+			if ( WC()->cart ) {
+				$applied_coupons = array();
+
+				// Método 1: has_discount
+				if ( method_exists( WC()->cart, 'has_discount' ) ) {
+					$debug_info['applied_coupons']['has_discount_method'] = 'available';
+				} else {
+					$debug_info['applied_coupons']['has_discount_method'] = 'not available';
+				}
+
+				// Método 2: get_applied_coupons
+				if ( method_exists( WC()->cart, 'get_applied_coupons' ) ) {
+					$applied_coupons = WC()->cart->get_applied_coupons();
+					$debug_info['applied_coupons']['get_applied_coupons'] = $applied_coupons;
+				} else {
+					$debug_info['applied_coupons']['get_applied_coupons'] = 'method not available';
+				}
+
+				// Método 3: acceso directo
+				if ( property_exists( WC()->cart, 'applied_coupons' ) ) {
+					$debug_info['applied_coupons']['direct_access'] = WC()->cart->applied_coupons;
+				} else {
+					$debug_info['applied_coupons']['direct_access'] = 'property not available';
+				}
+
+				$debug_info['applied_coupons']['count'] = count( $applied_coupons );
+			}
+		}
+
+		return rest_ensure_response( $debug_info );
+	}
+
+	/**
+	 * Endpoint para verificar si un cupón específico está aplicado
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 * @return WP_REST_Response
+	 */
+	public function check_coupon_applied( $request ) {
+		$coupon_code = sanitize_text_field( $request->get_param( 'coupon_code' ) );
+
+		if ( empty( $coupon_code ) ) {
+			return rest_ensure_response( array(
+				'error' => 'Coupon code is required',
+				'coupon_code' => $coupon_code,
+			) );
+		}
+
+		// Asegurar que WooCommerce esté cargado
+		if ( ! $this->ensure_woocommerce_loaded() ) {
+			return rest_ensure_response( array(
+				'error' => 'WooCommerce not available',
+				'coupon_code' => $coupon_code,
+				'is_applied' => false,
+			) );
+		}
+
+		// Asegurar inicialización del carrito
+		$this->ensure_cart_session();
+
+		$result = array(
+			'coupon_code' => $coupon_code,
+			'timestamp' => current_time( 'mysql' ),
+			'is_applied' => false,
+			'methods_tested' => array(),
+		);
+
+		// Verificar usando nuestro método principal
+		$result['is_applied'] = $this->is_coupon_applied_to_cart( $coupon_code );
+
+		// Detalles de cada método para debugging
+		if ( function_exists( 'WC' ) && WC() && WC()->cart ) {
+			// Método 1: has_discount
+			if ( method_exists( WC()->cart, 'has_discount' ) ) {
+				$result['methods_tested']['has_discount'] = WC()->cart->has_discount( $coupon_code );
+			}
+
+			// Método 2: get_applied_coupons
+			if ( method_exists( WC()->cart, 'get_applied_coupons' ) ) {
+				$applied_coupons = WC()->cart->get_applied_coupons();
+				$result['methods_tested']['get_applied_coupons'] = array(
+					'all_coupons' => $applied_coupons,
+					'contains_coupon' => in_array( strtolower( $coupon_code ), array_map( 'strtolower', $applied_coupons ), true ),
+				);
+			}
+
+			// Método 3: acceso directo
+			if ( property_exists( WC()->cart, 'applied_coupons' ) ) {
+				$applied_coupons = WC()->cart->applied_coupons;
+				$result['methods_tested']['direct_access'] = array(
+					'all_coupons' => $applied_coupons,
+					'contains_coupon' => in_array( strtolower( $coupon_code ), array_map( 'strtolower', $applied_coupons ), true ),
+				);
+			}
+		}
+
+		return rest_ensure_response( $result );
+	}
+
+	/**
+	 * Endpoint SOLO LECTURA para información del carrito
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 * @return WP_REST_Response
+	 */
+	public function get_cart_info_endpoint( $request ) {
+		$cart_info = $this->get_cart_info_readonly();
+
+		$response = array(
+			'timestamp' => current_time( 'mysql' ),
+			'message' => 'Cart information (READ-ONLY - no modifications made)',
+			'cart_info' => $cart_info,
+		);
+
+		return rest_ensure_response( $response );
+	}
+
+	/**
+	 * Endpoint para probar diferentes estrategias de acceso al carrito
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 * @return WP_REST_Response
+	 */
+	public function try_cart_access_strategies( $request ) {
+		$strategies = array(
+			'timestamp' => current_time( 'mysql' ),
+			'message' => 'Testing different cart access strategies',
+			'strategies' => array(),
+		);
+
+		// Estrategia 1: Acceso directo actual
+		$strategies['strategies']['direct_access'] = $this->get_cart_info_readonly();
+
+		// Estrategia 2: Intentar con WooCommerce Store API
+		$strategies['strategies']['store_api'] = $this->try_store_api_access();
+
+		// Estrategia 3: Acceso a través de cookies de sesión
+		$strategies['strategies']['cookie_access'] = $this->try_cookie_session_access();
+
+		// Estrategia 4: Acceso a través de base de datos de sesiones
+		$strategies['strategies']['db_session_access'] = $this->try_db_session_access();
+
+		return rest_ensure_response( $strategies );
+	}
+
+	/**
+	 * Endpoint simple para probar detección de cupones
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 * @return WP_REST_Response
+	 */
+	public function test_coupon_detection( $request ) {
+		$result = array(
+			'timestamp' => current_time( 'mysql' ),
+			'message' => 'Testing coupon detection using session strategy',
+		);
+
+		// Obtener cupones aplicados usando nuestra nueva estrategia
+		$applied_coupons = $this->get_applied_coupons_from_session();
+		$result['applied_coupons'] = $applied_coupons;
+		$result['coupons_count'] = count( $applied_coupons );
+
+		// Probar verificación específica si hay cupones
+		if ( ! empty( $applied_coupons ) ) {
+			$result['coupon_tests'] = array();
+
+			foreach ( $applied_coupons as $coupon ) {
+				$result['coupon_tests'][$coupon] = array(
+					'coupon_code' => $coupon,
+					'is_applied' => $this->is_coupon_applied_to_cart( $coupon ),
+				);
+			}
+
+			// Probar con un cupón que NO está aplicado
+			$result['coupon_tests']['fake-coupon'] = array(
+				'coupon_code' => 'fake-coupon',
+				'is_applied' => $this->is_coupon_applied_to_cart( 'fake-coupon' ),
+			);
+		}
+
+		return rest_ensure_response( $result );
+	}
+
+	/**
+	 * Intentar acceso a través de WooCommerce Store API
+	 */
+	private function try_store_api_access() {
+		$result = array(
+			'method' => 'WooCommerce Store API',
+			'available' => false,
+			'data' => array(),
+		);
+
+		try {
+			// Verificar si la Store API está disponible
+			if ( class_exists( 'Automattic\WooCommerce\StoreApi\StoreApi' ) ) {
+				$result['available'] = true;
+				$result['data']['store_api_class'] = 'available';
+
+				// Intentar acceder al carrito a través de Store API
+				// Nota: Esto es solo para verificar disponibilidad, no para modificar
+				$result['data']['note'] = 'Store API available but requires proper authentication';
+			} else {
+				$result['data']['store_api_class'] = 'not available';
+			}
+		} catch ( Exception $e ) {
+			$result['data']['error'] = $e->getMessage();
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Intentar acceso a través de cookies de sesión
+	 */
+	private function try_cookie_session_access() {
+		$result = array(
+			'method' => 'Cookie Session Access',
+			'available' => false,
+			'data' => array(),
+		);
+
+		try {
+			// Buscar cookies de WooCommerce
+			$wc_cookies = array();
+			$session_cookie_name = null;
+			$session_cookie_value = null;
+
+			foreach ( $_COOKIE as $name => $value ) {
+				if ( strpos( $name, 'woocommerce' ) !== false || strpos( $name, 'wp_woocommerce' ) !== false ) {
+					$wc_cookies[$name] = array(
+						'length' => strlen( $value ),
+						'preview' => substr( $value, 0, 20 ) . '...',
+					);
+
+					// Identificar cookie de sesión
+					if ( strpos( $name, 'session' ) !== false ) {
+						$session_cookie_name = $name;
+						$session_cookie_value = $value;
+					}
+				}
+			}
+
+			$result['data']['cookies_found'] = $wc_cookies;
+			$result['available'] = ! empty( $wc_cookies );
+
+			// Decodificar cookie de sesión si existe
+			if ( $session_cookie_name && $session_cookie_value ) {
+				$result['data']['session_cookie'] = $session_cookie_name;
+
+				// Intentar decodificar la cookie de sesión
+				$decoded_session = $this->decode_wc_session_cookie( $session_cookie_value );
+				$result['data']['decoded_session'] = $decoded_session;
+
+				// Si tenemos un customer_id, intentar cargar datos de sesión desde DB
+				if ( ! empty( $decoded_session['customer_id'] ) ) {
+					$session_data = $this->get_session_data_from_db( $decoded_session['customer_id'] );
+					$result['data']['session_from_db'] = $session_data;
+				}
+			}
+
+		} catch ( Exception $e ) {
+			$result['data']['error'] = $e->getMessage();
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Decodificar cookie de sesión de WooCommerce
+	 */
+	private function decode_wc_session_cookie( $cookie_value ) {
+		$result = array(
+			'raw_cookie' => substr( $cookie_value, 0, 50 ) . '...',
+			'decoded' => false,
+		);
+
+		try {
+			// La cookie de WooCommerce tiene formato: customer_id||session_expiry||session_expiring||cookie_hash
+			$cookie_elements = explode( '||', $cookie_value );
+
+			if ( count( $cookie_elements ) >= 4 ) {
+				$result['decoded'] = true;
+				$result['customer_id'] = $cookie_elements[0];
+				$result['session_expiry'] = $cookie_elements[1];
+				$result['session_expiring'] = $cookie_elements[2];
+				$result['cookie_hash'] = $cookie_elements[3];
+
+				// Convertir timestamps a fechas legibles
+				$result['expiry_date'] = date( 'Y-m-d H:i:s', $cookie_elements[1] );
+				$result['expiring_date'] = date( 'Y-m-d H:i:s', $cookie_elements[2] );
+				$result['is_expired'] = time() > $cookie_elements[1];
+			} else {
+				$result['error'] = 'Invalid cookie format';
+				$result['elements_count'] = count( $cookie_elements );
+			}
+
+		} catch ( Exception $e ) {
+			$result['error'] = $e->getMessage();
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Obtener datos de sesión desde la base de datos
+	 */
+	private function get_session_data_from_db( $customer_id ) {
+		global $wpdb;
+
+		$result = array(
+			'customer_id' => $customer_id,
+			'found' => false,
+		);
+
+		try {
+			$table_name = $wpdb->prefix . 'woocommerce_sessions';
+
+			// Buscar sesión por customer_id
+			$session_data = $wpdb->get_row(
+				$wpdb->prepare(
+					"SELECT session_key, session_value, session_expiry FROM {$table_name} WHERE session_key = %s",
+					$customer_id
+				)
+			);
+
+			if ( $session_data ) {
+				$result['found'] = true;
+				$result['session_key'] = $session_data->session_key;
+				$result['session_expiry'] = $session_data->session_expiry;
+				$result['expiry_date'] = date( 'Y-m-d H:i:s', $session_data->session_expiry );
+				$result['is_expired'] = time() > $session_data->session_expiry;
+
+				// Decodificar datos de sesión
+				$session_value = maybe_unserialize( $session_data->session_value );
+				if ( is_array( $session_value ) ) {
+					$result['session_data'] = array();
+
+					// Buscar específicamente cupones aplicados
+					if ( isset( $session_value['applied_coupons'] ) ) {
+						$result['session_data']['applied_coupons_raw'] = $session_value['applied_coupons'];
+
+						// Deserializar cupones si están serializados
+						$applied_coupons = $session_value['applied_coupons'];
+						if ( is_string( $applied_coupons ) ) {
+							$applied_coupons = maybe_unserialize( $applied_coupons );
+						}
+
+						$result['session_data']['applied_coupons'] = $applied_coupons;
+						$result['session_data']['applied_coupons_count'] = is_array( $applied_coupons ) ? count( $applied_coupons ) : 0;
+						$result['found_coupons'] = true;
+					}
+
+					// Buscar datos del carrito
+					if ( isset( $session_value['cart'] ) ) {
+						$result['session_data']['cart_items_count'] = is_array( $session_value['cart'] ) ? count( $session_value['cart'] ) : 0;
+						$result['found_cart'] = true;
+					}
+
+					// Agregar otras claves disponibles (sin datos sensibles)
+					$result['session_data']['available_keys'] = array_keys( $session_value );
+				} else {
+					$result['session_decode_error'] = 'Could not unserialize session data';
+				}
+			}
+
+		} catch ( Exception $e ) {
+			$result['error'] = $e->getMessage();
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Intentar acceso a través de base de datos de sesiones
+	 */
+	private function try_db_session_access() {
+		global $wpdb;
+
+		$result = array(
+			'method' => 'Database Session Access',
+			'available' => false,
+			'data' => array(),
+		);
+
+		try {
+			// Verificar si existe la tabla de sesiones de WooCommerce
+			$table_name = $wpdb->prefix . 'woocommerce_sessions';
+			$table_exists = $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $table_name ) );
+
+			$result['data']['session_table_exists'] = $table_exists ? 'yes' : 'no';
+
+			if ( $table_exists ) {
+				// Contar sesiones activas (sin acceder a datos específicos)
+				$session_count = $wpdb->get_var( "SELECT COUNT(*) FROM {$table_name}" );
+				$result['data']['total_sessions'] = $session_count;
+				$result['available'] = true;
+
+				// Obtener información general sobre las sesiones (sin datos sensibles)
+				$recent_sessions = $wpdb->get_var(
+					"SELECT COUNT(*) FROM {$table_name} WHERE session_expiry > UNIX_TIMESTAMP()"
+				);
+				$result['data']['active_sessions'] = $recent_sessions;
+			}
+
+		} catch ( Exception $e ) {
+			$result['data']['error'] = $e->getMessage();
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Obtener cupones aplicados usando la estrategia de cookies/DB (MÉTODO PRINCIPAL)
+	 */
+	private function get_applied_coupons_from_session() {
+		$applied_coupons = array();
+
+		try {
+			// Buscar cookie de sesión de WooCommerce
+			$session_cookie_name = null;
+			$session_cookie_value = null;
+
+			foreach ( $_COOKIE as $name => $value ) {
+				if ( strpos( $name, 'wp_woocommerce_session_' ) !== false ) {
+					$session_cookie_name = $name;
+					$session_cookie_value = $value;
+					break;
+				}
+			}
+
+			if ( ! $session_cookie_name || ! $session_cookie_value ) {
+				return array(); // No hay cookie de sesión
+			}
+
+			// Decodificar cookie
+			$cookie_elements = explode( '||', $session_cookie_value );
+			if ( count( $cookie_elements ) < 4 ) {
+				return array(); // Cookie inválida
+			}
+
+			$customer_id = $cookie_elements[0];
+			$session_expiry = $cookie_elements[1];
+
+			// Verificar que no esté expirada
+			if ( time() > $session_expiry ) {
+				return array(); // Sesión expirada
+			}
+
+			// Obtener datos de sesión desde DB
+			global $wpdb;
+			$table_name = $wpdb->prefix . 'woocommerce_sessions';
+
+			$session_data = $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT session_value FROM {$table_name} WHERE session_key = %s AND session_expiry > %d",
+					$customer_id,
+					time()
+				)
+			);
+
+			if ( ! $session_data ) {
+				return array(); // No hay datos de sesión
+			}
+
+			// Deserializar datos de sesión
+			$session_value = maybe_unserialize( $session_data );
+			if ( ! is_array( $session_value ) || ! isset( $session_value['applied_coupons'] ) ) {
+				return array(); // No hay cupones en la sesión
+			}
+
+			// Obtener cupones aplicados
+			$applied_coupons_data = $session_value['applied_coupons'];
+			if ( is_string( $applied_coupons_data ) ) {
+				$applied_coupons_data = maybe_unserialize( $applied_coupons_data );
+			}
+
+			if ( is_array( $applied_coupons_data ) ) {
+				$applied_coupons = $applied_coupons_data;
+			}
+
+		} catch ( Exception $e ) {
+			error_log( 'EWM Modal: Error getting applied coupons from session: ' . $e->getMessage() );
+		}
+
+		return $applied_coupons;
+	}
+
+	/**
+	 * Verificar si un cupón está aplicado al carrito usando múltiples métodos
+	 *
+	 * @param string $coupon_code Código del cupón a verificar.
+	 * @return bool True si el cupón está aplicado, false en caso contrario.
+	 */
+	private function is_coupon_applied_to_cart( $coupon_code ) {
+		if ( empty( $coupon_code ) ) {
+			return false;
+		}
+
+		// MÉTODO PRINCIPAL: Usar estrategia de cookies/DB (más confiable en contexto REST)
+		$applied_coupons = $this->get_applied_coupons_from_session();
+		if ( ! empty( $applied_coupons ) ) {
+			return in_array( strtolower( $coupon_code ), array_map( 'strtolower', $applied_coupons ), true );
+		}
+
+		// FALLBACK: Métodos tradicionales si el carrito está disponible
+		if ( function_exists( 'WC' ) && WC() && WC()->cart ) {
+			try {
+				// Método 1: has_discount (más directo, WooCommerce 3.0+)
+				if ( method_exists( WC()->cart, 'has_discount' ) ) {
+					return WC()->cart->has_discount( $coupon_code );
+				}
+
+				// Método 2: get_applied_coupons (fallback)
+				if ( method_exists( WC()->cart, 'get_applied_coupons' ) ) {
+					$applied_coupons = WC()->cart->get_applied_coupons();
+					return in_array( strtolower( $coupon_code ), array_map( 'strtolower', $applied_coupons ), true );
+				}
+
+				// Método 3: acceso directo (último recurso)
+				if ( property_exists( WC()->cart, 'applied_coupons' ) && ! empty( WC()->cart->applied_coupons ) ) {
+					$applied_coupons = WC()->cart->applied_coupons;
+					return in_array( strtolower( $coupon_code ), array_map( 'strtolower', $applied_coupons ), true );
+				}
+
+			} catch ( Exception $e ) {
+				error_log( 'EWM Modal: Error checking applied coupons via WC()->cart: ' . $e->getMessage() );
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Obtener la última razón por la que el filtro WC rechazó un modal
+	 *
+	 * @return string|null
+	 */
+	private function get_last_wc_filter_reason() {
+		return $this->last_wc_filter_reason;
+	}
+
+	/**
+	 * Establecer la razón por la que el filtro WC rechazó un modal
+	 *
+	 * @param string $reason Razón del rechazo.
+	 */
+	private function set_wc_filter_reason( $reason ) {
+		$this->last_wc_filter_reason = $reason;
+	}
+
+	/**
+	 * Asegurar que WooCommerce esté cargado
+	 *
+	 * @return bool True si WooCommerce está disponible, false en caso contrario.
+	 */
+	private function ensure_woocommerce_loaded() {
+		if ( ! class_exists( 'WooCommerce' ) ) {
+			if ( file_exists( WP_PLUGIN_DIR . '/woocommerce/woocommerce.php' ) ) {
+				include_once WP_PLUGIN_DIR . '/woocommerce/woocommerce.php';
+			} else {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Asegurar inicialización del carrito en contexto REST - VERSIÓN CONSERVADORA
+	 */
+	private function ensure_cart_session() {
+		// NO TOCAR NADA - Solo verificar que esté disponible
+		// El problema es que cualquier inicialización puede borrar la sesión existente
+
+		// Solo verificar que WordPress esté cargado, sin forzar acciones
+		if ( ! did_action( 'wp_loaded' ) ) {
+			// NO ejecutar do_action('wp_loaded') porque puede interferir
+			return;
+		}
+
+		// NO inicializar nada manualmente - usar solo lo que ya existe
+		// Si WooCommerce no está disponible, simplemente retornar
+		if ( ! function_exists( 'WC' ) || ! WC() ) {
+			return;
+		}
+
+		// NO crear nuevas instancias - solo usar las existentes
+		// NO llamar get_cart_from_session() porque puede sobrescribir datos
+	}
+
+	/**
+	 * Obtener información del carrito de forma SOLO LECTURA con logging extensivo
+	 * NO modifica nada, solo lee lo que ya existe
+	 */
+	private function get_cart_info_readonly() {
+		$info = array(
+			'wc_available' => false,
+			'cart_available' => false,
+			'session_available' => false,
+			'applied_coupons' => array(),
+			'cart_contents_count' => 0,
+			'debug_info' => array(),
+			'detailed_logging' => array(),
+		);
+
+		// Log del contexto actual
+		$info['detailed_logging']['context'] = array(
+			'is_admin' => is_admin(),
+			'is_ajax' => wp_doing_ajax(),
+			'is_rest' => defined( 'REST_REQUEST' ) && REST_REQUEST,
+			'current_user_id' => get_current_user_id(),
+			'wp_loaded_fired' => did_action( 'wp_loaded' ),
+			'init_fired' => did_action( 'init' ),
+			'woocommerce_loaded_fired' => did_action( 'woocommerce_loaded' ),
+		);
+
+		// Verificar WooCommerce
+		if ( ! function_exists( 'WC' ) ) {
+			$info['debug_info'][] = 'WC() function not available';
+			$info['detailed_logging']['wc_function'] = 'not available';
+			return $info;
+		}
+
+		$info['detailed_logging']['wc_function'] = 'available';
+
+		$wc = WC();
+		if ( ! $wc ) {
+			$info['debug_info'][] = 'WC() returned null';
+			$info['detailed_logging']['wc_instance'] = 'null';
+			return $info;
+		}
+
+		$info['wc_available'] = true;
+		$info['detailed_logging']['wc_instance'] = 'available';
+		$info['detailed_logging']['wc_class'] = get_class( $wc );
+
+		// Logging detallado de la sesión
+		$info['detailed_logging']['session'] = array(
+			'session_exists' => $wc->session ? 'yes' : 'no',
+			'session_class' => $wc->session ? get_class( $wc->session ) : 'null',
+		);
+
+		// Verificar sesión SIN inicializarla
+		if ( $wc->session ) {
+			$info['session_available'] = true;
+
+			// Intentar leer datos de sesión directamente
+			try {
+				$session_data = array();
+				if ( method_exists( $wc->session, 'get' ) ) {
+					$cart_session = $wc->session->get( 'cart' );
+					$applied_coupons_session = $wc->session->get( 'applied_coupons' );
+
+					$session_data['cart_in_session'] = $cart_session ? 'yes' : 'no';
+					$session_data['coupons_in_session'] = $applied_coupons_session ? 'yes' : 'no';
+					$session_data['applied_coupons_from_session'] = $applied_coupons_session ? $applied_coupons_session : array();
+
+					if ( $applied_coupons_session ) {
+						$info['applied_coupons'] = $applied_coupons_session;
+						$info['debug_info'][] = 'Found coupons in session data';
+					}
+				}
+				$info['detailed_logging']['session_data'] = $session_data;
+			} catch ( Exception $e ) {
+				$info['detailed_logging']['session_error'] = $e->getMessage();
+			}
+		} else {
+			$info['debug_info'][] = 'WC()->session is null';
+		}
+
+		// Verificar carrito SIN inicializarlo
+		if ( ! $wc->cart ) {
+			$info['debug_info'][] = 'WC()->cart is null';
+			$info['detailed_logging']['cart'] = array(
+				'cart_exists' => 'no',
+				'cart_class' => 'null',
+			);
+
+			// Intentar acceder a cookies de sesión directamente
+			$info['detailed_logging']['cookies'] = array();
+			foreach ( $_COOKIE as $name => $value ) {
+				if ( strpos( $name, 'woocommerce' ) !== false || strpos( $name, 'wp_woocommerce' ) !== false ) {
+					$info['detailed_logging']['cookies'][$name] = substr( $value, 0, 50 ) . '...'; // Solo primeros 50 chars por seguridad
+				}
+			}
+
+			return $info;
+		}
+
+		$info['cart_available'] = true;
+		$info['detailed_logging']['cart'] = array(
+			'cart_exists' => 'yes',
+			'cart_class' => get_class( $wc->cart ),
+		);
+
+		// Obtener cupones aplicados SOLO si el carrito ya existe
+		try {
+			// Método 1: get_applied_coupons (más seguro)
+			if ( method_exists( $wc->cart, 'get_applied_coupons' ) ) {
+				$info['applied_coupons'] = $wc->cart->get_applied_coupons();
+				$info['debug_info'][] = 'Used get_applied_coupons() method';
+			}
+			// Método 2: acceso directo como fallback
+			elseif ( property_exists( $wc->cart, 'applied_coupons' ) ) {
+				$info['applied_coupons'] = $wc->cart->applied_coupons;
+				$info['debug_info'][] = 'Used direct access to applied_coupons property';
+			} else {
+				$info['debug_info'][] = 'No method available to get applied coupons';
+			}
+
+			// Obtener count del carrito
+			if ( method_exists( $wc->cart, 'get_cart_contents_count' ) ) {
+				$info['cart_contents_count'] = $wc->cart->get_cart_contents_count();
+			}
+
+		} catch ( Exception $e ) {
+			$info['debug_info'][] = 'Exception: ' . $e->getMessage();
+		}
+
+		return $info;
+	}
+
+	/**
+	 * Obtener configuración WooCommerce de un modal
+	 *
+	 * @param int $modal_id ID del modal.
+	 * @return array|null Configuración WC o null si no existe.
+	 */
+	private function get_modal_wc_config( $modal_id ) {
+		// Intentar cargar del meta ewm_wc_integration
+		$integration = get_post_meta( $modal_id, 'ewm_wc_integration', true );
+		if ( $integration ) {
+			$integration = is_array( $integration ) ? $integration : json_decode( $integration, true );
+			if ( is_array( $integration ) ) {
+				return $integration;
+			}
+		}
+		return null;
 	}
 }
 

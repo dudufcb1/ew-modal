@@ -1,0 +1,68 @@
+{
+  "schema_version": "2.0.0",
+  "meta": {
+    "date": "2025-07-28T00:00:00Z",
+    "project": "ewm-modal-cta",
+    "author": "augment_agent",
+    "task_id": "SPRINT3_ADMIN_INTERFACE",
+    "status": "todo",
+    "revision": 1,
+    "snapshot_id": "a4fc2bcb-7350-4bae-9603-e81f6c07cbe5",
+    "group_id": "wc_modal_inteligente_implementacion",
+    "can_agent_set_done": true,
+    "timestamp": "2025-07-28T01:21:09.479599Z",
+    "rolled_back": false,
+    "group_md": "groups/wc_modal_inteligente_implementacion/group.md"
+  },
+  "scope": {
+    "files": [
+      "includes/class-ewm-admin-page.php",
+      "admin/coupon-settings.php",
+      "assets/js/admin-coupon-settings.js"
+    ],
+    "components": [
+      "Admin Settings",
+      "Configuration Panel",
+      "Bulk Operations",
+      "Help Documentation"
+    ]
+  },
+  "problem": {
+    "user_request": "Extender panel de administración con configuraciones de cupones y operaciones bulk",
+    "business_goal": "Proporcionar control completo sobre funcionalidad de cupones a administradores",
+    "constraints": [
+      "Integración con admin existente",
+      "UI consistente con WordPress",
+      "Validaciones robustas"
+    ]
+  },
+  "implementation_plan": {
+    "steps": [
+      {
+        "step": "Extender panel de administración",
+        "status": "todo",
+        "estimated_time": "2h 30min"
+      },
+      {
+        "step": "Crear configuraciones de cupones",
+        "status": "todo",
+        "estimated_time": "2h"
+      },
+      {
+        "step": "Implementar bulk operations",
+        "status": "todo",
+        "estimated_time": "2h"
+      },
+      {
+        "step": "Help documentation",
+        "status": "todo",
+        "estimated_time": "1h 30min"
+      }
+    ]
+  },
+  "next_actions": [
+    "Extender class-ewm-admin-page.php",
+    "Crear sección de configuración de cupones",
+    "Implementar operaciones masivas"
+  ]
+}

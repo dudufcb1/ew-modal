@@ -1,0 +1,78 @@
+{
+  "schema_version": "2.0.0",
+  "meta": {
+    "date": "2025-07-28T00:00:00Z",
+    "project": "ewm-modal-cta",
+    "author": "augment_agent",
+    "task_id": "SPRINT1_INTEGRATION_TESTING",
+    "status": "todo",
+    "revision": 1,
+    "snapshot_id": "b5aa15fb-b678-4dd1-a3cd-9070bf4eb70d",
+    "group_id": "wc_modal_inteligente_implementacion",
+    "can_agent_set_done": true,
+    "timestamp": "2025-07-28T01:19:27.731052Z",
+    "rolled_back": false,
+    "group_md": "groups/wc_modal_inteligente_implementacion/group.md"
+  },
+  "scope": {
+    "files": [
+      "tests/test-ewm-coupon-manager.php",
+      "tests/test-woocommerce-integration.php",
+      "tests/test-security-validation.php"
+    ],
+    "components": [
+      "Unit Testing",
+      "Integration Testing",
+      "Security Testing",
+      "Performance Testing"
+    ]
+  },
+  "problem": {
+    "user_request": "Crear suite completa de pruebas para validar funcionalidad, integración WooCommerce y seguridad",
+    "business_goal": "Asegurar calidad y confiabilidad del sistema antes de proceder al frontend",
+    "constraints": [
+      "Cobertura de tests > 90%",
+      "Tests automatizados",
+      "Validación con diferentes tipos de cupones"
+    ]
+  },
+  "implementation_plan": {
+    "steps": [
+      {
+        "step": "Crear tests unitarios para coupon manager",
+        "status": "todo",
+        "estimated_time": "2h"
+      },
+      {
+        "step": "Crear tests de integración WooCommerce",
+        "status": "todo",
+        "estimated_time": "2h"
+      },
+      {
+        "step": "Crear tests de seguridad",
+        "status": "todo",
+        "estimated_time": "1h 30min"
+      },
+      {
+        "step": "Testing con diferentes tipos de cupones",
+        "status": "todo",
+        "estimated_time": "2h"
+      },
+      {
+        "step": "Validar edge cases",
+        "status": "todo",
+        "estimated_time": "1h 30min"
+      },
+      {
+        "step": "Performance benchmarking",
+        "status": "todo",
+        "estimated_time": "1h"
+      }
+    ]
+  },
+  "next_actions": [
+    "Setup testing environment",
+    "Crear tests para diferentes escenarios de cupones",
+    "Validar integración completa con WooCommerce"
+  ]
+}

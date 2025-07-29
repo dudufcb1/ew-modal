@@ -819,6 +819,86 @@
         }
 
         /**
+         * Verificar visibilidad WooCommerce (solo para modales con integración WC)
+         */
+        async checkWooCommerceVisibility() {
+            console.log(`[EWM LOG] [WC] checkWooCommerceVisibility iniciado para modal ${this.config.modal_id}`);
+            console.log(`[EWM LOG] [WC] Config completa:`, this.config);
+
+            // Solo verificar si el modal tiene configuración WooCommerce
+            const hasWCConfig = this.config.wc_integration && this.config.wc_integration.enabled;
+            console.log(`[EWM LOG] [WC] ¿Tiene config WC?`, hasWCConfig);
+            console.log(`[EWM LOG] [WC] Config WC:`, this.config.wc_integration);
+
+            if (!hasWCConfig) {
+                console.log(`[EWM LOG] [WC] No es modal WooCommerce, permitiendo mostrar`);
+                return { should_show: true, reason: 'not a WooCommerce modal' };
+            }
+
+            // Intentar obtener product_id de la página actual
+            const productId = this.getProductIdFromPage();
+            console.log(`[EWM LOG] [WC] Product ID detectado:`, productId);
+            if (!productId) {
+                console.log(`[EWM LOG] [WC] No es página de producto, permitiendo mostrar`);
+                return { should_show: true, reason: 'not a product page' };
+            }
+
+            try {
+                console.log(`[EWM LOG] [WC] Checking WooCommerce visibility for modal ${this.config.modal_id}, product ${productId}`);
+
+                const response = await fetch(`${ewmModal.restUrl}test-modal-visibility/${this.config.modal_id}/${productId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log(`[EWM LOG] [WC] Visibility check response:`, data);
+
+                    return {
+                        should_show: data.result === 'will show',
+                        reason: data.reason || 'unknown',
+                        modal_id: data.modal_id,
+                        product_id: data.product_id
+                    };
+                } else {
+                    console.warn(`[EWM LOG] [WC] Visibility check failed, status:`, response.status);
+                    return { should_show: true, reason: 'visibility check failed, allowing display' };
+                }
+            } catch (error) {
+                console.error(`[EWM LOG] [WC] Error checking WooCommerce visibility:`, error);
+                return { should_show: true, reason: 'visibility check error, allowing display' };
+            }
+        }
+
+        /**
+         * Obtener product_id de la página actual
+         */
+        getProductIdFromPage() {
+            // Método 1: Buscar en el body class
+            const bodyClasses = document.body.className;
+            const productMatch = bodyClasses.match(/postid-(\d+)/);
+            if (productMatch) {
+                return parseInt(productMatch[1]);
+            }
+
+            // Método 2: Buscar en datos del producto WooCommerce
+            if (typeof wc_single_product_params !== 'undefined' && wc_single_product_params.post_id) {
+                return parseInt(wc_single_product_params.post_id);
+            }
+
+            // Método 3: Buscar en el DOM
+            const productElement = document.querySelector('[data-product-id]');
+            if (productElement) {
+                return parseInt(productElement.getAttribute('data-product-id'));
+            }
+
+            return null;
+        }
+
+        /**
          * Mostrar modal (con validación de frecuencia y envío exitoso)
          */
         async show() {
@@ -843,6 +923,16 @@
                 console.log(`[EWM LOG] [PAGE LOAD] Modal bloqueado por frecuencia para modal ${this.config.modal_id}`);
                 return;
             }
+
+            // NUEVA VERIFICACIÓN: Para modales WooCommerce, verificar cupones aplicados
+            console.log(`[EWM LOG] [WC] Iniciando verificación WooCommerce para modal ${this.config.modal_id}`);
+            const wcVisibilityCheck = await this.checkWooCommerceVisibility();
+            console.log(`[EWM LOG] [WC] Resultado verificación WooCommerce:`, wcVisibilityCheck);
+            if (!wcVisibilityCheck.should_show) {
+                console.log(`[EWM LOG] [WC] Modal bloqueado por WooCommerce: ${wcVisibilityCheck.reason} para modal ${this.config.modal_id}`);
+                return;
+            }
+            console.log(`[EWM LOG] [WC] Modal aprobado por verificación WooCommerce para modal ${this.config.modal_id}`);
 
             this.modal.style.display = 'flex';
             this.isVisible = true;

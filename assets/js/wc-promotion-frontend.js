@@ -141,12 +141,25 @@
         }
 
         /**
-         * Mostrar modal de promoción
+         * Mostrar modal de promoción (con verificación de cupones aplicados)
          */
-        showPromotionModal(modalId, config) {
+        async showPromotionModal(modalId, config) {
+            console.log(`EWM WC Promotion: Attempting to show modal ${modalId}`);
+
+            // NUEVA VERIFICACIÓN: Consultar si el modal debe mostrarse
+            const productId = this.getProductId();
+            if (productId) {
+                const shouldShow = await this.checkModalVisibility(modalId, productId);
+                if (!shouldShow.should_show) {
+                    console.log(`EWM WC Promotion: Modal ${modalId} blocked:`, shouldShow.reason);
+                    return;
+                }
+                console.log(`EWM WC Promotion: Modal ${modalId} approved for display`);
+            }
+
             // Buscar el modal en el DOM
             const modalElement = document.getElementById(`ewm-modal-${modalId}`);
-            
+
             if (modalElement) {
                 // Usar el sistema existente de EWM Modal
                 if (window.EWMModal) {
@@ -157,6 +170,7 @@
                     modalElement.style.display = 'flex';
                     modalElement.classList.add('ewm-modal-visible');
                 }
+                console.log(`EWM WC Promotion: Modal ${modalId} displayed successfully`);
             } else {
                 console.warn('EWM WC Promotion: Modal element not found:', modalId);
             }
@@ -183,6 +197,48 @@
                     this.copyCoupon(couponCode, e.target);
                 }
             });
+        }
+
+        /**
+         * Verificar si un modal debe mostrarse consultando el endpoint de verificación
+         */
+        async checkModalVisibility(modalId, productId) {
+            try {
+                console.log(`EWM WC Promotion: Checking visibility for modal ${modalId}, product ${productId}`);
+
+                const response = await fetch(`${ewmModal.restUrl}test-modal-visibility/${modalId}/${productId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('EWM WC Promotion: Visibility check response:', data);
+
+                    return {
+                        should_show: data.result === 'will show',
+                        reason: data.reason || 'unknown',
+                        modal_id: data.modal_id,
+                        product_id: data.product_id
+                    };
+                } else {
+                    console.warn('EWM WC Promotion: Visibility check failed, status:', response.status);
+                    // En caso de error, permitir mostrar el modal (comportamiento por defecto)
+                    return {
+                        should_show: true,
+                        reason: 'visibility check failed, allowing display'
+                    };
+                }
+            } catch (error) {
+                console.error('EWM WC Promotion: Error checking modal visibility:', error);
+                // En caso de error, permitir mostrar el modal (comportamiento por defecto)
+                return {
+                    should_show: true,
+                    reason: 'visibility check error, allowing display'
+                };
+            }
         }
 
         /**
