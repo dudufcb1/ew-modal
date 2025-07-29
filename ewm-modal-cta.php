@@ -1,7 +1,7 @@
 <?php
 /**
- * Plugin Name:       Especialista en WP Modal
- * Description:       Plugin moderno para WordPress que permite crear modales interactivos de captura de leads con formularios multi-paso. Sistema basado en shortcodes clásicos.
+ * Plugin Name:       WP Modal Specialist
+ * Description:       Modern WordPress plugin that allows creation of interactive lead capture modals with multi-step forms. System based on classic shortcodes.
  * Version:           1.0.0
  * Requires at least: 5.0
  * Requires PHP:      7.4

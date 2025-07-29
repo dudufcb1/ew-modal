@@ -13,17 +13,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Clase para manejar meta fields flexibles con soporte JSON y serializado
+ * Class to manage flexible meta fields with JSON and serialized support
  */
 class EWM_Meta_Fields {
    /**
-	* Instancia singleton
+	* Singleton instance
 	*/
    private static $instance = null;
    /**
-	* Resuelve un valor de página/categoría especial, slug o numérico a su ID o valor lógico.
-	* Si es numérico, lo retorna como int. Si es un slug, busca el ID de la página o categoría.
-	* Si no encuentra nada, retorna null.
+	* Resolve a special page/category slug or numeric value to its ID or logical value.
+	* Returns int for numeric values, or null if not found.
 	*/
    public static function resolve_to_id($value) {
 	   if (is_numeric($value)) {
@@ -78,8 +77,8 @@ class EWM_Meta_Fields {
 
 
 
-	/**
-	 * Validar configuración de pasos
+   /**
+	 * Validate steps configuration
 	 */
 	private function validate_steps_config( $config ) {
 		// CONTRACTOR FIX: Siempre esperamos estructura completa, eliminada condición problemática
@@ -169,26 +168,26 @@ class EWM_Meta_Fields {
 	 */
 	public static function get_supported_field_types() {
 		return array(
-			'text'           => __( 'Texto', 'ewm-modal-cta' ),
-			'email'          => __( 'Email', 'ewm-modal-cta' ),
-			'tel'            => __( 'Teléfono', 'ewm-modal-cta' ),
-			'textarea'       => __( 'Área de Texto', 'ewm-modal-cta' ),
-			'select'         => __( 'Lista Desplegable', 'ewm-modal-cta' ),
-			'radio'          => __( 'Botones de Opción', 'ewm-modal-cta' ),
-			'checkbox'       => __( 'Casillas de Verificación', 'ewm-modal-cta' ),
-			'number'         => __( 'Número', 'ewm-modal-cta' ),
-			'url'            => __( 'URL', 'ewm-modal-cta' ),
-			'date'           => __( 'Fecha', 'ewm-modal-cta' ),
-			'hidden'         => __( 'Oculto', 'ewm-modal-cta' ),
+	   'text'           => __( 'Text', 'ewm-modal-cta' ),
+	   'email'          => __( 'Email', 'ewm-modal-cta' ),
+	   'tel'            => __( 'Phone', 'ewm-modal-cta' ),
+	   'textarea'       => __( 'Textarea', 'ewm-modal-cta' ),
+	   'select'         => __( 'Dropdown', 'ewm-modal-cta' ),
+	   'radio'          => __( 'Radio Buttons', 'ewm-modal-cta' ),
+	   'checkbox'       => __( 'Checkboxes', 'ewm-modal-cta' ),
+	   'number'         => __( 'Number', 'ewm-modal-cta' ),
+	   'url'            => __( 'URL', 'ewm-modal-cta' ),
+	   'date'           => __( 'Date', 'ewm-modal-cta' ),
+	   'hidden'         => __( 'Hidden', 'ewm-modal-cta' ),
 			// Nuevos tipos de campo
-			'time'           => __( 'Hora', 'ewm-modal-cta' ),
-			'datetime-local' => __( 'Fecha y Hora Local', 'ewm-modal-cta' ),
-			'range'          => __( 'Rango (Slider)', 'ewm-modal-cta' ),
-			'color'          => __( 'Selector de Color', 'ewm-modal-cta' ),
-			'password'       => __( 'Contraseña', 'ewm-modal-cta' ),
-			'search'         => __( 'Búsqueda', 'ewm-modal-cta' ),
-			'month'          => __( 'Mes', 'ewm-modal-cta' ),
-			'week'           => __( 'Semana', 'ewm-modal-cta' ),
+	   'time'           => __( 'Time', 'ewm-modal-cta' ),
+	   'datetime-local' => __( 'Local Date and Time', 'ewm-modal-cta' ),
+	   'range'          => __( 'Range (Slider)', 'ewm-modal-cta' ),
+	   'color'          => __( 'Color Picker', 'ewm-modal-cta' ),
+	   'password'       => __( 'Password', 'ewm-modal-cta' ),
+	   'search'         => __( 'Search', 'ewm-modal-cta' ),
+	   'month'          => __( 'Month', 'ewm-modal-cta' ),
+	   'week'           => __( 'Week', 'ewm-modal-cta' ),
 		);
 	}
 

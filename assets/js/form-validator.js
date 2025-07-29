@@ -104,7 +104,7 @@
             // Mostrar notificación centralizada si hay errores
             if (!isFormValid) {
                 const errors = results.filter(r => !r.isValid);
-                this.showNotification('error', 'Error de validación', this.buildErrorMessage(errors));
+                this.showNotification('error', 'Validation Error', this.buildErrorMessage(errors));
             }
 
             return {
@@ -141,7 +141,7 @@
             // Mostrar notificación centralizada si hay errores
             if (!isStepValid) {
                 const firstError = errors[0];
-                this.showNotification('error', 'Error de validación', firstError.errors[0]);
+                this.showNotification('error', 'Validation Error', firstError.errors[0]);
                 
                 // Hacer focus al primer campo con error para mejor UX
                 const firstErrorField = errors[0].field;
@@ -377,7 +377,7 @@
                     <div class="ewm-notification-title">${title}</div>
                     <div class="ewm-notification-message">${message.replace(/\n/g, '<br>')}</div>
                 </div>
-                <button type="button" class="ewm-notification-close" aria-label="Cerrar notificación">&times;</button>
+                <button type="button" class="ewm-notification-close" aria-label="Close notification">&times;</button>
             `;
 
             // Agregar al contenedor
@@ -486,7 +486,7 @@
             if (!result.isValid) {
                 field.classList.add('ewm-error');
                 // Mostrar notificación inmediatamente
-                this.showNotification('error', 'Error de validación', result.errors[0]);
+                this.showNotification('error', 'Validation Error', result.errors[0]);
             } else {
                 field.classList.remove('ewm-error');
                 // Si no hay más campos con error, limpiar notificaciones

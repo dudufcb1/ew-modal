@@ -107,10 +107,10 @@ class EWM_WooCommerce {
 				'cartUrl'     => wc_get_cart_url(),
 				'checkoutUrl' => wc_get_checkout_url(),
 				'strings'     => array(
-					'adding_to_cart'  => __( 'Agregando al carrito...', 'ewm-modal-cta' ),
-					'added_to_cart'   => __( 'Agregado al carrito', 'ewm-modal-cta' ),
-					'applying_coupon' => __( 'Aplicando cupón...', 'ewm-modal-cta' ),
-					'coupon_applied'  => __( 'Cupón aplicado', 'ewm-modal-cta' ),
+					'adding_to_cart'  => __( 'Adding to cart...', 'ewm-modal-cta' ),
+					'added_to_cart'   => __( 'Added to cart', 'ewm-modal-cta' ),
+					'applying_coupon' => __( 'Applying coupon...', 'ewm-modal-cta' ),
+					'coupon_applied'  => __( 'Coupon applied', 'ewm-modal-cta' ),
 					'error'           => __( 'Error', 'ewm-modal-cta' ),
 				),
 			)
@@ -431,11 +431,11 @@ class EWM_WooCommerce {
 		$coupon_code = sanitize_text_field( $_POST['coupon_code'] ?? '' );
 
 		if ( empty( $coupon_code ) ) {
-			wp_send_json_error( __( 'Código de cupón requerido.', 'ewm-modal-cta' ) );
+			wp_send_json_error( __( 'Coupon code required.', 'ewm-modal-cta' ) );
 		}
 
 		if ( ! WC()->cart ) {
-			wp_send_json_error( __( 'Carrito no disponible.', 'ewm-modal-cta' ) );
+			wp_send_json_error( __( 'Cart not available.', 'ewm-modal-cta' ) );
 		}
 
 		$result = WC()->cart->apply_coupon( $coupon_code );
@@ -443,12 +443,12 @@ class EWM_WooCommerce {
 		if ( $result ) {
 			wp_send_json_success(
 				array(
-					'message'    => __( 'Cupón aplicado correctamente.', 'ewm-modal-cta' ),
+					'message'    => __( 'Coupon applied successfully.', 'ewm-modal-cta' ),
 					'cart_total' => WC()->cart->get_total(),
 				)
 			);
 		} else {
-			wp_send_json_error( __( 'Error al aplicar el cupón.', 'ewm-modal-cta' ) );
+			wp_send_json_error( __( 'Error applying coupon.', 'ewm-modal-cta' ) );
 		}
 	}
 
@@ -471,13 +471,13 @@ class EWM_WooCommerce {
 		if ( $result ) {
 			wp_send_json_success(
 				array(
-					'message'    => __( 'Producto agregado al carrito.', 'ewm-modal-cta' ),
+					'message'    => __( 'Product added to cart.', 'ewm-modal-cta' ),
 					'cart_count' => WC()->cart->get_cart_contents_count(),
 					'cart_total' => WC()->cart->get_total(),
 				)
 			);
 		} else {
-			wp_send_json_error( __( 'Error al agregar el producto al carrito.', 'ewm-modal-cta' ) );
+			wp_send_json_error( __( 'Error adding product to cart.', 'ewm-modal-cta' ) );
 		}
 	}
 

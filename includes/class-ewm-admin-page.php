@@ -13,7 +13,7 @@ if (! defined('ABSPATH')) {
 }
 
 /**
- * Clase para la página de administración del Modal Builder
+ * Class for the Modal Builder admin page
  */
 class EWM_Admin_Page {
 	/**
@@ -137,7 +137,7 @@ class EWM_Admin_Page {
 	 */
 	public function add_admin_menu()
 	{
-		// Página principal bajo el menú de modales
+		// Main page under Modals menu
 		add_submenu_page(
 			'edit.php?post_type=ew_modal',
 			__('Modal Builder', 'ewm-modal-cta'),
@@ -149,9 +149,9 @@ class EWM_Admin_Page {
 
 		// Página de configuraciones
 		add_submenu_page(
-			'edit.php?post_type=ew_modal',
-			__('Configuraciones', 'ewm-modal-cta'),
-			__('Configuraciones', 'ewm-modal-cta'),
+		   'edit.php?post_type=ew_modal',
+		   __('Settings', 'ewm-modal-cta'),
+		   __('Settings', 'ewm-modal-cta'),
 			'manage_ewm_settings',
 			'ewm-settings',
 			array($this, 'render_settings_page')
@@ -245,7 +245,7 @@ class EWM_Admin_Page {
 				'strings'               => array(
 					'saving' => __('Guardando...', 'ewm-modal-cta'),
 					'saved'  => __('Guardado', 'ewm-modal-cta'),
-					'error'  => __('Error al guardar', 'ewm-modal-cta'),
+					'error'  => __('Error saving', 'ewm-modal-cta'),
 				),
 			)
 		);
@@ -277,7 +277,7 @@ class EWM_Admin_Page {
 
 		// Verificar permisos - usar fallback temporal
 		if (! $can_manage && ! $can_edit_posts) {
-			wp_die(__('No tienes permisos para acceder a esta página.', 'ewm-modal-cta'));
+			wp_die(__('You don\'t have permissions to access this page.', 'ewm-modal-cta'));
 		}
 
 		$modal_id   = isset($_GET['modal_id']) ? intval($_GET['modal_id']) : 0;
@@ -310,20 +310,20 @@ class EWM_Admin_Page {
 		<div class="wrap">
 			<div class="ewm-modal-builder">
 				<div class="ewm-builder-header">
-					<h1><?php echo $modal_id ? __('Editar Modal', 'ewm-modal-cta') : __('Crear Nuevo Modal', 'ewm-modal-cta'); ?></h1>
+					<h1><?php echo $modal_id ? __('Edit Modal', 'ewm-modal-cta') : __('Create New Modal', 'ewm-modal-cta'); ?></h1>
 					<p class="description">
-						<?php _e('Configura tu modal paso a paso usando las pestañas de abajo.', 'ewm-modal-cta'); ?>
+						<?php _e('Configure your modal step by step using the tabs below.', 'ewm-modal-cta'); ?>
 					</p>
 				</div>
 
 				<ul class="ewm-tabs-nav">
 					<li><a href="#general" class="active"><?php _e('General', 'ewm-modal-cta'); ?></a></li>
 					<li><a href="#woocommerce" id="woocommerce-tab" style="display: none;"><?php _e('WooCommerce', 'ewm-modal-cta'); ?></a></li>
-					<li><a href="#pasos" class="non-wc-tab"><?php _e('Pasos', 'ewm-modal-cta'); ?></a></li>
-					<li><a href="#diseno" class="non-wc-tab"><?php _e('Diseño', 'ewm-modal-cta'); ?></a></li>
+					<li><a href="#pasos" class="non-wc-tab"><?php _e('Steps', 'ewm-modal-cta'); ?></a></li>
+					<li><a href="#diseno" class="non-wc-tab"><?php _e('Design', 'ewm-modal-cta'); ?></a></li>
 					<li><a href="#triggers" class="non-wc-tab"><?php _e('Triggers', 'ewm-modal-cta'); ?></a></li>
-					<li><a href="#avanzado" class="non-wc-tab"><?php _e('Avanzado', 'ewm-modal-cta'); ?></a></li>
-					<li><a href="#preview" class="non-wc-tab"><?php _e('Vista Previa', 'ewm-modal-cta'); ?></a></li>
+					<li><a href="#avanzado" class="non-wc-tab"><?php _e('Advanced', 'ewm-modal-cta'); ?></a></li>
+					<li><a href="#preview" class="non-wc-tab"><?php _e('Preview', 'ewm-modal-cta'); ?></a></li>
 				</ul>
 
 				<form id="ewm-modal-form" method="post">
@@ -333,91 +333,91 @@ class EWM_Admin_Page {
 					<div class="ewm-tab-content">
 						<!-- Pestaña General -->
 						<div id="general" class="ewm-tab-pane active">
-							<h2><?php _e('Configuración General', 'ewm-modal-cta'); ?></h2>
+							<h2><?php _e('General Configuration', 'ewm-modal-cta'); ?></h2>
 
 							<div class="ewm-form-group">
-								<label for="modal-title"><?php _e('Título del Modal', 'ewm-modal-cta'); ?></label>
+								<label for="modal-title"><?php _e('Modal Title', 'ewm-modal-cta'); ?></label>
 								<input type="text" id="modal-title" name="title" class="ewm-form-control large"
 									value="<?php echo esc_attr($modal_data['title'] ?? ''); ?>"
-									placeholder="<?php _e('Introduce el título del modal...', 'ewm-modal-cta'); ?>">
-								<p class="description"><?php _e('Este título aparecerá en la cabecera del modal.', 'ewm-modal-cta'); ?></p>
+									placeholder="<?php _e('Enter the modal title...', 'ewm-modal-cta'); ?>">
+								<p class="description"><?php _e('This title will appear in the modal header.', 'ewm-modal-cta'); ?></p>
 							</div>
 
 							<div class="ewm-form-group">
-								<label for="modal-mode"><?php _e('Modo del Modal', 'ewm-modal-cta'); ?></label>
+								<label for="modal-mode"><?php _e('Modal Mode', 'ewm-modal-cta'); ?></label>
 								<select id="modal-mode" name="mode" class="ewm-form-control">
 									<option value="formulario" <?php selected($modal_data['mode'] ?? 'formulario', 'formulario'); ?>>
-										<?php _e('Formulario Multi-Paso', 'ewm-modal-cta'); ?>
+										<?php _e('Multi-Step Form', 'ewm-modal-cta'); ?>
 									</option>
 									<option value="anuncio" <?php selected($modal_data['mode'] ?? 'formulario', 'anuncio'); ?>>
-										<?php _e('Anuncio/Notificación', 'ewm-modal-cta'); ?>
+										<?php _e('Announcement/Notification', 'ewm-modal-cta'); ?>
 									</option>
 								</select>
-								<p class="description"><?php _e('Selecciona el tipo de modal que quieres crear.', 'ewm-modal-cta'); ?></p>
+								<p class="description"><?php _e('Select the type of modal you want to create.', 'ewm-modal-cta'); ?></p>
 							</div>
 
 							<div class="ewm-form-group">
 								<div class="ewm-checkbox">
 									<input type="checkbox" id="show-progress-bar" name="show_progress_bar" value="1"
 										<?php checked($modal_data['steps']['progressBar']['enabled'] ?? true); ?>>
-									<label for="show-progress-bar"><?php _e('Mostrar Barra de Progreso', 'ewm-modal-cta'); ?></label>
+									<label for="show-progress-bar"><?php _e('Show Progress Bar', 'ewm-modal-cta'); ?></label>
 								</div>
-								<p class="description"><?php _e('Muestra una barra de progreso en formularios multi-paso.', 'ewm-modal-cta'); ?></p>
+								<p class="description"><?php _e('Display a progress bar in multi-step forms.', 'ewm-modal-cta'); ?></p>
 							</div>
 
 							<div class="ewm-form-group">
 								<div class="ewm-checkbox">
 									<input type="checkbox" id="modal-enabled" name="enabled" value="1"
 										<?php checked($modal_data['display_rules']['enabled'] ?? true); ?>>
-									<label for="modal-enabled"><?php _e('Modal Activo', 'ewm-modal-cta'); ?></label>
+									<label for="modal-enabled"><?php _e('Modal Active', 'ewm-modal-cta'); ?></label>
 								</div>
-								<p class="description"><?php _e('Desactiva temporalmente el modal sin eliminarlo.', 'ewm-modal-cta'); ?></p>
+								<p class="description"><?php _e('Temporarily disable the modal without deleting it.', 'ewm-modal-cta'); ?></p>
 							</div>
 
 							<div class="ewm-form-group">
 								<div class="ewm-checkbox">
 									<input type="checkbox" id="use-global-config" name="use_global_config" value="1"
 										<?php checked($modal_data['display_rules']['use_global_config'] ?? true); ?>>
-									<label for="use-global-config"><?php _e('Usar configuración global', 'ewm-modal-cta'); ?></label>
+									<label for="use-global-config"><?php _e('Use global configuration', 'ewm-modal-cta'); ?></label>
 								</div>
-								<p class="description"><?php _e('Permite que el modal se auto-inyecte basándose en las reglas de páginas configuradas. Si está desactivado, el modal solo funcionará con shortcodes.', 'ewm-modal-cta'); ?></p>
+								<p class="description"><?php _e('Allow the modal to auto-inject based on configured page rules. If disabled, the modal will only work with shortcodes.', 'ewm-modal-cta'); ?></p>
 							</div>
 
 							<div class="ewm-form-group">
 								<div class="ewm-checkbox">
 									<input type="checkbox" id="omit-wc-products" name="omit_wc_products" value="1"
 										<?php checked($modal_data['display_rules']['omit_wc_products'] ?? false); ?>>
-									<label for="omit-wc-products"><?php _e('Omitir en páginas de productos', 'ewm-modal-cta'); ?></label>
+									<label for="omit-wc-products"><?php _e('Omit on product pages', 'ewm-modal-cta'); ?></label>
 								</div>
-								<p class="description"><?php _e('Evita que el modal se muestre automáticamente en páginas de productos WooCommerce para prevenir conflictos con modales de cupones.', 'ewm-modal-cta'); ?></p>
+								<p class="description"><?php _e('Prevent the modal from automatically showing on WooCommerce product pages to avoid conflicts with coupon modals.', 'ewm-modal-cta'); ?></p>
 							</div>
 
 							<div class="ewm-form-group">
 								<div class="ewm-checkbox">
 									<input type="checkbox" id="omit-wc-categories" name="omit_wc_categories" value="1"
 										<?php checked($modal_data['display_rules']['omit_wc_categories'] ?? false); ?>>
-									<label for="omit-wc-categories"><?php _e('Omitir en páginas de categorías', 'ewm-modal-cta'); ?></label>
+									<label for="omit-wc-categories"><?php _e('Omit on category pages', 'ewm-modal-cta'); ?></label>
 								</div>
-								<p class="description"><?php _e('Evita que el modal se muestre automáticamente en páginas de categorías WooCommerce.', 'ewm-modal-cta'); ?></p>
+								<p class="description"><?php _e('Prevent the modal from automatically showing on WooCommerce category pages.', 'ewm-modal-cta'); ?></p>
 							</div>
 
 							<div class="ewm-form-group">
 								<div class="ewm-checkbox">
 									<input type="checkbox" id="wc-integration-enabled" name="wc_integration_enabled" value="1"
 										<?php checked($modal_data['wc_integration']['enabled'] ?? false); ?>>
-									<label for="wc-integration-enabled"><?php _e('Integración WooCommerce', 'ewm-modal-cta'); ?></label>
+									<label for="wc-integration-enabled"><?php _e('WooCommerce Integration', 'ewm-modal-cta'); ?></label>
 								</div>
-								<p class="description"><?php _e('Habilita funciones especiales para WooCommerce como cupones y abandono de carrito', 'ewm-modal-cta'); ?></p>
+								<p class="description"><?php _e('Enable special features for WooCommerce like coupons and cart abandonment', 'ewm-modal-cta'); ?></p>
 							</div>
 
-							<h3><?php _e('Dispositivos Objetivo', 'ewm-modal-cta'); ?></h3>
-							<p class="description"><?php _e('Selecciona en qué dispositivos se mostrará el modal', 'ewm-modal-cta'); ?></p>
+							<h3><?php _e('Target Devices', 'ewm-modal-cta'); ?></h3>
+							<p class="description"><?php _e('Select on which devices the modal will be displayed', 'ewm-modal-cta'); ?></p>
 
 							<table class="ewm-devices-table widefat striped" style="width:100%;border-collapse:collapse;">
 								<thead>
 									<tr>
-										<th><?php _e('Dispositivo', 'ewm-modal-cta'); ?></th>
-										<th><?php _e('Seleccionar', 'ewm-modal-cta'); ?></th>
+										<th><?php _e('Device', 'ewm-modal-cta'); ?></th>
+										<th><?php _e('Select', 'ewm-modal-cta'); ?></th>
 									</tr>
 								</thead>
 								<tbody>
@@ -436,7 +436,7 @@ class EWM_Admin_Page {
 										</td>
 									</tr>
 									<tr>
-										<td><?php _e('Móvil', 'ewm-modal-cta'); ?></td>
+										<td><?php _e('Mobile', 'ewm-modal-cta'); ?></td>
 										<td>
 											<input type="checkbox" id="device-mobile" name="devices[mobile]" value="1"
 												<?php checked($modal_data['display_rules']['devices']['mobile'] ?? true); ?>>
@@ -445,18 +445,18 @@ class EWM_Admin_Page {
 								</tbody>
 							</table>
 
-							<h3><?php _e('Páginas Objetivo', 'ewm-modal-cta'); ?></h3>
-							<p class="description"><?php _e('Controla en qué páginas se mostrará el modal', 'ewm-modal-cta'); ?></p>
+							<h3><?php _e('Target Pages', 'ewm-modal-cta'); ?></h3>
+							<p class="description"><?php _e('Control on which pages the modal will be displayed', 'ewm-modal-cta'); ?></p>
 
 							<div class="ewm-form-row">
 								<div class="ewm-form-group">
-									<label for="pages-include"><?php _e('Incluir en páginas', 'ewm-modal-cta'); ?></label>
+									<label for="pages-include"><?php _e('Include on pages', 'ewm-modal-cta'); ?></label>
 									<select id="pages-include" name="pages[include][]" class="ewm-form-control" multiple size="4">
 										<?php
 										$specials = [
-											[ 'slug' => 'all', 'label' => __('Todas las páginas', 'ewm-modal-cta') ],
-											[ 'slug' => 'none', 'label' => __('No incluir ninguna', 'ewm-modal-cta') ],
-											[ 'slug' => 'home', 'label' => __('Página de inicio', 'ewm-modal-cta') ],
+											[ 'slug' => 'all', 'label' => __('All pages', 'ewm-modal-cta') ],
+											[ 'slug' => 'none', 'label' => __('Include none', 'ewm-modal-cta') ],
+											[ 'slug' => 'home', 'label' => __('Home page', 'ewm-modal-cta') ],
 											[ 'slug' => 'blog', 'label' => __('Blog', 'ewm-modal-cta') ],
 										];
 										$include_selected = $modal_data['display_rules']['pages']['include'] ?? array();
@@ -490,17 +490,17 @@ class EWM_Admin_Page {
 									   }
 										?>
 									</select>
-									<p class="description"><?php _e('Mantén Ctrl/Cmd presionado para seleccionar múltiples páginas', 'ewm-modal-cta'); ?></p>
+									<p class="description"><?php _e('Hold Ctrl/Cmd to select multiple pages', 'ewm-modal-cta'); ?></p>
 								</div>
 
 								<div class="ewm-form-group">
-									<label for="pages-exclude"><?php _e('Excluir de páginas', 'ewm-modal-cta'); ?></label>
+									<label for="pages-exclude"><?php _e('Exclude from pages', 'ewm-modal-cta'); ?></label>
 									<select id="pages-exclude" name="pages[exclude][]" class="ewm-form-control" multiple size="4">
 										<?php
 										$specials_ex = [
-											[ 'slug' => 'none', 'label' => __('No excluir ninguna', 'ewm-modal-cta') ],
-											[ 'slug' => 'all', 'label' => __('Excluir todas', 'ewm-modal-cta') ],
-											[ 'slug' => 'home', 'label' => __('Página de inicio', 'ewm-modal-cta') ],
+											[ 'slug' => 'none', 'label' => __('Do not exclude any', 'ewm-modal-cta') ],
+											[ 'slug' => 'all', 'label' => __('Exclude all', 'ewm-modal-cta') ],
+											[ 'slug' => 'home', 'label' => __('Home Page', 'ewm-modal-cta') ],
 											[ 'slug' => 'blog', 'label' => __('Blog', 'ewm-modal-cta') ],
 										];
 										$exclude_selected = $modal_data['display_rules']['pages']['exclude'] ?? array();
@@ -537,16 +537,16 @@ class EWM_Admin_Page {
 								</div>
 							</div>
 
-							<h3><?php _e('Roles de Usuario', 'ewm-modal-cta'); ?></h3>
-							<p class="description"><?php _e('Selecciona para qué roles de usuario se mostrará el modal', 'ewm-modal-cta'); ?></p>
+							<h3><?php _e('User Roles', 'ewm-modal-cta'); ?></h3>
+							<p class="description"><?php _e('Select which user roles will see the modal', 'ewm-modal-cta'); ?></p>
 
 							<div class="ewm-form-group">
 								<select id="user-roles" name="user_roles[]" class="ewm-form-control" multiple size="4">
 									<option value="all" <?php selected(in_array('all', $modal_data['display_rules']['user_roles'] ?? array())); ?>>
-										<?php _e('Todos los usuarios', 'ewm-modal-cta'); ?>
+										<?php _e('All users', 'ewm-modal-cta'); ?>
 									</option>
 									<option value="guest" <?php selected(in_array('guest', $modal_data['display_rules']['user_roles'] ?? array())); ?>>
-										<?php _e('Visitantes (no registrados)', 'ewm-modal-cta'); ?>
+										<?php _e('Visitors (not logged in)', 'ewm-modal-cta'); ?>
 									</option>
 									<?php
 									$roles = wp_roles()->get_names();
@@ -558,21 +558,21 @@ class EWM_Admin_Page {
 									}
 									?>
 								</select>
-								<p class="description"><?php _e('Mantén Ctrl/Cmd presionado para seleccionar múltiples roles', 'ewm-modal-cta'); ?></p>
+								<p class="description"><?php _e('Hold Ctrl/Cmd to select multiple roles', 'ewm-modal-cta'); ?></p>
 							</div>
 						</div>
 					</div>
 
 					<!-- Pestaña WooCommerce -->
 					<div id="woocommerce" class="ewm-tab-pane" style="display: none;">
-						<h2><?php _e('Configuración WooCommerce', 'ewm-modal-cta'); ?></h2>
+						<h2><?php _e('WooCommerce Configuration', 'ewm-modal-cta'); ?></h2>
 
 						<div class="ewm-wc-integration-settings">
 							<div id="wc-integration-settings">
 								<h3><?php _e('Selección de Cupón', 'ewm-modal-cta'); ?></h3>
 
 								<div class="ewm-form-group">
-									<label for="wc-coupon-select"><?php _e('Cupón de Descuento', 'ewm-modal-cta'); ?></label>
+									<label for="wc-coupon-select"><?php _e('Discount Coupon', 'ewm-modal-cta'); ?></label>
 									<select id="wc-coupon-select" name="wc_coupon_code" class="ewm-form-control">
 										<option value=""><?php _e('Cargando cupones...', 'ewm-modal-cta'); ?></option>
 									</select>
@@ -581,7 +581,7 @@ class EWM_Admin_Page {
 
 								<!-- Panel de detalles del cupón -->
 								<div id="wc-coupon-details" class="ewm-coupon-details-panel" style="display: none;">
-									<h4><?php _e('Detalles del Cupón', 'ewm-modal-cta'); ?></h4>
+									<h4><?php _e('Coupon Details', 'ewm-modal-cta'); ?></h4>
 									<div class="ewm-coupon-info-grid">
 										<div class="ewm-coupon-info-item">
 											<strong><?php _e('Código:', 'ewm-modal-cta'); ?></strong>
@@ -640,13 +640,13 @@ class EWM_Admin_Page {
 								</div>
 
 								<div class="ewm-form-group">
-									<label for="wc-promotion-cta"><?php _e('Texto del Botón CTA', 'ewm-modal-cta'); ?></label>
+									<label for="wc-promotion-cta"><?php _e('CTA Button Text', 'ewm-modal-cta'); ?></label>
 									<input type="text" id="wc-promotion-cta" name="wc_promotion_cta" class="ewm-form-control"
 										value="<?php echo esc_attr($modal_data['wc_integration']['wc_promotion']['cta_text'] ?? ''); ?>"
-										placeholder="<?php _e('Aplicar Cupón Ahora', 'ewm-modal-cta'); ?>">
+										placeholder="<?php _e('Apply Coupon Now', 'ewm-modal-cta'); ?>">
 								</div>
 
-								<h3><?php _e('Opciones Avanzadas', 'ewm-modal-cta'); ?></h3>
+								<h3><?php _e('Advanced Options', 'ewm-modal-cta'); ?></h3>
 
 								<div class="ewm-form-group">
 									<div class="ewm-checkbox">
@@ -654,14 +654,14 @@ class EWM_Admin_Page {
 											<?php checked($modal_data['wc_integration']['wc_promotion']['auto_apply'] ?? false); ?>>
 										<label for="wc-auto-apply"><?php _e('Aplicar Cupón Automáticamente', 'ewm-modal-cta'); ?></label>
 									</div>
-									<p class="description"><?php _e('El cupón se aplicará automáticamente al carrito cuando el usuario haga clic', 'ewm-modal-cta'); ?></p>
+									<p class="description"><?php _e('The coupon will be applied automatically to cart when user clicks', 'ewm-modal-cta'); ?></p>
 								</div>
 
 								<div class="ewm-form-group">
 									<div class="ewm-checkbox">
 										<input type="checkbox" id="wc-show-restrictions" name="wc_show_restrictions" value="1"
 											<?php checked($modal_data['wc_integration']['wc_promotion']['show_restrictions'] ?? false); ?>>
-										<label for="wc-show-restrictions"><?php _e('Mostrar Restricciones del Cupón', 'ewm-modal-cta'); ?></label>
+										<label for="wc-show-restrictions"><?php _e('Show Coupon Restrictions', 'ewm-modal-cta'); ?></label>
 									</div>
 									<p class="description"><?php _e('Muestra información sobre las restricciones del cupón (monto mínimo, productos, etc.)', 'ewm-modal-cta'); ?></p>
 								</div>
@@ -670,9 +670,9 @@ class EWM_Admin_Page {
 									<div class="ewm-checkbox">
 										<input type="checkbox" id="wc-timer-enabled" name="wc_timer_enabled" value="1"
 											<?php checked($modal_data['wc_integration']['wc_promotion']['timer_config']['enabled'] ?? false); ?>>
-										<label for="wc-timer-enabled"><?php _e('Habilitar Temporizador de Urgencia', 'ewm-modal-cta'); ?></label>
+										<label for="wc-timer-enabled"><?php _e('Enable Urgency Timer', 'ewm-modal-cta'); ?></label>
 									</div>
-									<p class="description"><?php _e('Muestra un temporizador para crear sensación de urgencia', 'ewm-modal-cta'); ?></p>
+									<p class="description"><?php _e('Shows a timer to create urgency sensation', 'ewm-modal-cta'); ?></p>
 								</div>
 
 								<div class="ewm-form-group" id="wc-timer-settings" style="display: none;">
@@ -689,7 +689,7 @@ class EWM_Admin_Page {
 
 					<!-- Pestaña Pasos -->
 					<div id="pasos" class="ewm-tab-pane">
-						<h2><?php _e('Configuración de Pasos', 'ewm-modal-cta'); ?></h2>
+						<h2><?php _e('Step Configuration', 'ewm-modal-cta'); ?></h2>
 
 						<div class="ewm-steps-config">
 							<!-- Los pasos se cargarán dinámicamente -->
@@ -708,7 +708,7 @@ class EWM_Admin_Page {
 
 						<div class="ewm-size-controls">
 							<div class="ewm-form-group">
-								<label for="modal-size"><?php _e('Tamaño del Modal', 'ewm-modal-cta'); ?></label>
+								<label for="modal-size"><?php _e('Modal Size', 'ewm-modal-cta'); ?></label>
 								<select id="modal-size" name="size" class="ewm-form-control">
 									<option value="small" <?php selected($modal_data['design']['modal_size'] ?? 'medium', 'small'); ?>>
 										<?php _e('Pequeño (400px)', 'ewm-modal-cta'); ?>
@@ -726,7 +726,7 @@ class EWM_Admin_Page {
 							</div>
 
 							<div class="ewm-form-group">
-								<label for="modal-animation"><?php _e('Animación', 'ewm-modal-cta'); ?></label>
+								<label for="modal-animation"><?php _e('Animation', 'ewm-modal-cta'); ?></label>
 								<select id="modal-animation" name="animation" class="ewm-form-control">
 									<option value="fade" <?php selected($modal_data['design']['animation'] ?? 'fade', 'fade'); ?>>
 										<?php _e('Fade', 'ewm-modal-cta'); ?>
@@ -775,7 +775,7 @@ class EWM_Admin_Page {
 
 					<!-- Pestaña Triggers -->
 					<div id="triggers" class="ewm-tab-pane">
-						<h2><?php _e('Configuración de Triggers', 'ewm-modal-cta'); ?></h2>
+						<h2><?php _e('Trigger Configuration', 'ewm-modal-cta'); ?></h2>
 
 						<div class="ewm-form-group">
 							<div class="ewm-checkbox">
@@ -783,7 +783,7 @@ class EWM_Admin_Page {
 									<?php checked($modal_data['triggers']['exit_intent']['enabled'] ?? false); ?>>
 								<label for="enable-exit-intent"><?php _e('Exit Intent', 'ewm-modal-cta'); ?></label>
 							</div>
-							<p class="description"><?php _e('Mostrar modal cuando el usuario intente salir de la página', 'ewm-modal-cta'); ?></p>
+							<p class="description"><?php _e('Show modal when user tries to leave the page', 'ewm-modal-cta'); ?></p>
 						<div class="ewm-form-group">
 							<label for="exit-intent-min-seconds" class="ewm-label">Tiempo mínimo antes de mostrar (segundos):</label>
 							<input type="number" id="exit-intent-min-seconds" name="exit_intent_min_seconds" class="ewm-form-control small" min="0" step="1"
@@ -827,37 +827,37 @@ class EWM_Admin_Page {
 						</div>
 
 						<div class="ewm-form-group">
-							<label for="display-frequency"><?php _e('Frecuencia de Visualización', 'ewm-modal-cta'); ?></label>
+							<label for="display-frequency"><?php _e('Display Frequency', 'ewm-modal-cta'); ?></label>
 							<select id="display-frequency" name="triggers[frequency_type]" class="ewm-form-control">
 								<?php
 								$frequency_type = isset($modal_data['config']['triggers']['frequency_type']) ? $modal_data['config']['triggers']['frequency_type'] : 'always';
 								?>
 								<option value="always" <?php selected($frequency_type, 'always'); ?>>
-									<?php _e('Siempre', 'ewm-modal-cta'); ?>
+									<?php _e('Always', 'ewm-modal-cta'); ?>
 								</option>
 								<option value="session" <?php selected($frequency_type, 'session'); ?>>
 									<?php _e('Una vez por sesión (30 minutos)', 'ewm-modal-cta'); ?>
 								</option>
 								<option value="daily" <?php selected($frequency_type, 'daily'); ?>>
-									<?php _e('Una vez por día', 'ewm-modal-cta'); ?>
+									<?php _e('Once per day', 'ewm-modal-cta'); ?>
 								</option>
 								<option value="weekly" <?php selected($frequency_type, 'weekly'); ?>>
-									<?php _e('Una vez por semana', 'ewm-modal-cta'); ?>
+									<?php _e('Once per week', 'ewm-modal-cta'); ?>
 								</option>
 							</select>
-							<p class="description"><?php _e('Controla con qué frecuencia se muestra el modal al mismo usuario', 'ewm-modal-cta'); ?></p>
+							<p class="description"><?php _e('Controls how frequently the modal is shown to the same user', 'ewm-modal-cta'); ?></p>
 						</div>
 					</div>
 
 					<!-- Pestaña Avanzado -->
 					<div id="avanzado" class="ewm-tab-pane">
-						<h2><?php _e('Configuración Avanzada', 'ewm-modal-cta'); ?></h2>
+						<h2><?php _e('Advanced Configuration', 'ewm-modal-cta'); ?></h2>
 
 						<div class="ewm-form-group">
 							<label for="custom-css"><?php _e('CSS Personalizado', 'ewm-modal-cta'); ?></label>
 							<textarea id="custom-css" name="custom_css" class="ewm-form-control large" rows="10"
 								placeholder="/* CSS personalizado aquí */"><?php echo esc_textarea(isset($modal_data['custom_css']) ? $modal_data['custom_css'] : ''); ?></textarea>
-							<p class="description"><?php _e('Agrega CSS personalizado que se aplicará solo a este modal', 'ewm-modal-cta'); ?></p>
+							<p class="description"><?php _e('Add custom CSS that will be applied only to this modal', 'ewm-modal-cta'); ?></p>
 						</div>
 					</div>
 
@@ -871,7 +871,7 @@ class EWM_Admin_Page {
 
 						<div class="ewm-form-group ewm-mt-20">
 							<button type="button" class="ewm-btn secondary" id="ewm-preview-modal">
-								<?php _e('Actualizar Vista Previa', 'ewm-modal-cta'); ?>
+								<?php _e('Update Preview', 'ewm-modal-cta'); ?>
 							</button>
 						</div>
 					</div>
@@ -892,17 +892,17 @@ class EWM_Admin_Page {
 			<!-- Botones de acción -->
 			<div class="ewm-form-group ewm-text-center ewm-mt-20">
 				<button type="button" class="ewm-btn large" id="ewm-save-modal">
-					<?php _e('Guardar Modal', 'ewm-modal-cta'); ?>
+					<?php _e('Save Modal', 'ewm-modal-cta'); ?>
 				</button>
 
 				<?php if ($modal_id) : ?>
 					<a href="<?php echo admin_url('admin.php?page=ewm-modal-builder'); ?>" class="ewm-btn secondary large">
-						<?php _e('Crear Nuevo', 'ewm-modal-cta'); ?>
+						<?php _e('Create New', 'ewm-modal-cta'); ?>
 					</a>
 				<?php endif; ?>
 
 				<button type="button" class="ewm-btn secondary large" data-action="clear">
-					<?php _e('Limpiar Formulario', 'ewm-modal-cta'); ?>
+					<?php _e('Clear Form', 'ewm-modal-cta'); ?>
 				</button>
 			</div>
 			</form>
@@ -933,13 +933,13 @@ class EWM_Admin_Page {
 					<div class="ewm-checkbox">
 						<input type="checkbox" id="debug-frequency-enabled" name="ewm_debug_frequency_enabled" value="1"
 							<?php checked($debug_frequency_enabled, '1'); ?>>
-						<label for="debug-frequency-enabled"><?php _e('Habilitar Modo de Depuración de Frecuencia', 'ewm-modal-cta'); ?></label>
+						<label for="debug-frequency-enabled"><?php _e('Enable Frequency Debug Mode', 'ewm-modal-cta'); ?></label>
 					</div>
-					<p class="description"><?php _e('Cuando está habilitado, el modal se mostrará con mayor frecuencia para el usuario actual.', 'ewm-modal-cta'); ?></p>
+					<p class="description"><?php _e('When enabled, the modal will be shown more frequently for the current user.', 'ewm-modal-cta'); ?></p>
 				</div>
 
 				<div class="ewm-form-group ewm-text-center ewm-mt-20">
-					<button type="submit" class="ewm-btn large"><?php _e('Guardar Configuraciones', 'ewm-modal-cta'); ?></button>
+					<button type="submit" class="ewm-btn large"><?php _e('Save Settings', 'ewm-modal-cta'); ?></button>
 				</div>
 			</form>
 		</div>
@@ -958,7 +958,7 @@ class EWM_Admin_Page {
 	?>
 		<div class="wrap">
 			<h1><?php _e('Analytics EWM Modal CTA', 'ewm-modal-cta'); ?></h1>
-			<p><?php _e('Estadísticas y métricas de conversión (próximamente)', 'ewm-modal-cta'); ?></p>
+			<p><?php _e('Conversion statistics and metrics (coming soon)', 'ewm-modal-cta'); ?></p>
 		</div>
 	<?php
 	}
@@ -1001,7 +1001,7 @@ class EWM_Admin_Page {
 			wp_send_json_success(
 				array(
 					'modal_id' => $modal_id,
-					'message'  => __('Modal guardado correctamente.', 'ewm-modal-cta'),
+					'message'  => __('Modal saved successfully.', 'ewm-modal-cta'),
 				)
 			);
 		} catch (Exception $e) {
@@ -1118,13 +1118,13 @@ class EWM_Admin_Page {
 		$post_id = wp_insert_post(
 			array(
 				'post_type'   => 'ew_modal',
-				'post_title'  => sanitize_text_field($modal_data['title'] ?? __('Nuevo Modal', 'ewm-modal-cta')),
+				'post_title'  => sanitize_text_field($modal_data['title'] ?? __('New Modal', 'ewm-modal-cta')),
 				'post_status' => 'publish',
 			)
 		);
 
 		if (is_wp_error($post_id)) {
-			throw new Exception(__('Error al crear el modal.', 'ewm-modal-cta'));
+			throw new Exception(__('Error creating modal.', 'ewm-modal-cta'));
 		}
 
 		$this->save_modal_meta($post_id, $modal_data);
@@ -1145,7 +1145,7 @@ class EWM_Admin_Page {
 		);
 
 		if (is_wp_error($result)) {
-			throw new Exception(__('Error al actualizar el modal.', 'ewm-modal-cta'));
+			throw new Exception(__('Error updating modal.', 'ewm-modal-cta'));
 		}
 
 		$this->save_modal_meta($modal_id, $modal_data);
@@ -1481,7 +1481,7 @@ class EWM_Admin_Page {
 					$is_last_step = ($step_index === count($steps) - 1) && empty($final_step['title']);
 					?>
 					<button class="ewm-preview-btn ewm-preview-btn-primary">
-						<?php echo $is_last_step ? 'Enviar' : esc_html($step['button_text'] ?? 'Siguiente'); ?>
+						<?php echo $is_last_step ? 'Submit' : esc_html($step['button_text'] ?? 'Next'); ?>
 					</button>
 				</div>
 			</div>

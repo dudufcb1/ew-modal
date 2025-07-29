@@ -88,15 +88,15 @@ class EWM_Submission_CPT {
 			'singular_name'      => _x( 'Lead', 'Post type singular name', 'ewm-modal-cta' ),
 			'menu_name'          => _x( 'Leads', 'Admin Menu text', 'ewm-modal-cta' ),
 			'name_admin_bar'     => _x( 'Lead', 'Add New on Toolbar', 'ewm-modal-cta' ),
-			'add_new'            => __( 'Agregar Nuevo', 'ewm-modal-cta' ),
-			'add_new_item'       => __( 'Agregar Nuevo Lead', 'ewm-modal-cta' ),
-			'new_item'           => __( 'Nuevo Lead', 'ewm-modal-cta' ),
-			'edit_item'          => __( 'Ver Lead', 'ewm-modal-cta' ),
-			'view_item'          => __( 'Ver Lead', 'ewm-modal-cta' ),
-			'all_items'          => __( 'Todos los Envíos', 'ewm-modal-cta' ),
-			'search_items'       => __( 'Buscar Envíos', 'ewm-modal-cta' ),
-			'not_found'          => __( 'No se encontraron envíos.', 'ewm-modal-cta' ),
-			'not_found_in_trash' => __( 'No se encontraron envíos en la papelera.', 'ewm-modal-cta' ),
+			'add_new'            => __( 'Add New', 'ewm-modal-cta' ),
+			'add_new_item'       => __( 'Add New Lead', 'ewm-modal-cta' ),
+			'new_item'           => __( 'New Lead', 'ewm-modal-cta' ),
+			'edit_item'          => __( 'View Lead', 'ewm-modal-cta' ),
+			'view_item'          => __( 'View Lead', 'ewm-modal-cta' ),
+			'all_items'          => __( 'All Submissions', 'ewm-modal-cta' ),
+			'search_items'       => __( 'Search Submissions', 'ewm-modal-cta' ),
+			'not_found'          => __( 'No submissions found.', 'ewm-modal-cta' ),
+			'not_found_in_trash' => __( 'No submissions found in trash.', 'ewm-modal-cta' ),
 		);
 
 		$args = array(
@@ -152,7 +152,7 @@ class EWM_Submission_CPT {
 	public function add_meta_boxes() {
 		add_meta_box(
 			'ewm-submission-details',
-			__( 'Detalles del Lead', 'ewm-modal-cta' ),
+			__( 'Lead Details', 'ewm-modal-cta' ),
 			array( $this, 'render_details_meta_box' ),
 			self::POST_TYPE,
 			'normal',
@@ -161,7 +161,7 @@ class EWM_Submission_CPT {
 
 		add_meta_box(
 			'ewm-submission-data',
-			__( 'Datos del Formulario', 'ewm-modal-cta' ),
+			__( 'Form Data', 'ewm-modal-cta' ),
 			array( $this, 'render_data_meta_box' ),
 			self::POST_TYPE,
 			'normal',
@@ -170,7 +170,7 @@ class EWM_Submission_CPT {
 
 		add_meta_box(
 			'ewm-submission-meta',
-			__( 'Información Técnica', 'ewm-modal-cta' ),
+			__( 'Technical Information', 'ewm-modal-cta' ),
 			array( $this, 'render_meta_box' ),
 			self::POST_TYPE,
 			'side',
@@ -193,7 +193,7 @@ class EWM_Submission_CPT {
 		?>
 		<table class="form-table">
 			<tr>
-				<th scope="row"><?php _e( 'Modal Origen', 'ewm-modal-cta' ); ?></th>
+				<th scope="row"><?php _e( 'Source Modal', 'ewm-modal-cta' ); ?></th>
 				<td>
 					<?php if ( $modal_id && get_post( $modal_id ) ) : ?>
 						<a href="<?php echo get_edit_post_link( $modal_id ); ?>">
@@ -205,7 +205,7 @@ class EWM_Submission_CPT {
 				</td>
 			</tr>
 			<tr>
-				<th scope="row"><?php _e( 'Fecha del Lead', 'ewm-modal-cta' ); ?></th>
+				<th scope="row"><?php _e( 'Lead Date', 'ewm-modal-cta' ); ?></th>
 				<td>
 					<?php
 					if ( $submission_time ) {
@@ -223,7 +223,7 @@ class EWM_Submission_CPT {
 				<td>
 					<select name="submission_status" id="submission_status">
 						<option value="new" <?php selected( $status, 'new' ); ?>>
-							<?php _e( 'Nuevo', 'ewm-modal-cta' ); ?>
+							<?php _e( 'New', 'ewm-modal-cta' ); ?>
 						</option>
 						<option value="processed" <?php selected( $status, 'processed' ); ?>>
 							<?php _e( 'Procesado', 'ewm-modal-cta' ); ?>
@@ -236,13 +236,13 @@ class EWM_Submission_CPT {
 			</tr>
 			<tr>
 				<th scope="row">
-					<label for="conversion_value"><?php _e( 'Valor de Conversión', 'ewm-modal-cta' ); ?></label>
+					<label for="conversion_value"><?php _e( 'Conversion Value', 'ewm-modal-cta' ); ?></label>
 				</th>
 				<td>
 					<input type="number" name="conversion_value" id="conversion_value" 
 							value="<?php echo esc_attr( $conversion_value ); ?>" step="0.01" min="0">
 					<p class="description">
-						<?php _e( 'Valor monetario asociado a esta conversión (opcional).', 'ewm-modal-cta' ); ?>
+						<?php _e( 'Monetary value associated with this conversion (optional).', 'ewm-modal-cta' ); ?>
 					</p>
 				</td>
 			</tr>
@@ -275,13 +275,13 @@ class EWM_Submission_CPT {
 
 		?>
 		<div class="ewm-submission-data">
-			<h4><?php _e( 'Datos del Formulario', 'ewm-modal-cta' ); ?></h4>
+			<h4><?php _e( 'Form Data', 'ewm-modal-cta' ); ?></h4>
 			<?php if ( ! empty( $form_data_decoded ) ) : ?>
 				<table class="widefat">
 					<thead>
 						<tr>
-							<th><?php _e( 'Campo', 'ewm-modal-cta' ); ?></th>
-							<th><?php _e( 'Valor', 'ewm-modal-cta' ); ?></th>
+							<th><?php _e( 'Field', 'ewm-modal-cta' ); ?></th>
+							<th><?php _e( 'Value', 'ewm-modal-cta' ); ?></th>
 						</tr>
 					</thead>
 					<tbody>
@@ -302,7 +302,7 @@ class EWM_Submission_CPT {
 			<?php endif; ?>
 			
 			<?php if ( ! empty( $step_data_decoded ) ) : ?>
-				<h4 style="margin-top: 20px;"><?php _e( 'Datos de Pasos', 'ewm-modal-cta' ); ?></h4>
+				<h4 style="margin-top: 20px;"><?php _e( 'Step Data', 'ewm-modal-cta' ); ?></h4>
 				<pre style="background: #f1f1f1; padding: 10px; overflow: auto; max-height: 200px;"><?php echo esc_html( wp_json_encode( $step_data_decoded, JSON_PRETTY_PRINT ) ); ?></pre>
 			<?php endif; ?>
 		</div>
@@ -337,13 +337,13 @@ class EWM_Submission_CPT {
 							echo __( 'Usuario eliminado', 'ewm-modal-cta' );
 						}
 					} else {
-						echo __( 'Usuario anónimo', 'ewm-modal-cta' );
+						echo __( 'Anonymous user', 'ewm-modal-cta' );
 					}
 					?>
 				</td>
 			</tr>
 			<tr>
-				<th><?php _e( 'URL de Referencia', 'ewm-modal-cta' ); ?></th>
+				<th><?php _e( 'Referrer URL', 'ewm-modal-cta' ); ?></th>
 				<td>
 					<?php if ( $referer_url ) : ?>
 						<a href="<?php echo esc_url( $referer_url ); ?>" target="_blank">
@@ -449,11 +449,11 @@ class EWM_Submission_CPT {
 		$new_columns                    = array();
 		$new_columns['cb']              = $columns['cb'];
 		$new_columns['title']           = $columns['title'];
-		$new_columns['page_origin']     = __( 'Página de Origen', 'ewm-modal-cta' );
+		$new_columns['page_origin']     = __( 'Source Page', 'ewm-modal-cta' );
 		$new_columns['modal']           = __( 'Modal', 'ewm-modal-cta' );
-		$new_columns['status']          = __( 'Estado', 'ewm-modal-cta' );
-		$new_columns['submission_date'] = __( 'Fecha del Lead', 'ewm-modal-cta' );
-		$new_columns['user_info']       = __( 'Usuario', 'ewm-modal-cta' );
+		$new_columns['status']          = __( 'Status', 'ewm-modal-cta' );
+		$new_columns['submission_date'] = __( 'Lead Date', 'ewm-modal-cta' );
+		$new_columns['user_info']       = __( 'User', 'ewm-modal-cta' );
 
 		return $new_columns;
 	}
@@ -488,7 +488,7 @@ class EWM_Submission_CPT {
 			case 'status':
 				$status        = get_post_meta( $post_id, 'status', true ) ?: 'new';
 				$status_labels = array(
-					'new'       => __( 'Nuevo', 'ewm-modal-cta' ),
+					'new'       => __( 'New', 'ewm-modal-cta' ),
 					'processed' => __( 'Procesado', 'ewm-modal-cta' ),
 					'archived'  => __( 'Archivado', 'ewm-modal-cta' ),
 				);
@@ -517,7 +517,7 @@ class EWM_Submission_CPT {
 						echo __( 'Usuario eliminado', 'ewm-modal-cta' );
 					}
 				} else {
-					echo __( 'Anónimo', 'ewm-modal-cta' );
+					echo __( 'Anonymous', 'ewm-modal-cta' );
 				}
 
 				if ( $ip_address ) {
@@ -573,7 +573,7 @@ class EWM_Submission_CPT {
 	 * Agregar acciones masivas personalizadas
 	 */
 	public function add_bulk_actions( $bulk_actions ) {
-		$bulk_actions['ewm_update_titles'] = __( 'Actualizar títulos', 'ewm-modal-cta' );
+		$bulk_actions['ewm_update_titles'] = __( 'Update titles', 'ewm-modal-cta' );
 		return $bulk_actions;
 	}
 
@@ -650,7 +650,7 @@ class EWM_Submission_CPT {
 	public static function create_submission( $modal_id, $form_data, $step_data = array() ) {
 		// Obtener información de la página de origen
 		$referer_url = $_SERVER['HTTP_REFERER'] ?? '';
-		$page_name   = __( 'Página desconocida', 'ewm-modal-cta' );
+		$page_name   = __( 'Unknown page', 'ewm-modal-cta' );
 
 		if ( $referer_url ) {
 			$page_name = self::detect_page_name_from_url( $referer_url );
@@ -698,7 +698,7 @@ class EWM_Submission_CPT {
 	 * @return string Nombre de la página detectado
 	 */
 	private static function detect_page_name_from_url( $url ) {
-		$page_name = __( 'Página desconocida', 'ewm-modal-cta' );
+		$page_name = __( 'Unknown page', 'ewm-modal-cta' );
 
 		// Parsear URL
 		$parsed_url = parse_url( $url );
@@ -711,7 +711,7 @@ class EWM_Submission_CPT {
 
 		// Página de inicio
 		if ( empty( $path ) ) {
-			return __( 'Página de inicio', 'ewm-modal-cta' );
+			return __( 'Home Page', 'ewm-modal-cta' );
 		}
 
 		// Detectar WooCommerce si está activo
@@ -754,27 +754,27 @@ class EWM_Submission_CPT {
 	private static function detect_woocommerce_page( $path, $query ) {
 		// Shop page
 		if ( $path === 'shop' || $path === get_option( 'woocommerce_shop_page_id' ) ) {
-			return __( 'Tienda', 'ewm-modal-cta' );
+			return __( 'Shop', 'ewm-modal-cta' );
 		}
 
 		// Verificar parámetros de query para páginas específicas
 		if ( ! empty( $query ) && strpos( $query, 'product_cat=' ) !== false ) {
-			return __( 'Categoría de Productos', 'ewm-modal-cta' );
+			return __( 'Product Category', 'ewm-modal-cta' );
 		}
 
 		// Cart page
 		if ( $path === 'cart' || $path === 'carrito' ) {
-			return __( 'Carrito', 'ewm-modal-cta' );
+			return __( 'Cart', 'ewm-modal-cta' );
 		}
 
 		// Checkout page
 		if ( $path === 'checkout' || $path === 'finalizar-compra' ) {
-			return __( 'Finalizar Compra', 'ewm-modal-cta' );
+			return __( 'Checkout', 'ewm-modal-cta' );
 		}
 
 		// My Account
 		if ( $path === 'my-account' || $path === 'mi-cuenta' ) {
-			return __( 'Mi Cuenta', 'ewm-modal-cta' );
+			return __( 'My Account', 'ewm-modal-cta' );
 		}
 
 		// Product page
@@ -794,10 +794,10 @@ class EWM_Submission_CPT {
 			if ( isset( $path_parts[1] ) ) {
 				$term = get_term_by( 'slug', $path_parts[1], 'product_cat' );
 				if ( $term ) {
-					return sprintf( __( 'Categoría: %s', 'ewm-modal-cta' ), $term->name );
+					return sprintf( __( 'Category: %s', 'ewm-modal-cta' ), $term->name );
 				}
 			}
-			return __( 'Categoría de Productos', 'ewm-modal-cta' );
+			return __( 'Product Category', 'ewm-modal-cta' );
 		}
 
 		return false;
@@ -852,10 +852,10 @@ class EWM_Submission_CPT {
 			if ( isset( $path_parts[1] ) ) {
 				$term = get_term_by( 'slug', $path_parts[1], 'category' );
 				if ( $term ) {
-					return sprintf( __( 'Categoría: %s', 'ewm-modal-cta' ), $term->name );
+					return sprintf( __( 'Category: %s', 'ewm-modal-cta' ), $term->name );
 				}
 			}
-			return __( 'Archivo de Categorías', 'ewm-modal-cta' );
+			return __( 'Category Archive', 'ewm-modal-cta' );
 		}
 
 		// Tag archive
@@ -863,10 +863,10 @@ class EWM_Submission_CPT {
 			if ( isset( $path_parts[1] ) ) {
 				$term = get_term_by( 'slug', $path_parts[1], 'post_tag' );
 				if ( $term ) {
-					return sprintf( __( 'Etiqueta: %s', 'ewm-modal-cta' ), $term->name );
+					return sprintf( __( 'Tag: %s', 'ewm-modal-cta' ), $term->name );
 				}
 			}
-			return __( 'Archivo de Etiquetas', 'ewm-modal-cta' );
+			return __( 'Tag Archive', 'ewm-modal-cta' );
 		}
 
 		// Author archive

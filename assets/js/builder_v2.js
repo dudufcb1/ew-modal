@@ -139,7 +139,7 @@
                 return;
             }
 
-            if (confirm('¿Estás seguro de que quieres eliminar este paso?')) {
+            if (confirm('Are you sure you want to delete this step?')) {
                 $(e.target).closest('.ewm-step-config').remove();
                 this.updateStepNumbers();
                 console.log('EWM Builder v2: Step removed');
@@ -173,7 +173,7 @@
         removeField: function(e) {
             e.preventDefault();
 
-            if (confirm('¿Estás seguro de que quieres eliminar este campo?')) {
+            if (confirm('Are you sure you want to delete this field?')) {
                 $(e.target).closest('.ewm-field-config').remove();
                 console.log('EWM Builder v2: Field removed');
             }
@@ -373,18 +373,18 @@
 
                     <div class="ewm-step-content">
                         <div class="ewm-form-group">
-                            <label>Título del Paso</label>
-                            <input type="text" class="ewm-step-title ewm-form-control" placeholder="Título del paso...">
+                            <label>Step Title</label>
+                            <input type="text" class="ewm-step-title ewm-form-control" placeholder="Step title...">
                         </div>
 
                         <div class="ewm-form-group">
-                            <label>Subtítulo (opcional)</label>
-                            <input type="text" class="ewm-step-subtitle ewm-form-control" placeholder="Subtítulo del paso...">
+                            <label>Subtitle (optional)</label>
+                            <input type="text" class="ewm-step-subtitle ewm-form-control" placeholder="Step subtitle...">
                         </div>
 
                         <div class="ewm-form-group">
-                            <label>Descripción (opcional)</label>
-                            <textarea class="ewm-step-description ewm-form-control" rows="2" placeholder="Descripción del paso..."></textarea>
+                            <label>Description (optional)</label>
+                            <textarea class="ewm-step-description ewm-form-control" rows="2" placeholder="Step description..."></textarea>
                         </div>
 
                         <div class="ewm-fields-section">
@@ -402,16 +402,16 @@
          */
         generateFieldHtml: function(fieldNumber) {
             const fieldTypes = ewm_admin_vars.supported_field_types || {
-                'text': 'Texto',
+                'text': 'Text',
                 'email': 'Email',
-                'tel': 'Teléfono',
-                'textarea': 'Área de texto',
-                'select': 'Lista desplegable',
-                'radio': 'Botones de opción',
-                'checkbox': 'Casillas de verificación',
-                'number': 'Número',
+                'tel': 'Phone',
+                'textarea': 'Text Area',
+                'select': 'Dropdown List',
+                'radio': 'Radio Buttons',
+                'checkbox': 'Checkboxes',
+                'number': 'Number',
                 'url': 'URL',
-                'date': 'Fecha'
+                'date': 'Date'
             };
 
             let optionsHtml = '';
@@ -460,8 +460,8 @@
                         </div>
 
                         <div class="ewm-field-options-container" style="display: none;">
-                            <label>Opciones (una por línea)</label>
-                            <textarea class="ewm-field-options ewm-form-control" rows="3" placeholder="Opción 1&#10;Opción 2&#10;Opción 3"></textarea>
+                            <label>Options (one per line)</label>
+                            <textarea class="ewm-field-options ewm-form-control" rows="3" placeholder="Option 1&#10;Option 2&#10;Option 3"></textarea>
                         </div>
                     </div>
                 </div>

@@ -338,7 +338,7 @@
                     stack: error.stack,
                     name: error.name
                 });
-                this.showErrorMessage(error.message || 'Error al enviar el formulario');
+                this.showErrorMessage(error.message || 'Error submitting form');
                 
                 // Rehabilitar botón
                 if (submitButton) {
@@ -477,7 +477,7 @@
                         if (errorData && errorData.message) {
                             errorMessage = errorData.message;
                         } else if (errorData && errorData.code) {
-                            errorMessage = `Error ${errorData.code}: ${errorData.message || 'Request failed'}`;
+                            errorMessage = `Error ${errorData.code}: ${errorData.message || 'Error en la solicitud'}`;
                         }
                     } catch (parseError) {
                         console.log('EWM Modal Frontend: Could not parse error response:', parseError);

@@ -1,12 +1,12 @@
 /**
  * EWM WooCommerce Builder Integration
- * Maneja la funcionalidad específica de WooCommerce en el builder
+ * Handles WooCommerce-specific functionality in the builder
  */
 (function($) {
     'use strict';
 
     /**
-     * Clase para manejar la integración WooCommerce en el builder
+     * Class to handle WooCommerce integration in the builder
      */
     class EWMWCBuilderIntegration {
         constructor() {
@@ -16,7 +16,7 @@
         }
 
         /**
-         * Inicializar funcionalidad
+         * Initialize functionality
          */
         init() {
             
@@ -26,15 +26,15 @@
         }
 
         /**
-         * Bind eventos del builder
+         * Bind builder events
          */
         bindEvents() {
-            // Toggle de integración WooCommerce
+            // Toggle WooCommerce integration
             $('#wc-integration-enabled').on('change', (e) => {
                 this.toggleWCIntegration(e.target.checked);
             });
 
-            // Selector de cupón
+            // Coupon selector
             $('#wc-coupon-select').on('change', (e) => {
                 this.selectCoupon(e.target.value);
             });
@@ -44,17 +44,17 @@
                 this.toggleTimerSettings(e.target.checked);
             });
 
-            // Validación de campos
+            // Field validation
             $('#wc-timer-threshold').on('input', (e) => {
                 this.validateTimerThreshold(e.target);
             });
 
-            // Auto-completar título y descripción basado en cupón
+            // Auto-fill title and description based on coupon
             $('#wc-coupon-select').on('change', () => {
                 this.autoFillPromotionFields();
             });
 
-            // Botón para auto-llenar campos
+            // Button to auto-fill fields
             $(document).on('click', '#wc-auto-fill-fields', () => {
                 this.autoFillPromotionFields();
             });
@@ -68,7 +68,7 @@
             
             if (enabled) {
                 $settings.slideDown(300);
-                this.loadCoupons(); // Cargar cupones cuando se habilita
+                this.loadCoupons(); // Load coupons when enabled
             } else {
                 $settings.slideUp(300);
                 this.clearCouponSelection();
@@ -87,15 +87,15 @@
          */
         async loadCoupons(callback) {
 
-            // Verificar que ewmModal esté disponible
+            // Verify that ewmModal is available
             if (typeof ewmModal === 'undefined') {
                 console.error('EWM WC Builder: ewmModal is not defined');
-                this.showCouponError('Error de configuración: variables no disponibles');
+                this.showCouponError('Configuration error: variables not available');
                 return;
             }
 
             try {
-                // Usar REST API directamente (más eficiente y ya está funcionando)
+                // Use REST API directly (more efficient and already working)
 
                 const response = await $.ajax({
                     url: ewmModal.restUrl + 'coupons',
@@ -106,11 +106,11 @@
                 });
 
 
-                // El endpoint REST API devuelve directamente el array de cupones
+                // The REST API endpoint returns the coupons array directly
                 this.coupons = response || [];
                 this.populateCouponSelect();
 
-                // Ejecutar callback si se proporciona
+                // Execute callback if provided
                 if (callback && typeof callback === 'function') {
                     callback();
                 }
@@ -123,12 +123,12 @@
                     responseText: error.responseText,
                     responseJSON: error.responseJSON
                 });
-                this.showCouponError('Error de conexión al cargar cupones');
+                this.showCouponError('Connection error loading coupons');
 
                 // Actualizar el selector para mostrar el error
                 const $select = $('#wc-coupon-select');
                 const $firstOption = $select.find('option:first');
-                $firstOption.text('Error al cargar cupones');
+                $firstOption.text('Error loading coupons');
 
                 // Ejecutar callback incluso en caso de error
                 if (callback && typeof callback === 'function') {
@@ -144,12 +144,12 @@
             const $select = $('#wc-coupon-select');
             const currentValue = $select.val();
 
-            // Actualizar el texto de la primera opción para indicar que la carga terminó
+            // Update first option text to indicate loading completed
             const $firstOption = $select.find('option:first');
             if (this.coupons.length > 0) {
-                $firstOption.text('-- Selecciona un cupón --');
+                $firstOption.text('-- Select a coupon --');
             } else {
-                $firstOption.text('No hay cupones disponibles');
+                $firstOption.text('No coupons available');
             }
 
             // Limpiar opciones existentes (excepto la primera)
@@ -214,23 +214,23 @@
             // Formatear fecha de expiración
             const expiresText = coupon.date_expires ?
                                new Date(coupon.date_expires).toLocaleDateString('es-ES') :
-                               'Sin expiración';
+                               'No expiration';
 
             // Formatear límite de uso
             const usageLimitText = coupon.usage_limit > 0 ?
                                   coupon.usage_limit :
-                                  'Sin límite';
+                                  'No limit';
 
             // Formatear monto mínimo
             const minimumText = coupon.minimum_amount && coupon.minimum_amount !== '' ?
                                `$${coupon.minimum_amount}` :
-                               'Sin mínimo';
+                               'No minimum';
 
             // Actualizar los campos del panel
             $('#coupon-detail-code').text(coupon.code);
             $('#coupon-detail-type').text(discountTypeText);
             $('#coupon-detail-amount').text(amountText);
-            $('#coupon-detail-description').text(coupon.description || 'Sin descripción');
+            $('#coupon-detail-description').text(coupon.description || 'No description');
             $('#coupon-detail-minimum').text(minimumText);
             $('#coupon-detail-expires').text(expiresText);
             $('#coupon-detail-usage-limit').text(usageLimitText);

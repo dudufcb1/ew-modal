@@ -78,9 +78,9 @@ class EWM_Modal_CPT {
 			'singular_name'         => _x( 'Modal', 'Post type singular name', 'ewm-modal-cta' ),
 			'menu_name'             => _x( 'EWM Modales', 'Admin Menu text', 'ewm-modal-cta' ),
 			'name_admin_bar'        => _x( 'Modal', 'Add New on Toolbar', 'ewm-modal-cta' ),
-			'add_new'               => __( 'Agregar Nuevo', 'ewm-modal-cta' ),
-			'add_new_item'          => __( 'Agregar Nuevo Modal', 'ewm-modal-cta' ),
-			'new_item'              => __( 'Nuevo Modal', 'ewm-modal-cta' ),
+			'add_new'               => __( 'Add New', 'ewm-modal-cta' ),
+			'add_new_item'          => __( 'Add New Modal', 'ewm-modal-cta' ),
+			'new_item'              => __( 'New Modal', 'ewm-modal-cta' ),
 			'edit_item'             => __( 'Editar Modal', 'ewm-modal-cta' ),
 			'view_item'             => __( 'Ver Modal', 'ewm-modal-cta' ),
 			'all_items'             => __( 'Todos los Modales', 'ewm-modal-cta' ),
@@ -152,7 +152,7 @@ class EWM_Modal_CPT {
 	public function add_meta_boxes() {
 		add_meta_box(
 			'ewm-modal-config',
-			__( 'Configuración del Modal', 'ewm-modal-cta' ),
+			__( 'Modal Configuration', 'ewm-modal-cta' ),
 			array( $this, 'render_config_meta_box' ),
 			self::POST_TYPE,
 			'normal',
@@ -161,7 +161,7 @@ class EWM_Modal_CPT {
 
 		add_meta_box(
 			'ewm-modal-shortcode',
-			__( 'Shortcode Generado', 'ewm-modal-cta' ),
+			__( 'Generated Shortcode', 'ewm-modal-cta' ),
 			array( $this, 'render_shortcode_meta_box' ),
 			self::POST_TYPE,
 			'side',
@@ -181,27 +181,27 @@ class EWM_Modal_CPT {
 		<table class="form-table">
 			<tr>
 				<th scope="row">
-					<label for="ewm_use_serialized"><?php _e( 'Tipo de Almacenamiento', 'ewm-modal-cta' ); ?></label>
+					<label for="ewm_use_serialized"><?php _e( 'Storage Type', 'ewm-modal-cta' ); ?></label>
 				</th>
 				<td>
 					<label>
 						<input type="checkbox" name="ewm_use_serialized" id="ewm_use_serialized" value="1" 
 								<?php checked( $use_serialized, '1' ); ?>>
-						<?php _e( 'Usar almacenamiento serializado (para configuraciones complejas)', 'ewm-modal-cta' ); ?>
+						<?php _e( 'Use serialized storage (for complex configurations)', 'ewm-modal-cta' ); ?>
 					</label>
 					<p class="description">
-						<?php _e( 'Activa esta opción solo para configuraciones muy complejas. Por defecto se usa JSON.', 'ewm-modal-cta' ); ?>
+						<?php _e( 'Enable this option only for very complex configurations. JSON is used by default.', 'ewm-modal-cta' ); ?>
 					</p>
 				</td>
 			</tr>
 		</table>
 		
 		<div id="ewm-modal-builder">
-			<p><?php _e( 'La configuración avanzada se realizará a través del Modal Builder.', 'ewm-modal-cta' ); ?></p>
+			<p><?php _e( 'Advanced configuration will be done through the Modal Builder.', 'ewm-modal-cta' ); ?></p>
 			<p>
 				<a href="<?php echo admin_url( 'admin.php?page=ewm-modal-builder&modal_id=' . $post->ID ); ?>" 
 					class="button button-secondary">
-					<?php _e( 'Abrir Modal Builder', 'ewm-modal-cta' ); ?>
+					<?php _e( 'Open Modal Builder', 'ewm-modal-cta' ); ?>
 				</a>
 			</p>
 		</div>
@@ -219,12 +219,12 @@ class EWM_Modal_CPT {
 			<input type="text" value="<?php echo esc_attr( $shortcode ); ?>" readonly 
 					style="width: 100%;" onclick="this.select();">
 			<p class="description">
-				<?php _e( 'Copia y pega este shortcode donde quieras mostrar el modal.', 'ewm-modal-cta' ); ?>
+				<?php _e( 'Copy and paste this shortcode where you want to display the modal.', 'ewm-modal-cta' ); ?>
 			</p>
 			<?php
 		} else {
 			?>
-			<p><?php _e( 'El shortcode estará disponible después de publicar el modal.', 'ewm-modal-cta' ); ?></p>
+			<p><?php _e( 'The shortcode will be available after publishing the modal.', 'ewm-modal-cta' ); ?></p>
 			<?php
 		}
 	}

@@ -54,10 +54,10 @@ class EWM_REST_API {
 		$modal_id   = absint( $request->get_param( 'modal_id' ) );
 		$product_id = absint( $request->get_param( 'product_id' ) );
 		if ( ! $modal_id ) {
-			return rest_ensure_response( array( 'result' => 'will not show', 'reason' => 'invalid modal_id' ) );
+			return rest_ensure_response( array( 'result' => 'will not show', 'reason' => 'Invalid modal ID' ) );
 		}
 		if ( ! $product_id ) {
-			return rest_ensure_response( array( 'result' => 'will not show', 'reason' => 'invalid product_id' ) );
+			return rest_ensure_response( array( 'result' => 'will not show', 'reason' => 'Invalid product ID' ) );
 		}
 		// Cargar WooCommerce si no está cargado
 		if ( ! class_exists( 'WooCommerce' ) ) {
@@ -66,7 +66,7 @@ class EWM_REST_API {
 			}
 		}
 		if ( ! function_exists( 'wc_get_product' ) ) {
-			return rest_ensure_response( array( 'result' => 'will not show', 'reason' => 'WooCommerce not active' ) );
+			return rest_ensure_response( array( 'result' => 'will not show', 'reason' => 'WooCommerce is not active' ) );
 		}
 		$product = wc_get_product( $product_id );
 		if ( ! $product ) {
@@ -147,7 +147,7 @@ class EWM_REST_API {
 	public function get_user_profile( $request ) {
 		$user = wp_get_current_user();
 		if ( ! $user || 0 === $user->ID ) {
-			return new WP_Error( 'not_logged_in', 'Usuario no autenticado', array( 'status' => 401 ) );
+			return new WP_Error( 'not_logged_in', 'User not authenticated', array( 'status' => 401 ) );
 		}
 		return array(
 			'ID'         => $user->ID,
@@ -485,7 +485,7 @@ class EWM_REST_API {
 			// Verificar que el modal existe
 			$modal_post = get_post( $modal_id );
 			if ( ! $modal_post || $modal_post->post_type !== 'ew_modal' ) {
-				return new WP_Error( 'modal_not_found', __( 'Modal no encontrado.', 'ewm-modal-cta' ), array( 'status' => 404 ) );
+				return new WP_Error( 'modal_not_found', __( 'Modal not found.', 'ewm-modal-cta' ), array( 'status' => 404 ) );
 			}
 
 			// Cargar configuración usando el sistema actual
@@ -867,12 +867,12 @@ class EWM_REST_API {
 						</div>
 					<?php else : ?>
 						<h3><?php echo esc_html( $config['title'] ); ?></h3>
-						<p><strong><?php esc_html_e( 'Vista previa del anuncio', 'ewm-modal-cta' ); ?></strong></p>
-						<p><em><?php esc_html_e( 'Modo:', 'ewm-modal-cta' ); ?> <?php echo esc_html( ucfirst( $config['mode'] ) ); ?></em></p>
-						<p><?php esc_html_e( 'Este es un ejemplo de cómo se verá tu anuncio modal. Puedes personalizar el contenido, colores y diseño desde las opciones de configuración.', 'ewm-modal-cta' ); ?></p>
+						<p><strong><?php esc_html_e( 'Announcement preview', 'ewm-modal-cta' ); ?></strong></p>
+						<p><em><?php esc_html_e( 'Mode:', 'ewm-modal-cta' ); ?> <?php echo esc_html( ucfirst( $config['mode'] ) ); ?></em></p>
+						<p><?php esc_html_e( 'This is an example of how your modal announcement will look. You can customize the content, colors and design from the configuration options.', 'ewm-modal-cta' ); ?></p>
 						<div style="margin-top: 20px; text-align: center;">
 							<button class="ewm-btn ewm-btn-primary" style="background: var(--ewm-primary-color); color: white; padding: 12px 24px; border: none; border-radius: 4px; cursor: pointer;">
-								<?php esc_html_e( 'Llamada a la Acción', 'ewm-modal-cta' ); ?>
+								<?php esc_html_e( 'Call to Action', 'ewm-modal-cta' ); ?>
 							</button>
 						</div>
 					<?php endif; ?>

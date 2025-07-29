@@ -274,7 +274,7 @@
                     buttonElement.classList.add('ewm-coupon-applied');
                     
                     // Mostrar mensaje de éxito
-                    this.showMessage('Cupón aplicado correctamente', 'success');
+                    this.showMessage('Coupon applied successfully', 'success');
                     
                     // Opcional: redirigir al carrito
                     setTimeout(() => {
@@ -283,12 +283,12 @@
                         }
                     }, 1500);
                 } else {
-                    throw new Error(data.data || 'Error al aplicar cupón');
+                    throw new Error(data.data || 'Error applying coupon');
                 }
             } catch (error) {
                 console.error('EWM WC Promotion: Error applying coupon:', error);
                 buttonElement.textContent = originalText;
-                this.showMessage('Error al aplicar cupón: ' + error.message, 'error');
+                this.showMessage('Error applying coupon: ' + error.message, 'error');
             } finally {
                 buttonElement.disabled = false;
             }
@@ -310,10 +310,10 @@
                     buttonElement.textContent = originalText;
                 }, 2000);
                 
-                this.showMessage('Código copiado al portapapeles', 'success');
+                this.showMessage('Code copied to clipboard', 'success');
             } catch (error) {
                 console.error('EWM WC Promotion: Error copying coupon:', error);
-                this.showMessage('Error al copiar código', 'error');
+                this.showMessage('Error copying code', 'error');
             }
         }
 

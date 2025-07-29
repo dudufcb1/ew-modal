@@ -167,7 +167,7 @@
                 }
             } catch (error) {
                 console.error('EWM Modal Admin: AJAX error loading modal', error);
-                this.showError('Error de conexión al cargar el modal');
+                this.showError('Connection error loading modal');
             } finally {
                 this.isLoading = false;
                 this.hideLoading();
@@ -430,7 +430,7 @@
                 },
                 error: function(xhr, status, error) {
                     console.error('EWM Modal Admin: AJAX error saving modal', error);
-                    EWMModalAdmin.showError('Error de conexión al guardar el modal');
+                    EWMModalAdmin.showError('Connection error saving modal');
                 },
                 complete: function() {
                     EWMModalAdmin.isLoading = false;
@@ -476,7 +476,7 @@
                 },
                 error: function(xhr, status, error) {
                     console.error('EWM Modal Admin: AJAX error generating preview', error);
-                    EWMModalAdmin.showError('Error de conexión al generar preview');
+                    EWMModalAdmin.showError('Connection error generating preview');
                 },
                 complete: function() {
                     EWMModalAdmin.isLoading = false;
@@ -867,7 +867,7 @@
 
         clearForm: function(e) {
             e.preventDefault();
-            if (confirm('¿Estás seguro de que quieres limpiar el formulario?')) {
+            if (confirm('Are you sure you want to clear the form?')) {
                 $('#ewm-modal-form')[0].reset();
                 $('.ewm-steps-config').empty();
                 console.log('EWM Modal Admin: Form cleared');

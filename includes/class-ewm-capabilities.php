@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Clase para manejar capabilities personalizados del plugin
+ * Class to manage custom plugin capabilities
  */
 class EWM_Capabilities {
 
@@ -22,10 +22,10 @@ class EWM_Capabilities {
 	private static $instance = null;
 
 	/**
-	 * Capabilities del plugin
+	 * Plugin capabilities
 	 */
 	private $capabilities = array(
-		// Capabilities para modales
+		// Capabilities for modals
 		'read_ew_modal',
 		'read_private_ew_modals',
 		'edit_ew_modal',
@@ -40,7 +40,7 @@ class EWM_Capabilities {
 		'delete_private_ew_modals',
 		'delete_published_ew_modals',
 
-		// Capabilities para envíos
+		// Capabilities for submissions
 		'read_ewm_submission',
 		'read_private_ewm_submissions',
 		'edit_ewm_submission',
@@ -50,7 +50,7 @@ class EWM_Capabilities {
 		'delete_ewm_submissions',
 		'delete_others_ewm_submissions',
 
-		// Capabilities administrativos
+		// Administrative capabilities
 		'manage_ewm_settings',
 		'view_ewm_analytics',
 		'export_ewm_data',
@@ -58,7 +58,7 @@ class EWM_Capabilities {
 	);
 
 	/**
-	 * Mapeo de roles a capabilities
+	 * Role to capabilities mapping
 	 */
 	private $role_capabilities = array(
 		'administrator' => array(
@@ -90,7 +90,7 @@ class EWM_Capabilities {
 			'import_ewm_data',
 		),
 		'editor'        => array(
-			// Gestión completa de modales y envíos
+			// Full management of modals and submissions
 			'read_ew_modal',
 			'read_private_ew_modals',
 			'edit_ew_modal',
@@ -112,7 +112,7 @@ class EWM_Capabilities {
 			'view_ewm_analytics',
 		),
 		'author'        => array(
-			// Solo sus propios modales
+			// Own modals only
 			'read_ew_modal',
 			'edit_ew_modal',
 			'edit_ew_modals',
@@ -126,7 +126,7 @@ class EWM_Capabilities {
 			'edit_ewm_submissions',
 		),
 		'contributor'   => array(
-			// Solo crear y editar borradores
+			// Create and edit drafts only
 			'read_ew_modal',
 			'edit_ew_modal',
 			'edit_ew_modals',
@@ -136,14 +136,14 @@ class EWM_Capabilities {
 	);
 
 	/**
-	 * Constructor privado para singleton
+	 * Private constructor for singleton
 	 */
 	private function __construct() {
 		$this->init();
 	}
 
 	/**
-	 * Obtener instancia singleton
+	 * Get singleton instance
 	 */
 	public static function get_instance() {
 		if ( null === self::$instance ) {
@@ -153,7 +153,7 @@ class EWM_Capabilities {
 	}
 
 	/**
-	 * Inicializar la clase
+	 * Initialize class
 	 */
 	private function init() {
 		add_action( 'init', array( $this, 'setup_capabilities' ) );
@@ -162,7 +162,7 @@ class EWM_Capabilities {
 	}
 
 	/**
-	 * Configurar capabilities en la activación
+	 * Setup capabilities on activation
 	 */
 	public function setup_capabilities() {
 		// Solo ejecutar en activación o cuando sea necesario
@@ -175,7 +175,7 @@ class EWM_Capabilities {
 	}
 
 	/**
-	 * Agregar capabilities a los roles
+	 * Add capabilities to roles
 	 */
 	private function add_capabilities_to_roles() {
 		foreach ( $this->role_capabilities as $role_name => $capabilities ) {
@@ -192,7 +192,7 @@ class EWM_Capabilities {
 	}
 
 	/**
-	 * Remover capabilities de los roles (para desactivación)
+	 * Remove capabilities from roles (for deactivation)
 	 */
 	public function remove_capabilities_from_roles() {
 		foreach ( $this->role_capabilities as $role_name => $capabilities ) {

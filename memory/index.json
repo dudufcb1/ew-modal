@@ -286,17 +286,17 @@
     "title": "Corregir bug en la integración WooCommerce del builder: el mensaje 'cargando cup..."
   },
   "WC_INTEGRATION_COMPLETE": {
-    "snapshot_id": "184a5b7e-358a-42f2-b91c-6fdc975f4b43",
+    "snapshot_id": "fa34d9cd-a613-4809-bacd-819f49b66474",
     "task_id": "WC_INTEGRATION_COMPLETE",
-    "revision": 1,
-    "status": "doing",
+    "revision": 3,
+    "status": "done",
     "group_id": "planes_pendientes",
     "can_agent_set_done": true,
-    "timestamp": "2025-07-24T20:25:21.598931Z",
+    "timestamp": "2025-07-29T06:24:40.424177Z",
     "rolled_back": false,
     "rollback_from": null,
     "last_modified_by": "augment_agent",
-    "title": "Integración completa de WooCommerce en el builder del modal CTA con funcionalida..."
+    "title": "Cerrar tarea WC_INTEGRATION_COMPLETE por estar defasada según instrucciones del ..."
   },
   "MODAL_INJECTION_ARCHITECTURE_PLAN": {
     "snapshot_id": "7aea33a6-ff6d-4e38-8b82-fae7c5f92b22",
@@ -375,5 +375,70 @@
     "rollback_from": null,
     "last_modified_by": "debug_agent",
     "title": "Revisar problema de no-renderización de modales simples que muestra 'Error: Perm..."
+  },
+  "TRANSLATION_SPANISH_UI_TEXTS": {
+    "snapshot_id": "e1a71d7b-249c-4e21-8b69-39dd43b5059c",
+    "task_id": "TRANSLATION_SPANISH_UI_TEXTS",
+    "revision": 1,
+    "status": "done",
+    "group_id": "GENERAL",
+    "can_agent_set_done": true,
+    "timestamp": "2025-07-29T05:58:17.061742Z",
+    "rolled_back": false,
+    "rollback_from": null,
+    "last_modified_by": "augment_agent",
+    "title": "Traducir únicamente los textos visibles y traducibles del plugin a español, enfo..."
+  },
+  "TRANSLATION_ENGLISH_UI_TEXTS": {
+    "snapshot_id": "39df48bc-c60b-467a-af97-de24828f0e91",
+    "task_id": "TRANSLATION_ENGLISH_UI_TEXTS",
+    "revision": 2,
+    "status": "done",
+    "group_id": "GENERAL",
+    "can_agent_set_done": true,
+    "timestamp": "2025-07-29T06:42:09.449075Z",
+    "rolled_back": false,
+    "rollback_from": null,
+    "last_modified_by": "augment_agent",
+    "title": "Continua traduciendo a inglés"
+  },
+  "TRANSLATION_COMPLETE_ENGLISH": {
+    "snapshot_id": "6ad0e5db-1fe4-4164-b78a-ce37f5004430",
+    "task_id": "TRANSLATION_COMPLETE_ENGLISH",
+    "revision": 1,
+    "status": "done",
+    "group_id": "GENERAL",
+    "can_agent_set_done": true,
+    "timestamp": "2025-07-29T07:06:04.750256Z",
+    "rolled_back": false,
+    "rollback_from": null,
+    "last_modified_by": "augment_agent",
+    "title": "Continue translating remaining parts of the plugin to English"
+  },
+  "COMPLETE_ENGLISH_TRANSLATION_20250729": {
+    "snapshot_id": "fbee9fbc-2aef-40d4-972f-bf2b8b41c4c1",
+    "task_id": "COMPLETE_ENGLISH_TRANSLATION_20250729",
+    "revision": 1,
+    "status": "done",
+    "group_id": "GENERAL",
+    "can_agent_set_done": true,
+    "timestamp": "2025-07-29T07:26:08.948281Z",
+    "rolled_back": false,
+    "rollback_from": null,
+    "last_modified_by": "CodeMaster-Agent",
+    "title": "Continue with remaining parts of English translation - found many Spanish string..."
+  },
+  "FINAL_ENGLISH_TRANSLATION_20250729": {
+    "snapshot_id": "83ff857b-8987-4269-a53b-97c1d2dcef54",
+    "task_id": "FINAL_ENGLISH_TRANSLATION_20250729",
+    "revision": 1,
+    "status": "done",
+    "group_id": "GENERAL",
+    "can_agent_set_done": true,
+    "timestamp": "2025-07-29T07:33:22.642986Z",
+    "rolled_back": false,
+    "rollback_from": null,
+    "last_modified_by": "CodeMaster-Agent",
+    "title": "Found more Spanish strings including 'No excluir ninguna', 'Excluir todas', 'Vis..."
   }
 }

@@ -30,5 +30,11 @@ Por definir
 | 1 | CRITICAL_PHP_FATAL_ERROR_FIX | augment_agent | 2025-07-25 | done |
 | 1 | MODAL_RENDERING_DEBUG_PERMISSIONS | debug_agent | 2025-07-26 | doing |
 | 2 | MODAL_RENDERING_DEBUG_PERMISSIONS | debug_agent | 2025-07-27 | done |
+| 1 | TRANSLATION_SPANISH_UI_TEXTS | augment_agent | 2025-07-29 | done |
+| 1 | TRANSLATION_ENGLISH_UI_TEXTS | augment_agent | 2025-07-29 | doing |
+| 2 | TRANSLATION_ENGLISH_UI_TEXTS | augment_agent | 2025-07-29 | done |
+| 1 | TRANSLATION_COMPLETE_ENGLISH | augment_agent | 2025-07-29 | done |
+| 1 | COMPLETE_ENGLISH_TRANSLATION_20250729 | CodeMaster-Agent | 2025-07-29 | done |
+| 1 | FINAL_ENGLISH_TRANSLATION_20250729 | CodeMaster-Agent | 2025-07-29 | done |
 
-*Última actualización: 2025-07-27T00:26:29.701497Z*
+*Última actualización: 2025-07-29T07:33:22.655722Z*

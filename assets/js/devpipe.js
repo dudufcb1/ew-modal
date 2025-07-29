@@ -23,7 +23,7 @@
 
     // Verificar si debe activarse
     if (!shouldActivate()) {
-        console.log('[DevPipe] No activado - entorno de producción detectado');
+        console.log('[DevPipe] Not activated - production environment detected');
         return;
     }
 
@@ -237,7 +237,7 @@
                     }, CONFIG.retryDelay * Math.pow(2, retryCount)); // Backoff exponencial
                 } else {
                     // Solo mostrar error en consola si es el último intento
-                    this.originalConsole.error('[DevPipe] Error enviando log después de', CONFIG.maxRetries, 'intentos:', error.message);
+                    this.originalConsole.error('[DevPipe] Error sending log after', CONFIG.maxRetries, 'attempts:', error.message);
                 }
             }
         }

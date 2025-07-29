@@ -81,7 +81,7 @@
             showCopyFeedback(button, 'Copiado!');
         } catch (err) {
             console.error('[EWM WooCommerce] Fallback copy failed:', err);
-            showCopyFeedback(button, 'Error al copiar');
+            showCopyFeedback(button, 'Copy error');
         }
         
         document.body.removeChild(textArea);
@@ -162,7 +162,7 @@
         copyToClipboard(couponCode, button);
         
         setTimeout(() => {
-            button.textContent = 'Cupón copiado - Ve al carrito';
+            button.textContent = 'Coupon copied - Go to cart';
             button.style.background = '#28a745';
         }, 1000);
         

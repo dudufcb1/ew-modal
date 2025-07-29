@@ -69,7 +69,7 @@ $section_class = implode(' ', $section_classes);
         </h4>
         <p class="ewm-coupon-subtitle">
             <?php 
-            $subtitle = apply_filters('ewm_coupon_modal_subtitle', __('Aplica un cupón y ahorra en tu compra', 'ewm-modal-cta'), $modal_id);
+            $subtitle = apply_filters('ewm_coupon_modal_subtitle', __('Apply a coupon and save on your purchase', 'ewm-modal-cta'), $modal_id);
             echo esc_html($subtitle);
             ?>
         </p>
@@ -144,7 +144,7 @@ $section_class = implode(' ', $section_classes);
                     <div class="ewm-coupon-info">
                         <!-- Código del cupón -->
                         <span class="ewm-coupon-code" 
-                              title="<?php echo esc_attr(sprintf(__('Código de cupón: %s', 'ewm-modal-cta'), $coupon['code'])); ?>">
+                              title="<?php echo esc_attr(sprintf(__('Coupon code: %s', 'ewm-modal-cta'), $coupon['code'])); ?>">
                             <?php echo esc_html($coupon['code']); ?>
                         </span>
                         
@@ -169,7 +169,7 @@ $section_class = implode(' ', $section_classes);
                             <span class="ewm-coupon-expires">
                                 <?php 
                                 $expires_date = date_i18n(get_option('date_format'), strtotime($coupon['expires']));
-                                echo esc_html(sprintf(__('Expira: %s', 'ewm-modal-cta'), $expires_date));
+                                echo esc_html(sprintf(__('Expires: %s', 'ewm-modal-cta'), $expires_date));
                                 ?>
                             </span>
                             <?php endif; ?>
@@ -179,7 +179,7 @@ $section_class = implode(' ', $section_classes);
                             <span class="ewm-coupon-availability">
                                 <?php 
                                 $remaining = $coupon['usage_limit'] - $coupon['usage_count'];
-                                echo esc_html(sprintf(_n('Queda %d uso', 'Quedan %d usos', $remaining, 'ewm-modal-cta'), $remaining));
+                                echo esc_html(sprintf(_n('%d use remaining', '%d uses remaining', $remaining, 'ewm-modal-cta'), $remaining));
                                 ?>
                             </span>
                             <?php endif; ?>
@@ -190,10 +190,10 @@ $section_class = implode(' ', $section_classes);
                     <button class="ewm-apply-coupon-btn" 
                             type="button"
                             data-coupon="<?php echo esc_attr($coupon['code']); ?>"
-                            aria-label="<?php echo esc_attr(sprintf(__('Aplicar cupón %s', 'ewm-modal-cta'), $coupon['code'])); ?>"
+                            aria-label="<?php echo esc_attr(sprintf(__('Apply coupon %s', 'ewm-modal-cta'), $coupon['code'])); ?>"
                             <?php echo $settings['animations'] ? 'data-animate="true"' : ''; ?>>
                         <span class="ewm-btn-text">
-                            <?php esc_html_e('Aplicar', 'ewm-modal-cta'); ?>
+                            <?php esc_html_e('Apply', 'ewm-modal-cta'); ?>
                         </span>
                         <span class="ewm-btn-loading" style="display: none;" aria-hidden="true">
                             <span class="ewm-loading-spinner-small"></span>
@@ -216,8 +216,8 @@ $section_class = implode(' ', $section_classes);
                         echo esc_html($no_coupons_message);
                         ?>
                     </p>
-                    <button class="ewm-retry-btn" type="button" aria-label="<?php esc_attr_e('Intentar cargar cupones de nuevo', 'ewm-modal-cta'); ?>">
-                        <span><?php esc_html_e('Intentar de nuevo', 'ewm-modal-cta'); ?></span>
+                    <button class="ewm-retry-btn" type="button" aria-label="<?php esc_attr_e('Try loading coupons again', 'ewm-modal-cta'); ?>">
+                        <span><?php esc_html_e('Try again', 'ewm-modal-cta'); ?></span>
                     </button>
                 </div>
             <?php endif; ?>
@@ -247,11 +247,11 @@ $coupon_data = array(
         'layout' => $settings['layout']
     ),
     'strings' => array(
-        'applying' => __('Aplicando cupón...', 'ewm-modal-cta'),
-        'applied' => __('¡Cupón aplicado!', 'ewm-modal-cta'),
-        'error' => __('Error al aplicar cupón', 'ewm-modal-cta'),
-        'loading' => __('Cargando cupones...', 'ewm-modal-cta'),
-        'retry' => __('Intentar de nuevo', 'ewm-modal-cta')
+        'applying' => __('Applying coupon...', 'ewm-modal-cta'),
+        'applied' => __('Coupon applied!', 'ewm-modal-cta'),
+        'error' => __('Error applying coupon', 'ewm-modal-cta'),
+        'loading' => __('Loading coupons...', 'ewm-modal-cta'),
+        'retry' => __('Try again', 'ewm-modal-cta')
     )
 );
 

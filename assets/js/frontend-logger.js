@@ -124,7 +124,7 @@
             
             // Errores JavaScript no capturados
             window.addEventListener('error', function(event) {
-                self.log('error', 'Uncaught JavaScript Error', {
+                self.log('error', 'Uncaught JavaScript error', {
                     message: event.message,
                     filename: event.filename,
                     lineno: event.lineno,
@@ -136,7 +136,7 @@
             
             // Promesas rechazadas no manejadas
             window.addEventListener('unhandledrejection', function(event) {
-                self.log('error', 'Unhandled Promise Rejection', {
+                self.log('error', 'Unhandled promise rejection', {
                     reason: event.reason,
                     promise: event.promise,
                     source: 'unhandledrejection'

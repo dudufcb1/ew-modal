@@ -113,25 +113,25 @@ class EWM_Legacy_Cleanup_Admin {
 			
 			<div class="notice notice-info">
 				<p>
-					<strong><?php _e( 'Esta herramienta elimina:', 'ewm-modal-cta' ); ?></strong>
+					<strong><?php _e( 'This tool removes:', 'ewm-modal-cta' ); ?></strong>
 				</p>
 				<ul>
-					<li><?php _e( 'Todos los shortcodes [ewm_modal] del contenido de posts/páginas', 'ewm-modal-cta' ); ?></li>
-					<li><?php _e( 'Metadatos legacy: ewm_modal_mode, ewm_modal_config', 'ewm-modal-cta' ); ?></li>
-					<li><?php _e( 'Transients y cookies con prefijo ewm_modal_', 'ewm-modal-cta' ); ?></li>
+					<li><?php _e( 'All [ewm_modal] shortcodes from posts/pages content', 'ewm-modal-cta' ); ?></li>
+					<li><?php _e( 'Legacy metadata: ewm_modal_mode, ewm_modal_config', 'ewm-modal-cta' ); ?></li>
+					<li><?php _e( 'Transients and cookies with ewm_modal_ prefix', 'ewm-modal-cta' ); ?></li>
 				</ul>
 				<p>
-					<em><?php _e( 'El sistema actual ew_modal (sin "m" extra) se mantiene intacto.', 'ewm-modal-cta' ); ?></em>
+					<em><?php _e( 'The current ew_modal system (without extra "m") remains intact.', 'ewm-modal-cta' ); ?></em>
 				</p>
 			</div>
 
-			<h2><?php _e( 'Estado Actual del Sistema Legacy', 'ewm-modal-cta' ); ?></h2>
+			<h2><?php _e( 'Current Legacy System Status', 'ewm-modal-cta' ); ?></h2>
 			<table class="widefat fixed striped">
 				<thead>
 					<tr>
 						<th><?php _e( 'Tipo de Dato', 'ewm-modal-cta' ); ?></th>
 						<th><?php _e( 'Cantidad Encontrada', 'ewm-modal-cta' ); ?></th>
-						<th><?php _e( 'Estado', 'ewm-modal-cta' ); ?></th>
+						<th><?php _e( 'Status', 'ewm-modal-cta' ); ?></th>
 					</tr>
 				</thead>
 				<tbody>
@@ -147,7 +147,7 @@ class EWM_Legacy_Cleanup_Admin {
 						</td>
 					</tr>
 					<tr>
-						<td><?php _e( 'Metadatos Legacy', 'ewm-modal-cta' ); ?></td>
+						<td><?php _e( 'Legacy Metadata', 'ewm-modal-cta' ); ?></td>
 						<td><?php echo $legacy_data['metadata']; ?></td>
 						<td>
 							<?php if ( $legacy_data['metadata'] > 0 ) : ?>
@@ -172,19 +172,19 @@ class EWM_Legacy_Cleanup_Admin {
 			</table>
 
 			<?php if ( $has_legacy ) : ?>
-				<h2><?php _e( 'Ejecutar Limpieza', 'ewm-modal-cta' ); ?></h2>
+				<h2><?php _e( 'Run Cleanup', 'ewm-modal-cta' ); ?></h2>
 				<div class="notice notice-warning">
 					<p>
-						<strong><?php _e( '⚠️ ADVERTENCIA:', 'ewm-modal-cta' ); ?></strong>
-						<?php _e( 'Esta acción es irreversible. Recomendamos hacer un backup antes de continuar.', 'ewm-modal-cta' ); ?>
+						<strong><?php _e( '⚠️ WARNING:', 'ewm-modal-cta' ); ?></strong>
+						<?php _e( 'This action is irreversible. We recommend making a backup before continuing.', 'ewm-modal-cta' ); ?>
 					</p>
 				</div>
 				
-				<form method="post" onsubmit="return confirm('<?php _e( '¿Estás seguro de que quieres ejecutar la limpieza legacy? Esta acción no se puede deshacer.', 'ewm-modal-cta' ); ?>')">
+				<form method="post" onsubmit="return confirm('<?php _e( 'Are you sure you want to run the legacy cleanup? This action cannot be undone.', 'ewm-modal-cta' ); ?>')">
 					<?php wp_nonce_field( 'ewm_legacy_cleanup', 'ewm_cleanup_nonce' ); ?>
 					<p>
 						<input type="submit" name="ewm_run_cleanup" class="button button-primary" 
-							   value="<?php _e( 'Ejecutar Limpieza Legacy', 'ewm-modal-cta' ); ?>">
+							   value="<?php _e( 'Run Legacy Cleanup', 'ewm-modal-cta' ); ?>">
 					</p>
 				</form>
 			<?php else : ?>

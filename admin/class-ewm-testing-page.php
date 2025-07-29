@@ -31,7 +31,7 @@ class EWM_Testing_Page {
 	public function add_admin_menu() {
 		add_submenu_page(
 			'edit.php?post_type=ew_modal',
-			__( 'Testing de Paridad', 'ewm-modal-cta' ),
+			__( 'Parity Testing', 'ewm-modal-cta' ),
 			__( 'Testing', 'ewm-modal-cta' ),
 			'manage_options',
 			'ewm-testing',
@@ -48,7 +48,7 @@ class EWM_Testing_Page {
 		}
 
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( __( 'No tienes permisos para ejecutar tests.', 'ewm-modal-cta' ) );
+			wp_die( __( 'You don\'t have permissions to run tests.', 'ewm-modal-cta' ) );
 		}
 
 		// Incluir archivo de tests
@@ -77,37 +77,37 @@ class EWM_Testing_Page {
 	public function render_testing_page() {
 		?>
 		<div class="wrap">
-			<h1><?php _e( 'Testing de Paridad Funcional', 'ewm-modal-cta' ); ?></h1>
+			<h1><?php _e( 'Functional Parity Testing', 'ewm-modal-cta' ); ?></h1>
 			
 			<div class="notice notice-info">
 				<p>
-					<strong><?php _e( '¿Qué es el testing del sistema?', 'ewm-modal-cta' ); ?></strong><br>
-					<?php _e( 'Estos tests verifican que los shortcodes funcionen correctamente y que el sistema de modales opere de manera estable.', 'ewm-modal-cta' ); ?>
+					<strong><?php _e( 'What is system testing?', 'ewm-modal-cta' ); ?></strong><br>
+					<?php _e( 'These tests verify that shortcodes work correctly and that the modal system operates stably.', 'ewm-modal-cta' ); ?>
 				</p>
 			</div>
 
 			<?php if ( isset( $_GET['test_executed'] ) ) : ?>
 				<div class="notice notice-success is-dismissible">
-					<p><?php _e( 'Tests ejecutados exitosamente. Ver resultados abajo.', 'ewm-modal-cta' ); ?></p>
+					<p><?php _e( 'Tests executed successfully. See results below.', 'ewm-modal-cta' ); ?></p>
 				</div>
 			<?php endif; ?>
 
 			<div class="card">
-				<h2><?php _e( 'Ejecutar Tests del Sistema', 'ewm-modal-cta' ); ?></h2>
-				<p><?php _e( 'Los siguientes tests verificarán el funcionamiento correcto de los shortcodes:', 'ewm-modal-cta' ); ?></p>
+				<h2><?php _e( 'Run System Tests', 'ewm-modal-cta' ); ?></h2>
+				<p><?php _e( 'The following tests will verify the correct functioning of shortcodes:', 'ewm-modal-cta' ); ?></p>
 				
 				<ul>
-					<li>📋 <strong><?php _e( 'Renderizado Básico:', 'ewm-modal-cta' ); ?></strong> <?php _e( 'Verifica que ambos sistemas generen HTML idéntico', 'ewm-modal-cta' ); ?></li>
-					<li>⏰ <strong><?php _e( 'Configuración de Triggers:', 'ewm-modal-cta' ); ?></strong> <?php _e( 'Prueba todos los tipos de trigger (auto, manual, exit-intent, scroll)', 'ewm-modal-cta' ); ?></li>
-					<li>📝 <strong><?php _e( 'Formularios Multi-paso:', 'ewm-modal-cta' ); ?></strong> <?php _e( 'Verifica renderizado de formularios complejos', 'ewm-modal-cta' ); ?></li>
-					<li>🛒 <strong><?php _e( 'Integración WooCommerce:', 'ewm-modal-cta' ); ?></strong> <?php _e( 'Prueba funcionalidad de cupones y productos', 'ewm-modal-cta' ); ?></li>
-					<li>🎨 <strong><?php _e( 'CSS Personalizado:', 'ewm-modal-cta' ); ?></strong> <?php _e( 'Verifica aplicación de estilos personalizados', 'ewm-modal-cta' ); ?></li>
+					<li>📋 <strong><?php _e( 'Basic Rendering:', 'ewm-modal-cta' ); ?></strong> <?php _e( 'Verify that both systems generate identical HTML', 'ewm-modal-cta' ); ?></li>
+					<li>⏰ <strong><?php _e( 'Trigger Configuration:', 'ewm-modal-cta' ); ?></strong> <?php _e( 'Test all trigger types (auto, manual, exit-intent, scroll)', 'ewm-modal-cta' ); ?></li>
+					<li>📝 <strong><?php _e( 'Multi-step Forms:', 'ewm-modal-cta' ); ?></strong> <?php _e( 'Verify complex form rendering', 'ewm-modal-cta' ); ?></li>
+					<li>🛒 <strong><?php _e( 'WooCommerce Integration:', 'ewm-modal-cta' ); ?></strong> <?php _e( 'Test coupon and product functionality', 'ewm-modal-cta' ); ?></li>
+					<li>🎨 <strong><?php _e( 'Custom CSS:', 'ewm-modal-cta' ); ?></strong> <?php _e( 'Verify custom style application', 'ewm-modal-cta' ); ?></li>
 				</ul>
 
 				<form method="post" action="">
 					<?php wp_nonce_field( 'ewm_run_tests', 'ewm_test_nonce' ); ?>
 					<p>
-						<input type="submit" name="ewm_run_tests" class="button button-primary" value="<?php _e( 'Ejecutar Tests de Paridad', 'ewm-modal-cta' ); ?>" />
+						<input type="submit" name="ewm_run_tests" class="button button-primary" value="<?php _e( 'Run Parity Tests', 'ewm-modal-cta' ); ?>" />
 					</p>
 				</form>
 			</div>
@@ -115,11 +115,11 @@ class EWM_Testing_Page {
 			<?php $this->display_test_results(); ?>
 
 			<div class="card">
-				<h2><?php _e( 'Información del Sistema', 'ewm-modal-cta' ); ?></h2>
+				<h2><?php _e( 'System Information', 'ewm-modal-cta' ); ?></h2>
 				<table class="widefat">
 					<tbody>
 						<tr>
-							<td><strong><?php _e( 'Versión del Plugin:', 'ewm-modal-cta' ); ?></strong></td>
+							<td><strong><?php _e( 'Plugin Version:', 'ewm-modal-cta' ); ?></strong></td>
 							<td><?php echo EWM_VERSION; ?></td>
 						</tr>
 						<tr>
@@ -132,14 +132,14 @@ class EWM_Testing_Page {
 						</tr>
 						<tr>
 							<td><strong><?php _e( 'WooCommerce:', 'ewm-modal-cta' ); ?></strong></td>
-							<td><?php echo class_exists( 'WooCommerce' ) ? WC()->version : __( 'No instalado', 'ewm-modal-cta' ); ?></td>
+							<td><?php echo class_exists( 'WooCommerce' ) ? WC()->version : __( 'Not installed', 'ewm-modal-cta' ); ?></td>
 						</tr>
 						<tr>
-							<td><strong><?php _e( 'Tema Actual:', 'ewm-modal-cta' ); ?></strong></td>
+							<td><strong><?php _e( 'Current Theme:', 'ewm-modal-cta' ); ?></strong></td>
 							<td><?php echo wp_get_theme()->get( 'Name' ) . ' ' . wp_get_theme()->get( 'Version' ); ?></td>
 						</tr>
 						<tr>
-							<td><strong><?php _e( 'Modales Creados:', 'ewm-modal-cta' ); ?></strong></td>
+							<td><strong><?php _e( 'Created Modals:', 'ewm-modal-cta' ); ?></strong></td>
 							<td><?php echo wp_count_posts( 'ew_modal' )->publish; ?></td>
 						</tr>
 					</tbody>
@@ -207,32 +207,32 @@ class EWM_Testing_Page {
 		}
 		?>
 		<div class="card">
-			<h2><?php _e( 'Resultados de Tests', 'ewm-modal-cta' ); ?></h2>
-			<p><em><?php printf( __( 'Ejecutado el: %s', 'ewm-modal-cta' ), $timestamp ); ?></em></p>
+			<h2><?php _e( 'Test Results', 'ewm-modal-cta' ); ?></h2>
+			<p><em><?php printf( __( 'Executed on: %s', 'ewm-modal-cta' ), $timestamp ); ?></em></p>
 
 			<div class="<?php echo esc_attr( $summary_class ); ?>">
-				<h3><?php _e( 'Resumen', 'ewm-modal-cta' ); ?></h3>
+				<h3><?php _e( 'Summary', 'ewm-modal-cta' ); ?></h3>
 				<p>
-					<strong><?php _e( 'Tests ejecutados:', 'ewm-modal-cta' ); ?></strong> <?php echo $total_tests; ?><br>
-					<strong><?php _e( 'Tests exitosos:', 'ewm-modal-cta' ); ?></strong> <?php echo $passed_tests; ?><br>
-					<strong><?php _e( 'Tasa de éxito:', 'ewm-modal-cta' ); ?></strong> <?php echo round( $success_rate, 1 ); ?>%
+					<strong><?php _e( 'Tests executed:', 'ewm-modal-cta' ); ?></strong> <?php echo $total_tests; ?><br>
+					<strong><?php _e( 'Successful tests:', 'ewm-modal-cta' ); ?></strong> <?php echo $passed_tests; ?><br>
+					<strong><?php _e( 'Success rate:', 'ewm-modal-cta' ); ?></strong> <?php echo round( $success_rate, 1 ); ?>%
 				</p>
 
 				<?php if ( $success_rate >= 100 ) : ?>
-					<p>🎉 <strong><?php _e( '¡PERFECTO!', 'ewm-modal-cta' ); ?></strong> <?php _e( 'Sistema de shortcodes funcionando correctamente.', 'ewm-modal-cta' ); ?></p>
+					<p>🎉 <strong><?php _e( 'PERFECT!', 'ewm-modal-cta' ); ?></strong> <?php _e( 'Shortcode system working correctly.', 'ewm-modal-cta' ); ?></p>
 				<?php elseif ( $success_rate >= 80 ) : ?>
-					<p>✅ <strong><?php _e( 'BUENO:', 'ewm-modal-cta' ); ?></strong> <?php _e( 'Alta compatibilidad, revisar tests fallidos.', 'ewm-modal-cta' ); ?></p>
+					<p>✅ <strong><?php _e( 'GOOD:', 'ewm-modal-cta' ); ?></strong> <?php _e( 'High compatibility, review failed tests.', 'ewm-modal-cta' ); ?></p>
 				<?php else : ?>
-					<p>⚠️ <strong><?php _e( 'ATENCIÓN:', 'ewm-modal-cta' ); ?></strong> <?php _e( 'Problemas de paridad detectados, revisar implementación.', 'ewm-modal-cta' ); ?></p>
+					<p>⚠️ <strong><?php _e( 'ATTENTION:', 'ewm-modal-cta' ); ?></strong> <?php _e( 'Parity issues detected, review implementation.', 'ewm-modal-cta' ); ?></p>
 				<?php endif; ?>
 			</div>
 
-			<h3><?php _e( 'Detalles de Tests', 'ewm-modal-cta' ); ?></h3>
+			<h3><?php _e( 'Test Details', 'ewm-modal-cta' ); ?></h3>
 			<div class="ewm-test-output"><?php echo esc_html( $output ); ?></div>
 
 			<p>
 				<button type="button" class="button" onclick="document.querySelector('.ewm-test-output').style.display = document.querySelector('.ewm-test-output').style.display === 'none' ? 'block' : 'none';">
-					<?php _e( 'Mostrar/Ocultar Detalles', 'ewm-modal-cta' ); ?>
+					<?php _e( 'Show/Hide Details', 'ewm-modal-cta' ); ?>
 				</button>
 			</p>
 		</div>
