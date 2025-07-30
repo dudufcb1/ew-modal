@@ -171,16 +171,20 @@ function ewm_modal_cta_enqueue_frontend_assets() {
 	// Cargar en frontend si hay modales en la página (solo shortcodes)
 	$should_load_frontend = ewm_has_modal_shortcode();
 
-	// Cargar DevPipe para logging en desarrollo
+	// Cargar DevPipe para logging en desarrollo (solo si el archivo existe)
 	if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-		wp_enqueue_script(
-			'ewm-devpipe',
-			EWM_PLUGIN_URL . 'assets/js/devpipe.js',
-			array(),
-			EWM_VERSION,
-			false // Cargar en head para capturar todos los logs
-		);
+		$devpipe_path = EWM_PLUGIN_DIR . 'assets/js/devpipe.js';
 
+		// Solo encolar si el archivo existe para evitar errores 404
+		if ( file_exists( $devpipe_path ) ) {
+			wp_enqueue_script(
+				'ewm-devpipe',
+				EWM_PLUGIN_URL . 'assets/js/devpipe.js',
+				array(),
+				EWM_VERSION,
+				false // Cargar en head para capturar todos los logs
+			);
+		}
 	}
 
 	if ( $should_load_frontend ) {
@@ -226,16 +230,20 @@ add_action( 'wp_enqueue_scripts', 'ewm_modal_cta_enqueue_frontend_assets' );
  * Enqueue DevPipe for admin development logging
  */
 function ewm_modal_cta_enqueue_admin_devpipe() {
-	// Solo cargar DevPipe en desarrollo
+	// Solo cargar DevPipe en desarrollo (solo si el archivo existe)
 	if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-		wp_enqueue_script(
-			'ewm-devpipe-admin',
-			EWM_PLUGIN_URL . 'assets/js/devpipe.js',
-			array(),
-			EWM_VERSION,
-			false // Cargar en head para capturar todos los logs
-		);
+		$devpipe_path = EWM_PLUGIN_DIR . 'assets/js/devpipe.js';
 
+		// Solo encolar si el archivo existe para evitar errores 404
+		if ( file_exists( $devpipe_path ) ) {
+			wp_enqueue_script(
+				'ewm-devpipe-admin',
+				EWM_PLUGIN_URL . 'assets/js/devpipe.js',
+				array(),
+				EWM_VERSION,
+				false // Cargar en head para capturar todos los logs
+			);
+		}
 	}
 }
 add_action( 'admin_enqueue_scripts', 'ewm_modal_cta_enqueue_admin_devpipe' );
