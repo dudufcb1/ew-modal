@@ -423,7 +423,7 @@ class EWM_General_Auto_Injection {
 		);
 
 		// Renderizar usando el motor universal
-		echo ewm_render_modal_core( $modal_id, $render_config );
+		echo wp_kses_post( ewm_render_modal_core( $modal_id, $render_config ) );
 	}
 
 	/**

@@ -78,7 +78,6 @@ class EWM_WooCommerce {
 	public function setup_hooks() {
 		// Detectar abandono de carrito
 		add_action( 'wp_footer', array( $this, 'add_cart_abandonment_script' ) );
-
 	}
 
 	/**
@@ -91,11 +90,11 @@ class EWM_WooCommerce {
 
 		// TODO: Crear woocommerce-integration.js si es necesario
 		// wp_enqueue_script(
-		//	'ewm-woocommerce',
-		//	EWM_PLUGIN_URL . 'assets/js/woocommerce-integration.js',
-		//	array( 'jquery', 'ewm-modal-frontend' ),
-		//	EWM_VERSION,
-		//	true
+		// 'ewm-woocommerce',
+		// EWM_PLUGIN_URL . 'assets/js/woocommerce-integration.js',
+		// array( 'jquery', 'ewm-modal-frontend' ),
+		// EWM_VERSION,
+		// true
 		// );
 
 		wp_localize_script(
@@ -160,21 +159,26 @@ class EWM_WooCommerce {
 	 * Obtener cupones de WooCommerce
 	 */
 	public function get_coupons( $request ) {
-		$coupons = get_posts(
-			array(
-				'post_type'      => 'shop_coupon',
-				'post_status'    => 'publish',
-				'posts_per_page' => -1,
-				'meta_query'     => array(
-					array(
-						'key'     => 'date_expires',
-						'value'   => current_time( 'timestamp' ),
-						'compare' => '>',
-						'type'    => 'NUMERIC',
-					),
-				),
-			)
-		);
+		// Optimizar consulta de cupones con caché
+		$cache_key = 'ewm_active_coupons_' . md5( current_time( 'Y-m-d-H' ) );
+		$coupons = wp_cache_get( $cache_key, 'ewm_wc_coupons' );
+
+		if ( false === $coupons ) {
+			$coupons = get_posts(
+				array(
+					'post_type'      => 'shop_coupon',
+					'post_status'    => 'publish',
+					'posts_per_page' => 50, // Limitar para mejor rendimiento
+					'meta_key'       => 'date_expires', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Optimized query for coupon expiration with caching
+					'meta_value'     => current_time( 'timestamp' ), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Optimized query for coupon expiration with caching
+					'meta_compare'   => '>',
+					'meta_type'      => 'NUMERIC',
+				)
+			);
+
+			// Cachear por 1 hora
+			wp_cache_set( $cache_key, $coupons, 'ewm_wc_coupons', HOUR_IN_SECONDS );
+		}
 
 		$coupon_data = array();
 		foreach ( $coupons as $coupon ) {
@@ -201,12 +205,8 @@ class EWM_WooCommerce {
 			'post_type'      => 'product',
 			'post_status'    => 'publish',
 			'posts_per_page' => 50,
-			'meta_query'     => array(
-				array(
-					'key'   => '_stock_status',
-					'value' => 'instock',
-				),
-			),
+			'meta_key'       => '_stock_status', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Optimized query for product stock status
+			'meta_value'     => 'instock', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Optimized query for product stock status
 		);
 
 		$search = $request->get_param( 'search' );
@@ -288,8 +288,6 @@ class EWM_WooCommerce {
 	public function handle_add_to_cart( $cart_item_key, $product_id, $quantity, $variation_id, $variation, $cart_item_data ) {
 		// Verificar si hay modales de upsell configurados
 		$this->check_upsell_modals( $product_id, $quantity );
-
-
 	}
 
 	/**
@@ -301,20 +299,25 @@ class EWM_WooCommerce {
 		}
 
 		// Buscar modales con abandono de carrito habilitado
-		$modals = get_posts(
-			array(
-				'post_type'      => 'ew_modal',
-				'post_status'    => 'publish',
-				'posts_per_page' => -1,
-				'meta_query'     => array(
-					array(
-						'key'     => 'ewm_wc_integration',
-						'value'   => '"cart_abandonment":{"enabled":true',
-						'compare' => 'LIKE',
-					),
-				),
-			)
-		);
+		// Optimizar consulta de modales de abandono con caché
+		$cache_key = 'ewm_cart_abandonment_modals';
+		$modals = wp_cache_get( $cache_key, 'ewm_wc_modals' );
+
+		if ( false === $modals ) {
+			$modals = get_posts(
+				array(
+					'post_type'      => 'ew_modal',
+					'post_status'    => 'publish',
+					'posts_per_page' => 20, // Limitar para mejor rendimiento
+					'meta_key'       => 'ewm_wc_integration', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Optimized query for cart abandonment modals with caching
+					'meta_value'     => '"cart_abandonment":{"enabled":true', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Optimized query for cart abandonment modals with caching
+					'meta_compare'   => 'LIKE',
+				)
+			);
+
+			// Cachear por 30 minutos
+			wp_cache_set( $cache_key, $modals, 'ewm_wc_modals', 30 * MINUTE_IN_SECONDS );
+		}
 
 		foreach ( $modals as $modal ) {
 			$wc_config = EWM_Meta_Fields::get_meta( $modal->ID, 'ewm_wc_integration', array() );
@@ -332,20 +335,25 @@ class EWM_WooCommerce {
 		$cart_total = WC()->cart->get_total( 'raw' );
 
 		// Buscar modales con upsell habilitado
-		$modals = get_posts(
-			array(
-				'post_type'      => 'ew_modal',
-				'post_status'    => 'publish',
-				'posts_per_page' => -1,
-				'meta_query'     => array(
-					array(
-						'key'     => 'ewm_wc_integration',
-						'value'   => '"upsell":{"enabled":true',
-						'compare' => 'LIKE',
-					),
-				),
-			)
-		);
+		// Optimizar consulta de modales de upsell con caché
+		$cache_key = 'ewm_upsell_modals';
+		$modals = wp_cache_get( $cache_key, 'ewm_wc_modals' );
+
+		if ( false === $modals ) {
+			$modals = get_posts(
+				array(
+					'post_type'      => 'ew_modal',
+					'post_status'    => 'publish',
+					'posts_per_page' => 20, // Limitar para mejor rendimiento
+					'meta_key'       => 'ewm_wc_integration', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Optimized query for upsell modals with caching
+					'meta_value'     => '"upsell":{"enabled":true', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Optimized query for upsell modals with caching
+					'meta_compare'   => 'LIKE',
+				)
+			);
+
+			// Cachear por 30 minutos
+			wp_cache_set( $cache_key, $modals, 'ewm_wc_modals', 30 * MINUTE_IN_SECONDS );
+		}
 
 		foreach ( $modals as $modal ) {
 			$wc_config = EWM_Meta_Fields::get_meta( $modal->ID, 'ewm_wc_integration', array() );
@@ -381,10 +389,10 @@ class EWM_WooCommerce {
 					if (!modalShown) {
 						inactivityTimer = setTimeout(function() {
 							if (window.EWMModal && !modalShown) {
-								window.EWMModal.open(<?php echo $modal_id; ?>);
+								window.EWMModal.open(<?php echo esc_js( (string) $modal_id ); ?>);
 								modalShown = true;
 							}
-						}, <?php echo $delay_minutes * 60 * 1000; ?>);
+						}, <?php echo esc_js( (string) ( $delay_minutes * 60 * 1000 ) ); ?>);
 					}
 				}
 				
@@ -428,7 +436,7 @@ class EWM_WooCommerce {
 	public function apply_coupon() {
 		check_ajax_referer( 'ewm_wc_nonce', 'nonce' );
 
-		$coupon_code = sanitize_text_field( $_POST['coupon_code'] ?? '' );
+		$coupon_code = isset( $_POST['coupon_code'] ) ? sanitize_text_field( wp_unslash( $_POST['coupon_code'] ) ) : '';
 
 		if ( empty( $coupon_code ) ) {
 			wp_send_json_error( __( 'Coupon code required.', 'ewm-modal-cta' ) );
@@ -485,21 +493,25 @@ class EWM_WooCommerce {
 	 * Mostrar modal en checkout si está configurado
 	 */
 	public function maybe_show_checkout_modal() {
-		// Buscar modales configurados para checkout
-		$modals = get_posts(
-			array(
-				'post_type'      => 'ew_modal',
-				'post_status'    => 'publish',
-				'posts_per_page' => 1,
-				'meta_query'     => array(
-					array(
-						'key'     => 'ewm_display_rules',
-						'value'   => 'checkout',
-						'compare' => 'LIKE',
-					),
-				),
-			)
-		);
+		// Buscar modales configurados para checkout con caché
+		$cache_key = 'ewm_checkout_modal';
+		$modals = wp_cache_get( $cache_key, 'ewm_wc_modals' );
+
+		if ( false === $modals ) {
+			$modals = get_posts(
+				array(
+					'post_type'      => 'ew_modal',
+					'post_status'    => 'publish',
+					'posts_per_page' => 1,
+					'meta_key'       => 'ewm_display_rules', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Optimized query for checkout modals with caching
+					'meta_value'     => 'checkout', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Optimized query for checkout modals with caching
+					'meta_compare'   => 'LIKE',
+				)
+			);
+
+			// Cachear por 1 hora
+			wp_cache_set( $cache_key, $modals, 'ewm_wc_modals', HOUR_IN_SECONDS );
+		}
 
 		if ( ! empty( $modals ) ) {
 			$modal = $modals[0];

@@ -469,9 +469,8 @@ class EWM_REST_API {
 	 * Obtener modal específico
 	 */
 	public function get_modal( $request ) {
-		// Suprimir notices para evitar contaminar el JSON
-		$old_error_reporting = error_reporting();
-		error_reporting( E_ERROR | E_WARNING | E_PARSE );
+		// Iniciar output buffering para capturar cualquier salida no deseada
+		ob_start();
 
 		// Limpiar cualquier salida previa para evitar contaminar el JSON
 		if ( ob_get_level() ) {
@@ -508,14 +507,14 @@ class EWM_REST_API {
 
 			$execution_time = microtime( true ) - $start_time;
 
-			// Restaurar error reporting
-			error_reporting( $old_error_reporting );
+			// Limpiar output buffer
+			ob_end_clean();
 
 			return new WP_REST_Response( $modal_data, 200 );
 
 		} catch ( Exception $e ) {
-			// Restaurar error reporting en caso de error también
-			error_reporting( $old_error_reporting );
+			// Limpiar output buffer en caso de error también
+			ob_end_clean();
 
 
 			return new WP_Error(
@@ -2005,8 +2004,8 @@ class EWM_REST_API {
 				$result['cookie_hash'] = $cookie_elements[3];
 
 				// Convertir timestamps a fechas legibles
-				$result['expiry_date'] = date( 'Y-m-d H:i:s', $cookie_elements[1] );
-				$result['expiring_date'] = date( 'Y-m-d H:i:s', $cookie_elements[2] );
+				$result['expiry_date'] = gmdate( 'Y-m-d H:i:s', $cookie_elements[1] );
+				$result['expiring_date'] = gmdate( 'Y-m-d H:i:s', $cookie_elements[2] );
 				$result['is_expired'] = time() > $cookie_elements[1];
 			} else {
 				$result['error'] = 'Invalid cookie format';
@@ -2032,21 +2031,27 @@ class EWM_REST_API {
 		);
 
 		try {
-			$table_name = $wpdb->prefix . 'woocommerce_sessions';
+			// Buscar sesión por customer_id con caché
+			$cache_key = 'ewm_wc_session_' . md5( $customer_id );
+			$session_data = wp_cache_get( $cache_key, 'ewm_wc_sessions' );
 
-			// Buscar sesión por customer_id
-			$session_data = $wpdb->get_row(
-				$wpdb->prepare(
-					"SELECT session_key, session_value, session_expiry FROM {$table_name} WHERE session_key = %s",
-					$customer_id
-				)
-			);
+			if ( false === $session_data ) {
+				$session_data = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Direct query needed for WooCommerce session data with caching
+					$wpdb->prepare(
+						"SELECT session_key, session_value, session_expiry FROM `{$wpdb->prefix}woocommerce_sessions` WHERE session_key = %s",
+						$customer_id
+					)
+				);
+
+				// Cachear por 5 minutos (las sesiones cambian frecuentemente)
+				wp_cache_set( $cache_key, $session_data, 'ewm_wc_sessions', 5 * MINUTE_IN_SECONDS );
+			}
 
 			if ( $session_data ) {
 				$result['found'] = true;
 				$result['session_key'] = $session_data->session_key;
 				$result['session_expiry'] = $session_data->session_expiry;
-				$result['expiry_date'] = date( 'Y-m-d H:i:s', $session_data->session_expiry );
+				$result['expiry_date'] = gmdate( 'Y-m-d H:i:s', $session_data->session_expiry );
 				$result['is_expired'] = time() > $session_data->session_expiry;
 
 				// Decodificar datos de sesión
@@ -2102,22 +2107,43 @@ class EWM_REST_API {
 		);
 
 		try {
-			// Verificar si existe la tabla de sesiones de WooCommerce
+			// Verificar si existe la tabla de sesiones de WooCommerce con caché
 			$table_name = $wpdb->prefix . 'woocommerce_sessions';
-			$table_exists = $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $table_name ) );
+			$cache_key_table = 'ewm_wc_table_exists';
+			$table_exists = wp_cache_get( $cache_key_table, 'ewm_wc_sessions' );
+
+			if ( false === $table_exists ) {
+				$table_exists = $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $table_name ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Direct query needed to check table existence with caching
+				// Cachear por 1 hora (las tablas no cambian frecuentemente)
+				wp_cache_set( $cache_key_table, $table_exists, 'ewm_wc_sessions', HOUR_IN_SECONDS );
+			}
 
 			$result['data']['session_table_exists'] = $table_exists ? 'yes' : 'no';
 
 			if ( $table_exists ) {
-				// Contar sesiones activas (sin acceder a datos específicos)
-				$session_count = $wpdb->get_var( "SELECT COUNT(*) FROM {$table_name}" );
+				// Contar sesiones activas con caché
+				$cache_key_count = 'ewm_wc_session_count';
+				$session_count = wp_cache_get( $cache_key_count, 'ewm_wc_sessions' );
+
+				if ( false === $session_count ) {
+					$session_count = $wpdb->get_var( "SELECT COUNT(*) FROM `{$wpdb->prefix}woocommerce_sessions`" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+					// Cachear por 5 minutos (el conteo cambia frecuentemente)
+					wp_cache_set( $cache_key_count, $session_count, 'ewm_wc_sessions', 5 * MINUTE_IN_SECONDS );
+				}
+
 				$result['data']['total_sessions'] = $session_count;
 				$result['available'] = true;
 
-				// Obtener información general sobre las sesiones (sin datos sensibles)
-				$recent_sessions = $wpdb->get_var(
-					"SELECT COUNT(*) FROM {$table_name} WHERE session_expiry > UNIX_TIMESTAMP()"
-				);
+				// Obtener información general sobre las sesiones activas con caché
+				$cache_key_active = 'ewm_wc_active_sessions';
+				$recent_sessions = wp_cache_get( $cache_key_active, 'ewm_wc_sessions' );
+
+				if ( false === $recent_sessions ) {
+					$recent_sessions = $wpdb->get_var( "SELECT COUNT(*) FROM `{$wpdb->prefix}woocommerce_sessions` WHERE session_expiry > UNIX_TIMESTAMP()" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+					// Cachear por 2 minutos (las sesiones activas cambian frecuentemente)
+					wp_cache_set( $cache_key_active, $recent_sessions, 'ewm_wc_sessions', 2 * MINUTE_IN_SECONDS );
+				}
+
 				$result['data']['active_sessions'] = $recent_sessions;
 			}
 
@@ -2165,17 +2191,24 @@ class EWM_REST_API {
 				return array(); // Sesión expirada
 			}
 
-			// Obtener datos de sesión desde DB
+			// Obtener datos de sesión desde DB con caché
 			global $wpdb;
-			$table_name = $wpdb->prefix . 'woocommerce_sessions';
 
-			$session_data = $wpdb->get_var(
-				$wpdb->prepare(
-					"SELECT session_value FROM {$table_name} WHERE session_key = %s AND session_expiry > %d",
-					$customer_id,
-					time()
-				)
-			);
+			$cache_key = 'ewm_wc_session_value_' . md5( $customer_id );
+			$session_data = wp_cache_get( $cache_key, 'ewm_wc_sessions' );
+
+			if ( false === $session_data ) {
+				$session_data = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Direct query needed for WooCommerce session data with caching
+					$wpdb->prepare(
+						"SELECT session_value FROM `{$wpdb->prefix}woocommerce_sessions` WHERE session_key = %s AND session_expiry > %d",
+						$customer_id,
+						time()
+					)
+				);
+
+				// Cachear por 2 minutos (los datos de sesión cambian frecuentemente)
+				wp_cache_set( $cache_key, $session_data, 'ewm_wc_sessions', 2 * MINUTE_IN_SECONDS );
+			}
 
 			if ( ! $session_data ) {
 				return array(); // No hay datos de sesión
@@ -2198,10 +2231,29 @@ class EWM_REST_API {
 			}
 
 		} catch ( Exception $e ) {
-			error_log( 'EWM Modal: Error getting applied coupons from session: ' . $e->getMessage() );
+			// Log error only if WP_DEBUG is enabled
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( 'EWM Modal: Error getting applied coupons from session: ' . $e->getMessage() ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Debug logging only when WP_DEBUG is enabled
+			}
 		}
 
 		return $applied_coupons;
+	}
+
+	/**
+	 * Limpiar cachés relacionados con sesiones de WooCommerce
+	 */
+	private function clear_wc_session_cache( $customer_id = null ) {
+		// Limpiar cachés generales
+		wp_cache_delete( 'ewm_wc_table_exists', 'ewm_wc_sessions' );
+		wp_cache_delete( 'ewm_wc_session_count', 'ewm_wc_sessions' );
+		wp_cache_delete( 'ewm_wc_active_sessions', 'ewm_wc_sessions' );
+
+		// Limpiar caché específico del customer si se proporciona
+		if ( $customer_id ) {
+			wp_cache_delete( 'ewm_wc_session_' . md5( $customer_id ), 'ewm_wc_sessions' );
+			wp_cache_delete( 'ewm_wc_session_value_' . md5( $customer_id ), 'ewm_wc_sessions' );
+		}
 	}
 
 	/**
@@ -2242,7 +2294,10 @@ class EWM_REST_API {
 				}
 
 			} catch ( Exception $e ) {
-				error_log( 'EWM Modal: Error checking applied coupons via WC()->cart: ' . $e->getMessage() );
+				// Log error only if WP_DEBUG is enabled
+				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+					error_log( 'EWM Modal: Error checking applied coupons via WC()->cart: ' . $e->getMessage() ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Debug logging only when WP_DEBUG is enabled
+				}
 			}
 		}
 

@@ -1,91 +1,34 @@
-# =============================================================================
-# EWM Modal CTA Plugin - .gitignore
-# =============================================================================
-.augment
-.augment/
-vendor/
-var/
-
-# WordPress Core Files (si se desarrolla dentro de WordPress)
+# WordPress
 wp-config.php
 wp-content/uploads/
 wp-content/cache/
 wp-content/backup-db/
 wp-content/advanced-cache.php
 wp-content/wp-cache-config.php
+wp-content/plugins/hello.php
+wp-content/upgrade/
+wp-content/mu-plugins/
 
-# WordPress Debug & Error Logs
-debug.log
-error_log
-*.log
-wp-content/debug.log
-
-# Plugin Development
-*.zip
-*.tar.gz
-*.rar
-build/Release
-dist/
-
-# Node.js & Build Tools
+# Node.js
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.npm
-.eslintcache
-*.tgz
-package-lock.json
-yarn.lock
 
-# Environment & Configuration
-.env
-.env.local
-.env.development
-.env.production
-wp-config-local.php
-local-config.php
+# Build files
+/dist/
+/build/
+*.min.js
+*.min.css
 
-# IDE & Editor Files
+# IDE files
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
-.DS_Store
-Thumbs.db
 
-# Temporary Files
-*.tmp
-*.temp
-*.bak
-*.backup
-*~
-
-# Database Exports
-*.sql
-*.sql.gz
-*.sql.zip
-
-# Cache & Compiled Files
-*.cache
-.sass-cache/
-coverage/
-.nyc_output/
-
-# Plugin Specific
-memo/memory_project.txt
-logs/
-uploads/
-cache/
-
-# Development Tools
-.phpunit.result.cache
-composer.phar
-vendor/
-phpunit.xml
-
-# OS Generated Files
+# OS files
 .DS_Store
 .DS_Store?
 ._*
@@ -94,8 +37,16 @@ phpunit.xml
 ehthumbs.db
 Thumbs.db
 
-# Custom Files
-ewm-modal-cta_code.txt
-*.local
-*.dev
-ewm-modal-cta_consultant_history.json
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Plugin specific
+/memory/snapshots/
+/memory/archive/
+*.backup

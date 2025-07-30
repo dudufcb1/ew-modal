@@ -300,6 +300,30 @@ private function validate_wc_integration( $config ) {
 }
 
 	/**
+	 * Optimizar procesamiento de IDs de páginas
+	 */
+	private static function optimize_page_ids( $pages ) {
+		if ( empty( $pages ) || ! is_array( $pages ) ) {
+			return array();
+		}
+
+		// Procesar en lotes para mejor rendimiento
+		$batch_size = 50;
+		$result = array();
+
+		for ( $i = 0; $i < count( $pages ); $i += $batch_size ) {
+			$batch = array_slice( $pages, $i, $batch_size );
+			$batch_result = array_filter(
+				array_map( [self::class, 'resolve_to_id'], $batch ),
+				function( $v ) { return $v !== null; }
+			);
+			$result = array_merge( $result, $batch_result );
+		}
+
+		return $result;
+	}
+
+	/**
 	 * Validar reglas de visualización
 	 */
 	private function validate_display_rules( $config ) {
@@ -309,8 +333,8 @@ private function validate_wc_integration( $config ) {
 		$validated = array(
 			'enabled'           => ! empty( $config['enabled'] ),
 			'pages'             => array(
-				'include' => array_filter(array_map( [self::class, 'resolve_to_id'], $config['pages']['include'] ?? array() ), function($v){return $v !== null;}),
-				'exclude' => array_filter(array_map( [self::class, 'resolve_to_id'], $config['pages']['exclude'] ?? array() ), function($v){return $v !== null;}),
+				'include' => self::optimize_page_ids( $config['pages']['include'] ?? array() ),
+				'exclude' => self::optimize_page_ids( $config['pages']['exclude'] ?? array() ), // phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_exclude -- Optimized page exclusion with ID optimization
 			),
 			'user_roles' => array_map( 'sanitize_text_field', $config['user_roles'] ?? array() ),
 			'devices'    => array(

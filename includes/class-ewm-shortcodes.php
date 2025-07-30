@@ -326,7 +326,7 @@ class EWM_Shortcodes {
 	 * Detectar tipo de dispositivo
 	 */
 	private function detect_device() {
-		$user_agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+		$user_agent = isset( $_SERVER['HTTP_USER_AGENT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : '';
 
 		if ( preg_match( '/Mobile|Android|iPhone|iPad/', $user_agent ) ) {
 			if ( preg_match( '/iPad/', $user_agent ) ) {
@@ -392,7 +392,7 @@ class EWM_Shortcodes {
 	 */
 	private function get_modal_transient_key( $modal_id ) {
 		$user_id = get_current_user_id();
-		$user_ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+		$user_ip = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : 'unknown';
 
 		// Obtener la configuración de frecuencia ACTUAL del modal
 		$frequency_config = $this->get_modal_frequency_config( $modal_id );
@@ -587,13 +587,19 @@ class EWM_Shortcodes {
 			wp_send_json_error( 'Invalid modal ID' );
 		}
 
-		// Buscar y eliminar todos los transients de este modal
-		global $wpdb;
-		$deleted = $wpdb->query( $wpdb->prepare(
-			"DELETE FROM {$wpdb->options}
-			 WHERE option_name LIKE %s",
-			'_transient_ewm_modal_' . $modal_id . '_%'
-		) );
+		// Buscar y eliminar todos los transients de este modal usando WordPress API
+		$deleted = 0;
+		$transient_keys = array( 'session', 'daily', 'weekly', 'monthly' );
+
+		foreach ( $transient_keys as $key ) {
+			$transient_name = 'ewm_modal_' . $modal_id . '_' . $key;
+			if ( delete_transient( $transient_name ) ) {
+				$deleted++;
+			}
+		}
+
+		// También limpiar caché relacionado
+		wp_cache_delete( 'ewm_modal_frequency_' . $modal_id, 'ewm_modals' );
 
 		wp_send_json_success( array(
 			'deleted' => $deleted,

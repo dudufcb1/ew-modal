@@ -120,8 +120,6 @@ class EWM_Submission_CPT {
 		);
 
 		register_post_type( self::POST_TYPE, $args );
-
-	
 	}
 
 	/**
@@ -142,8 +140,6 @@ class EWM_Submission_CPT {
 				)
 			);
 		}
-
-
 	}
 
 	/**
@@ -193,11 +189,11 @@ class EWM_Submission_CPT {
 		?>
 		<table class="form-table">
 			<tr>
-				<th scope="row"><?php _e( 'Source Modal', 'ewm-modal-cta' ); ?></th>
+				<th scope="row"><?php esc_html_e( 'Source Modal', 'ewm-modal-cta' ); ?></th>
 				<td>
 					<?php if ( $modal_id && get_post( $modal_id ) ) : ?>
-						<a href="<?php echo get_edit_post_link( $modal_id ); ?>">
-							<?php echo esc_html( $modal_title ); ?> (ID: <?php echo $modal_id; ?>)
+						<a href="<?php echo esc_url( get_edit_post_link( $modal_id ) ); ?>">
+							<?php echo esc_html( $modal_title ); ?> (ID: <?php echo esc_html( $modal_id ); ?>)
 						</a>
 					<?php else : ?>
 						<em><?php echo esc_html( $modal_title ); ?></em>
@@ -205,50 +201,50 @@ class EWM_Submission_CPT {
 				</td>
 			</tr>
 			<tr>
-				<th scope="row"><?php _e( 'Lead Date', 'ewm-modal-cta' ); ?></th>
+				<th scope="row"><?php esc_html_e( 'Lead Date', 'ewm-modal-cta' ); ?></th>
 				<td>
 					<?php
 					if ( $submission_time ) {
-						echo date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), strtotime( $submission_time ) );
+						echo esc_html( date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), strtotime( $submission_time ) ) );
 					} else {
-						echo __( 'No disponible', 'ewm-modal-cta' );
+						echo esc_html__( 'No disponible', 'ewm-modal-cta' );
 					}
 					?>
 				</td>
 			</tr>
 			<tr>
 				<th scope="row">
-					<label for="submission_status"><?php _e( 'Estado', 'ewm-modal-cta' ); ?></label>
+					<label for="submission_status"><?php esc_html_e( 'Estado', 'ewm-modal-cta' ); ?></label>
 				</th>
 				<td>
 					<select name="submission_status" id="submission_status">
 						<option value="new" <?php selected( $status, 'new' ); ?>>
-							<?php _e( 'New', 'ewm-modal-cta' ); ?>
+							<?php esc_html_e( 'New', 'ewm-modal-cta' ); ?>
 						</option>
 						<option value="processed" <?php selected( $status, 'processed' ); ?>>
-							<?php _e( 'Procesado', 'ewm-modal-cta' ); ?>
+							<?php esc_html_e( 'Procesado', 'ewm-modal-cta' ); ?>
 						</option>
 						<option value="archived" <?php selected( $status, 'archived' ); ?>>
-							<?php _e( 'Archivado', 'ewm-modal-cta' ); ?>
+							<?php esc_html_e( 'Archivado', 'ewm-modal-cta' ); ?>
 						</option>
 					</select>
 				</td>
 			</tr>
 			<tr>
 				<th scope="row">
-					<label for="conversion_value"><?php _e( 'Conversion Value', 'ewm-modal-cta' ); ?></label>
+					<label for="conversion_value"><?php esc_html_e( 'Conversion Value', 'ewm-modal-cta' ); ?></label>
 				</th>
 				<td>
 					<input type="number" name="conversion_value" id="conversion_value" 
 							value="<?php echo esc_attr( $conversion_value ); ?>" step="0.01" min="0">
 					<p class="description">
-						<?php _e( 'Monetary value associated with this conversion (optional).', 'ewm-modal-cta' ); ?>
+						<?php esc_html_e( 'Monetary value associated with this conversion (optional).', 'ewm-modal-cta' ); ?>
 					</p>
 				</td>
 			</tr>
 			<tr>
 				<th scope="row">
-					<label for="submission_notes"><?php _e( 'Notas', 'ewm-modal-cta' ); ?></label>
+					<label for="submission_notes"><?php esc_html_e( 'Notas', 'ewm-modal-cta' ); ?></label>
 				</th>
 				<td>
 					<textarea name="submission_notes" id="submission_notes" rows="3" class="large-text"><?php echo esc_textarea( $notes ); ?></textarea>
@@ -275,18 +271,18 @@ class EWM_Submission_CPT {
 
 		?>
 		<div class="ewm-submission-data">
-			<h4><?php _e( 'Form Data', 'ewm-modal-cta' ); ?></h4>
+			<h4><?php esc_html_e( 'Form Data', 'ewm-modal-cta' ); ?></h4>
 			<?php if ( ! empty( $form_data_decoded ) ) : ?>
 				<table class="widefat">
 					<thead>
 						<tr>
-							<th><?php _e( 'Field', 'ewm-modal-cta' ); ?></th>
-							<th><?php _e( 'Value', 'ewm-modal-cta' ); ?></th>
+							<th><?php esc_html_e( 'Field', 'ewm-modal-cta' ); ?></th>
+							<th><?php esc_html_e( 'Value', 'ewm-modal-cta' ); ?></th>
 						</tr>
 					</thead>
 					<tbody>
 						<?php foreach ( $form_data_decoded as $field => $value ) : ?>
-							<?php 
+							<?php
 							// Mapear field_id a label legible
 							$field_label = isset( $field_mapping[ $field ] ) ? $field_mapping[ $field ] : $field;
 							?>
@@ -298,11 +294,11 @@ class EWM_Submission_CPT {
 					</tbody>
 				</table>
 			<?php else : ?>
-				<p><em><?php _e( 'No hay datos de formulario disponibles.', 'ewm-modal-cta' ); ?></em></p>
+				<p><em><?php esc_html_e( 'No hay datos de formulario disponibles.', 'ewm-modal-cta' ); ?></em></p>
 			<?php endif; ?>
 			
 			<?php if ( ! empty( $step_data_decoded ) ) : ?>
-				<h4 style="margin-top: 20px;"><?php _e( 'Step Data', 'ewm-modal-cta' ); ?></h4>
+				<h4 style="margin-top: 20px;"><?php esc_html_e( 'Step Data', 'ewm-modal-cta' ); ?></h4>
 				<pre style="background: #f1f1f1; padding: 10px; overflow: auto; max-height: 200px;"><?php echo esc_html( wp_json_encode( $step_data_decoded, JSON_PRETTY_PRINT ) ); ?></pre>
 			<?php endif; ?>
 		</div>
@@ -322,47 +318,47 @@ class EWM_Submission_CPT {
 		?>
 		<table class="form-table">
 			<tr>
-				<th><?php _e( 'IP Address', 'ewm-modal-cta' ); ?></th>
+				<th><?php esc_html_e( 'IP Address', 'ewm-modal-cta' ); ?></th>
 				<td><?php echo esc_html( $ip_address ?: __( 'No disponible', 'ewm-modal-cta' ) ); ?></td>
 			</tr>
 			<tr>
-				<th><?php _e( 'Usuario', 'ewm-modal-cta' ); ?></th>
+				<th><?php esc_html_e( 'Usuario', 'ewm-modal-cta' ); ?></th>
 				<td>
 					<?php
 					if ( $user_id ) {
 						$user = get_user_by( 'id', $user_id );
 						if ( $user ) {
-							echo '<a href="' . get_edit_user_link( $user_id ) . '">' . esc_html( $user->display_name ) . '</a>';
+							echo '<a href="' . esc_url( get_edit_user_link( $user_id ) ) . '">' . esc_html( $user->display_name ) . '</a>';
 						} else {
-							echo __( 'Usuario eliminado', 'ewm-modal-cta' );
+							echo esc_html__( 'Usuario eliminado', 'ewm-modal-cta' );
 						}
 					} else {
-						echo __( 'Anonymous user', 'ewm-modal-cta' );
+						echo esc_html__( 'Anonymous user', 'ewm-modal-cta' );
 					}
 					?>
 				</td>
 			</tr>
 			<tr>
-				<th><?php _e( 'Referrer URL', 'ewm-modal-cta' ); ?></th>
+				<th><?php esc_html_e( 'Referrer URL', 'ewm-modal-cta' ); ?></th>
 				<td>
 					<?php if ( $referer_url ) : ?>
 						<a href="<?php echo esc_url( $referer_url ); ?>" target="_blank">
 							<?php echo esc_html( wp_trim_words( $referer_url, 8, '...' ) ); ?>
 						</a>
 					<?php else : ?>
-						<?php _e( 'No disponible', 'ewm-modal-cta' ); ?>
+						<?php esc_html_e( 'No disponible', 'ewm-modal-cta' ); ?>
 					<?php endif; ?>
 				</td>
 			</tr>
 			<tr>
-				<th><?php _e( 'User Agent', 'ewm-modal-cta' ); ?></th>
+				<th><?php esc_html_e( 'User Agent', 'ewm-modal-cta' ); ?></th>
 				<td>
 					<small><?php echo esc_html( wp_trim_words( $user_agent ?: __( 'No disponible', 'ewm-modal-cta' ), 10, '...' ) ); ?></small>
 				</td>
 			</tr>
 			<?php if ( $session_id ) : ?>
 			<tr>
-				<th><?php _e( 'Session ID', 'ewm-modal-cta' ); ?></th>
+				<th><?php esc_html_e( 'Session ID', 'ewm-modal-cta' ); ?></th>
 				<td><code><?php echo esc_html( $session_id ); ?></code></td>
 			</tr>
 			<?php endif; ?>
@@ -379,16 +375,16 @@ class EWM_Submission_CPT {
 		}
 
 		// Obtener configuración del modal
-		$modal_config = EWM_Modal_CPT::get_modal_config( $modal_id );
+		$modal_config  = EWM_Modal_CPT::get_modal_config( $modal_id );
 		$field_mapping = array();
 
 		if ( ! empty( $modal_config['steps'] ) ) {
 			foreach ( $modal_config['steps'] as $step ) {
 				if ( ! empty( $step['fields'] ) ) {
 					foreach ( $step['fields'] as $field ) {
-						$field_id = $field['id'] ?? '';
+						$field_id    = $field['id'] ?? '';
 						$field_label = $field['label'] ?? '';
-						
+
 						if ( $field_id && $field_label ) {
 							$field_mapping[ $field_id ] = $field_label;
 						}
@@ -406,7 +402,7 @@ class EWM_Submission_CPT {
 	public function save_meta_fields( $post_id ) {
 		// Verificar nonce
 		if ( ! isset( $_POST['ewm_submission_meta_box_nonce'] ) ||
-			! wp_verify_nonce( $_POST['ewm_submission_meta_box_nonce'], 'ewm_submission_meta_box' ) ) {
+			! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['ewm_submission_meta_box_nonce'] ) ), 'ewm_submission_meta_box' ) ) {
 			return;
 		}
 
@@ -427,19 +423,17 @@ class EWM_Submission_CPT {
 
 		// Guardar campos editables
 		if ( isset( $_POST['submission_status'] ) ) {
-			update_post_meta( $post_id, 'status', sanitize_text_field( $_POST['submission_status'] ) );
+			update_post_meta( $post_id, 'status', sanitize_text_field( wp_unslash( $_POST['submission_status'] ) ) );
 		}
 
 		if ( isset( $_POST['conversion_value'] ) ) {
-			$value = floatval( $_POST['conversion_value'] );
+			$value = floatval( sanitize_text_field( wp_unslash( $_POST['conversion_value'] ) ) );
 			update_post_meta( $post_id, 'conversion_value', $value );
 		}
 
 		if ( isset( $_POST['submission_notes'] ) ) {
-			update_post_meta( $post_id, 'notes', sanitize_textarea_field( $_POST['submission_notes'] ) );
+			update_post_meta( $post_id, 'notes', sanitize_textarea_field( wp_unslash( $_POST['submission_notes'] ) ) );
 		}
-
-	
 	}
 
 	/**
@@ -472,16 +466,16 @@ class EWM_Submission_CPT {
 					echo '<span class="dashicons dashicons-external" style="font-size: 12px; margin-left: 4px;"></span>';
 					echo '</a>';
 				} else {
-					echo '<em style="color: #666;">' . __( 'No disponible', 'ewm-modal-cta' ) . '</em>';
+					echo '<em style="color: #666;">' . esc_html__( 'No disponible', 'ewm-modal-cta' ) . '</em>';
 				}
 				break;
 
 			case 'modal':
 				$modal_id = get_post_meta( $post_id, 'modal_id', true );
 				if ( $modal_id && get_post( $modal_id ) ) {
-					echo '<a href="' . get_edit_post_link( $modal_id ) . '">' . get_the_title( $modal_id ) . '</a>';
+					echo '<a href="' . esc_url( get_edit_post_link( $modal_id ) ) . '">' . esc_html( get_the_title( $modal_id ) ) . '</a>';
 				} else {
-					echo '<em>' . __( 'Modal eliminado', 'ewm-modal-cta' ) . '</em>';
+					echo '<em>' . esc_html__( 'Modal eliminado', 'ewm-modal-cta' ) . '</em>';
 				}
 				break;
 
@@ -492,14 +486,14 @@ class EWM_Submission_CPT {
 					'processed' => __( 'Procesado', 'ewm-modal-cta' ),
 					'archived'  => __( 'Archivado', 'ewm-modal-cta' ),
 				);
-				echo '<span class="ewm-status ewm-status-' . $status . '">' .
-					( $status_labels[ $status ] ?? $status ) . '</span>';
+				echo '<span class="ewm-status ewm-status-' . esc_attr( $status ) . '">' .
+					esc_html( $status_labels[ $status ] ?? $status ) . '</span>';
 				break;
 
 			case 'submission_date':
 				$submission_time = get_post_meta( $post_id, 'submission_time', true );
 				if ( $submission_time ) {
-					echo date_i18n( get_option( 'date_format' ), strtotime( $submission_time ) );
+					echo esc_html( date_i18n( get_option( 'date_format' ), strtotime( $submission_time ) ) );
 				} else {
 					echo get_the_date( '', $post_id );
 				}
@@ -514,10 +508,10 @@ class EWM_Submission_CPT {
 					if ( $user ) {
 						echo esc_html( $user->display_name );
 					} else {
-						echo __( 'Usuario eliminado', 'ewm-modal-cta' );
+						echo esc_html__( 'Usuario eliminado', 'ewm-modal-cta' );
 					}
 				} else {
-					echo __( 'Anonymous', 'ewm-modal-cta' );
+					echo esc_html__( 'Anonymous', 'ewm-modal-cta' );
 				}
 
 				if ( $ip_address ) {
@@ -566,7 +560,6 @@ class EWM_Submission_CPT {
 			array(),
 			EWM_VERSION
 		);
-
 	}
 
 	/**
@@ -585,20 +578,21 @@ class EWM_Submission_CPT {
 			$updated_count = 0;
 
 			foreach ( $post_ids as $post_id ) {
-				$referer_url = get_post_meta( $post_id, 'referer_url', true );
+				$referer_url     = get_post_meta( $post_id, 'referer_url', true );
 				$submission_time = get_post_meta( $post_id, 'submission_time', true );
 
 				if ( $referer_url ) {
 					$page_name = self::detect_page_name_from_url( $referer_url );
-					
+
 					if ( $submission_time ) {
 						$formatted_date = date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), strtotime( $submission_time ) );
 					} else {
-						$post_date = get_post_field( 'post_date', $post_id );
+						$post_date      = get_post_field( 'post_date', $post_id );
 						$formatted_date = date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), strtotime( $post_date ) );
 					}
 
 					$new_title = sprintf(
+						/* translators: %1$s: page name, %2$s: formatted date */
 						__( 'Lead obtenido de: %1$s %2$s', 'ewm-modal-cta' ),
 						$page_name,
 						$formatted_date
@@ -613,7 +607,7 @@ class EWM_Submission_CPT {
 					);
 
 					if ( ! is_wp_error( $result ) ) {
-						$updated_count++;
+						++$updated_count;
 					}
 				}
 			}
@@ -628,17 +622,20 @@ class EWM_Submission_CPT {
 	 * Mostrar mensajes de acciones masivas
 	 */
 	public function show_bulk_action_notices() {
-		if ( ! empty( $_REQUEST['ewm_updated_titles'] ) ) {
-			$count = intval( $_REQUEST['ewm_updated_titles'] );
+		if ( ! empty( $_REQUEST['ewm_updated_titles'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Display-only admin notice, no state changes
+			$count = intval( sanitize_text_field( wp_unslash( $_REQUEST['ewm_updated_titles'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Display-only admin notice, no state changes
 			echo '<div class="notice notice-success is-dismissible">';
-			echo '<p>' . sprintf( 
-				_n( 
-					'Se actualizó el título de %s envío.', 
-					'Se actualizaron los títulos de %s envíos.', 
-					$count, 
-					'ewm-modal-cta' 
-				), 
-				number_format_i18n( $count ) 
+			echo '<p>' . esc_html(
+				sprintf(
+					/* translators: %s: number of submissions */
+					_n(
+						'Se actualizó el título de %s envío.',
+						'Se actualizaron los títulos de %s envíos.',
+						$count,
+						'ewm-modal-cta'
+					),
+					number_format_i18n( $count )
+				)
 			) . '</p>';
 			echo '</div>';
 		}
@@ -649,7 +646,7 @@ class EWM_Submission_CPT {
 	 */
 	public static function create_submission( $modal_id, $form_data, $step_data = array() ) {
 		// Obtener información de la página de origen
-		$referer_url = $_SERVER['HTTP_REFERER'] ?? '';
+		$referer_url = isset( $_SERVER['HTTP_REFERER'] ) ? sanitize_url( wp_unslash( $_SERVER['HTTP_REFERER'] ) ) : '';
 		$page_name   = __( 'Unknown page', 'ewm-modal-cta' );
 
 		if ( $referer_url ) {
@@ -658,7 +655,8 @@ class EWM_Submission_CPT {
 
 		// Crear título en formato: "Lead obtenido de: nombre_de_la_pagina fecha"
 		$current_date = date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ) );
-		$title        = sprintf(
+		$title = sprintf(
+			/* translators: %1$s: page name, %2$s: current date */
 			__( 'Lead obtenido de: %1$s %2$s', 'ewm-modal-cta' ),
 			$page_name,
 			$current_date
@@ -673,9 +671,9 @@ class EWM_Submission_CPT {
 				'form_data'       => wp_json_encode( $form_data ),
 				'step_data'       => wp_json_encode( $step_data ),
 				'submission_time' => current_time( 'mysql' ),
-				'ip_address'      => $_SERVER['REMOTE_ADDR'] ?? '',
-				'user_agent'      => $_SERVER['HTTP_USER_AGENT'] ?? '',
-				'referer_url'     => $_SERVER['HTTP_REFERER'] ?? '',
+				'ip_address'      => isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '',
+				'user_agent'      => isset( $_SERVER['HTTP_USER_AGENT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : '',
+				'referer_url'     => isset( $_SERVER['HTTP_REFERER'] ) ? sanitize_url( wp_unslash( $_SERVER['HTTP_REFERER'] ) ) : '',
 				'user_id'         => get_current_user_id() ?: '',
 				'session_id'      => session_id() ?: '',
 				'status'          => 'new',
@@ -693,7 +691,7 @@ class EWM_Submission_CPT {
 
 	/**
 	 * Detectar nombre de página desde URL con soporte avanzado
-	 * 
+	 *
 	 * @param string $url URL de referencia
 	 * @return string Nombre de la página detectado
 	 */
@@ -701,12 +699,12 @@ class EWM_Submission_CPT {
 		$page_name = __( 'Unknown page', 'ewm-modal-cta' );
 
 		// Parsear URL
-		$parsed_url = parse_url( $url );
+		$parsed_url = wp_parse_url( $url );
 		if ( ! $parsed_url || ! isset( $parsed_url['path'] ) ) {
 			return $page_name;
 		}
 
-		$path = trim( $parsed_url['path'], '/' );
+		$path  = trim( $parsed_url['path'], '/' );
 		$query = isset( $parsed_url['query'] ) ? $parsed_url['query'] : '';
 
 		// Página de inicio
@@ -746,7 +744,7 @@ class EWM_Submission_CPT {
 
 	/**
 	 * Detectar páginas de WooCommerce
-	 * 
+	 *
 	 * @param string $path Path de la URL
 	 * @param string $query Query string
 	 * @return string|false Nombre de página WC o false
@@ -783,6 +781,7 @@ class EWM_Submission_CPT {
 			if ( isset( $path_parts[1] ) ) {
 				$product = get_page_by_path( $path_parts[1], OBJECT, 'product' );
 				if ( $product ) {
+					/* translators: %s: product title */
 					return sprintf( __( 'Producto: %s', 'ewm-modal-cta' ), get_the_title( $product->ID ) );
 				}
 			}
@@ -794,6 +793,7 @@ class EWM_Submission_CPT {
 			if ( isset( $path_parts[1] ) ) {
 				$term = get_term_by( 'slug', $path_parts[1], 'product_cat' );
 				if ( $term ) {
+					/* translators: %s: category name */
 					return sprintf( __( 'Category: %s', 'ewm-modal-cta' ), $term->name );
 				}
 			}
@@ -805,7 +805,7 @@ class EWM_Submission_CPT {
 
 	/**
 	 * Buscar post por path en cualquier post type
-	 * 
+	 *
 	 * @param string $path Path a buscar
 	 * @return WP_Post|false Post encontrado o false
 	 */
@@ -820,27 +820,47 @@ class EWM_Submission_CPT {
 			return false;
 		}
 
-		$escaped_post_types = array_map( 'esc_sql', $post_types );
-		$string_post_types = array_map( 'strval', $escaped_post_types );
-		$post_types_in = "'" . implode( "', '", $string_post_types ) . "'";
+		// Crear clave de caché
+		$cache_key = 'ewm_post_by_path_' . md5( $path . serialize( $post_types ) );
+		$post_id   = wp_cache_get( $cache_key, 'ewm_submissions' );
 
-		$sql = $wpdb->prepare(
-			"SELECT ID FROM {$wpdb->posts} 
-			 WHERE post_name = %s 
-			 AND post_type IN ({$post_types_in}) 
-			 AND post_status = 'publish' 
-			 LIMIT 1",
-			$path
-		);
+		if ( false === $post_id ) {
+			// Crear placeholders para los tipos de post de forma segura
+			$placeholders = implode( ', ', array_fill( 0, count( $post_types ), '%s' ) );
 
-		$post_id = $wpdb->get_var( $sql );
+			// Construir consulta SQL de forma segura
+			$sql_template = "SELECT ID FROM {$wpdb->posts}
+				 WHERE post_name = %s
+				 AND post_type IN ({$placeholders})
+				 AND post_status = 'publish'
+				 LIMIT 1";
+
+			$sql = $wpdb->prepare(
+				$sql_template, // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQL.NotPrepared -- Placeholders are safely constructed from count of post_types array
+				array_merge( array( $path ), $post_types )
+			);
+
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery -- Query is properly prepared with placeholders, custom query for post lookup with caching
+			$post_id = $wpdb->get_var( $sql );
+
+			// Cachear resultado por 1 hora
+			wp_cache_set( $cache_key, $post_id, 'ewm_submissions', HOUR_IN_SECONDS );
+		}
 
 		return $post_id ? get_post( $post_id ) : false;
 	}
 
 	/**
+	 * Limpiar caché de búsqueda de posts
+	 */
+	private static function clear_post_search_cache() {
+		// Limpiar todos los cachés de búsqueda de posts
+		wp_cache_flush_group( 'ewm_submissions' );
+	}
+
+	/**
 	 * Detectar páginas de archivo (categorías, tags, etc.)
-	 * 
+	 *
 	 * @param string $path Path de la URL
 	 * @return string|false Nombre de archivo o false
 	 */
@@ -852,6 +872,7 @@ class EWM_Submission_CPT {
 			if ( isset( $path_parts[1] ) ) {
 				$term = get_term_by( 'slug', $path_parts[1], 'category' );
 				if ( $term ) {
+					/* translators: %s: category name */
 					return sprintf( __( 'Category: %s', 'ewm-modal-cta' ), $term->name );
 				}
 			}
@@ -863,6 +884,7 @@ class EWM_Submission_CPT {
 			if ( isset( $path_parts[1] ) ) {
 				$term = get_term_by( 'slug', $path_parts[1], 'post_tag' );
 				if ( $term ) {
+					/* translators: %s: tag name */
 					return sprintf( __( 'Tag: %s', 'ewm-modal-cta' ), $term->name );
 				}
 			}
@@ -874,6 +896,7 @@ class EWM_Submission_CPT {
 			if ( isset( $path_parts[1] ) ) {
 				$user = get_user_by( 'slug', $path_parts[1] );
 				if ( $user ) {
+					/* translators: %s: author display name */
 					return sprintf( __( 'Autor: %s', 'ewm-modal-cta' ), $user->display_name );
 				}
 			}
@@ -884,10 +907,12 @@ class EWM_Submission_CPT {
 		if ( is_numeric( $path_parts[0] ) && strlen( $path_parts[0] ) === 4 ) {
 			$year = $path_parts[0];
 			if ( isset( $path_parts[1] ) && is_numeric( $path_parts[1] ) ) {
-				$month = $path_parts[1];
+				$month      = $path_parts[1];
 				$month_name = date_i18n( 'F', mktime( 0, 0, 0, (int) $month, 1 ) );
-				return sprintf( __( 'Archivo: %s %s', 'ewm-modal-cta' ), $month_name, $year );
+				/* translators: %1$s: month name, %2$s: year */
+				return sprintf( __( 'Archivo: %1$s %2$s', 'ewm-modal-cta' ), $month_name, $year );
 			}
+			/* translators: %s: year */
 			return sprintf( __( 'Archivo: %s', 'ewm-modal-cta' ), $year );
 		}
 
@@ -899,46 +924,50 @@ class EWM_Submission_CPT {
 	 * Función utilitaria para migrar envíos antiguos al nuevo formato
 	 */
 	public static function update_existing_submission_titles() {
-		// Buscar envíos sin título o con título genérico
-		$submissions = get_posts(
-			array(
-				'post_type'      => self::POST_TYPE,
-				'post_status'    => 'private',
-				'numberposts'    => -1,
-				'fields'         => 'ids',
-				'meta_query'     => array(
-					'relation' => 'OR',
-					array(
-						'key'     => 'referer_url',
-						'compare' => 'EXISTS',
-					),
-				),
-			)
-		);
+		// Buscar envíos sin título con caché y límite optimizado
+		$cache_key   = 'ewm_submissions_to_update';
+		$submissions = wp_cache_get( $cache_key, 'ewm_submissions' );
+
+		if ( false === $submissions ) {
+			$submissions = get_posts(
+				array(
+					'post_type'    => self::POST_TYPE,
+					'post_status'  => 'private',
+					'numberposts'  => 100, // Limitar para evitar consultas lentas
+					'fields'       => 'ids',
+					'meta_key'     => 'referer_url', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Using meta_key for better performance than meta_query, with caching
+					'meta_compare' => 'EXISTS',
+				)
+			);
+
+			// Cachear por 10 minutos
+			wp_cache_set( $cache_key, $submissions, 'ewm_submissions', 10 * MINUTE_IN_SECONDS );
+		}
 
 		$updated_count = 0;
 		$total_count   = count( $submissions );
 
 		foreach ( $submissions as $submission_id ) {
 			$current_title = get_the_title( $submission_id );
-			
+
 			// Actualizar solo si no tiene título o el título está vacío/genérico
 			if ( empty( $current_title ) || $current_title === 'Auto Draft' || strpos( $current_title, '(no title)' ) !== false ) {
-				$referer_url = get_post_meta( $submission_id, 'referer_url', true );
+				$referer_url     = get_post_meta( $submission_id, 'referer_url', true );
 				$submission_time = get_post_meta( $submission_id, 'submission_time', true );
 
 				if ( $referer_url ) {
 					$page_name = self::detect_page_name_from_url( $referer_url );
-					
+
 					// Usar submission_time si existe, sino usar post_date
 					if ( $submission_time ) {
 						$formatted_date = date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), strtotime( $submission_time ) );
 					} else {
-						$post_date = get_post_field( 'post_date', $submission_id );
+						$post_date      = get_post_field( 'post_date', $submission_id );
 						$formatted_date = date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), strtotime( $post_date ) );
 					}
 
 					$new_title = sprintf(
+						/* translators: %1$s: page name, %2$s: formatted date */
 						__( 'Lead obtenido de: %1$s %2$s', 'ewm-modal-cta' ),
 						$page_name,
 						$formatted_date
@@ -954,13 +983,12 @@ class EWM_Submission_CPT {
 					);
 
 					if ( ! is_wp_error( $result ) ) {
-						$updated_count++;
+						++$updated_count;
 					} else {
 					}
 				}
 			}
 		}
-
 
 		return array(
 			'total'   => $total_count,
@@ -979,19 +1007,25 @@ class EWM_Submission_CPT {
 		}
 
 		// Verificar si se solicitó la actualización
-		if ( isset( $_GET['ewm_update_titles'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'ewm_update_titles' ) ) {
+		if ( isset( $_GET['ewm_update_titles'] ) && isset( $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'ewm_update_titles' ) ) {
 			$result = self::update_existing_submission_titles();
-			
+
 			// Mostrar mensaje de admin
-			add_action( 'admin_notices', function() use ( $result ) {
-				echo '<div class="notice notice-success is-dismissible">';
-				echo '<p><strong>EWM:</strong> ' . sprintf( 
-					__( 'Títulos actualizados: %d de %d envíos procesados.', 'ewm-modal-cta' ),
-					$result['updated'], 
-					$result['total'] 
-				) . '</p>';
-				echo '</div>';
-			} );
+			add_action(
+				'admin_notices',
+				function () use ( $result ) {
+					echo '<div class="notice notice-success is-dismissible">';
+					echo '<p><strong>EWM:</strong> ' . esc_html(
+						sprintf(
+							/* translators: %1$d: number of updated titles, %2$d: total number of submissions processed */
+							__( 'Títulos actualizados: %1$d de %2$d envíos procesados.', 'ewm-modal-cta' ),
+							$result['updated'],
+							$result['total']
+						)
+					) . '</p>';
+					echo '</div>';
+				}
+			);
 
 			// Redireccionar para evitar reenvío
 			wp_redirect( remove_query_arg( array( 'ewm_update_titles', '_wpnonce' ) ) );

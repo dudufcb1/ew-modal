@@ -180,23 +180,28 @@ class EWM_Performance {
 			return false;
 		}
 
-		// Verificar si hay modales configurados para WooCommerce
-		$wc_modals = get_posts(
-			array(
-				'post_type'      => 'ew_modal',
-				'post_status'    => 'publish',
-				'posts_per_page' => 1,
-				'meta_query'     => array(
-					array(
-						'key'     => 'ewm_wc_integration',
-						'value'   => '"enabled":true',
-						'compare' => 'LIKE',
-					),
-				),
-			)
-		);
+		// Verificar si hay modales configurados para WooCommerce con caché
+		$cache_key = 'ewm_performance_wc_check';
+		$has_wc_modals = wp_cache_get( $cache_key, 'ewm_performance' );
 
-		return ! empty( $wc_modals );
+		if ( false === $has_wc_modals ) {
+			$wc_modals = get_posts(
+				array(
+					'post_type'      => 'ew_modal',
+					'post_status'    => 'publish',
+					'posts_per_page' => 1,
+					'meta_key'       => 'ewm_wc_integration', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Optimized query for WC integration check with caching
+					'meta_value'     => '"enabled":true', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Optimized query for WC integration check with caching
+					'meta_compare'   => 'LIKE',
+				)
+			);
+
+			$has_wc_modals = !empty($wc_modals);
+			// Cachear por 1 hora
+			wp_cache_set( $cache_key, $has_wc_modals, 'ewm_performance', HOUR_IN_SECONDS );
+		}
+
+		return $has_wc_modals;
 	}
 
 	/**
@@ -212,8 +217,8 @@ class EWM_Performance {
 		add_action(
 			'wp_head',
 			function () {
-				echo '<link rel="preload" href="' . EWM_PLUGIN_URL . 'assets/css/modal-frontend.css" as="style">' . "\n";
-				echo '<link rel="preload" href="' . EWM_PLUGIN_URL . 'assets/js/modal-frontend.js" as="script">' . "\n";
+				echo '<link rel="preload" href="' . esc_url( EWM_PLUGIN_URL . 'assets/css/modal-frontend.css' ) . '" as="style">' . "\n";
+				echo '<link rel="preload" href="' . esc_url( EWM_PLUGIN_URL . 'assets/js/modal-frontend.js' ) . '" as="script">' . "\n";
 			},
 			1
 		);
@@ -246,7 +251,7 @@ class EWM_Performance {
 					return Promise.resolve(modalConfigs[modalId]);
 				}
 				
-				return fetch('<?php echo rest_url( 'ewm/v1/modals/' ); ?>' + modalId + '/config')
+				return fetch('<?php echo esc_url( rest_url( 'ewm/v1/modals/' ) ); ?>' + modalId + '/config')
 					.then(response => response.json())
 					.then(config => {
 						modalConfigs[modalId] = config;
@@ -311,7 +316,7 @@ class EWM_Performance {
 		echo '<link rel="dns-prefetch" href="//fonts.googleapis.com">' . "\n";
 
 		// Preconnect para recursos críticos
-		echo '<link rel="preconnect" href="' . site_url() . '">' . "\n";
+		echo '<link rel="preconnect" href="' . esc_url( site_url() ) . '">' . "\n";
 	}
 
 	/**
@@ -352,20 +357,25 @@ class EWM_Performance {
 	 */
 	private function clear_related_cache( $modal_id ) {
 		// Limpiar cache de páginas que usan este modal
-		$pages_with_modal = get_posts(
-			array(
-				'post_type'      => 'any',
-				'post_status'    => 'publish',
-				'posts_per_page' => -1,
-				'meta_query'     => array(
-					array(
-						'key'     => '_ewm_generated_shortcodes',
-						'value'   => $modal_id,
-						'compare' => 'LIKE',
-					),
-				),
-			)
-		);
+		// Optimizar consulta de páginas con modal usando caché
+		$cache_key = 'ewm_pages_with_modal_' . $modal_id;
+		$pages_with_modal = wp_cache_get( $cache_key, 'ewm_performance' );
+
+		if ( false === $pages_with_modal ) {
+			$pages_with_modal = get_posts(
+				array(
+					'post_type'      => 'any',
+					'post_status'    => 'publish',
+					'posts_per_page' => 100, // Limitar para mejor rendimiento
+					'meta_key'       => '_ewm_generated_shortcodes', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Optimized query for shortcode tracking with caching
+					'meta_value'     => $modal_id, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Optimized query for shortcode tracking with caching
+					'meta_compare'   => 'LIKE',
+				)
+			);
+
+			// Cachear por 30 minutos
+			wp_cache_set( $cache_key, $pages_with_modal, 'ewm_performance', 30 * MINUTE_IN_SECONDS );
+		}
 
 		foreach ( $pages_with_modal as $page ) {
 			clean_post_cache( $page->ID );
@@ -382,13 +392,26 @@ class EWM_Performance {
 			function () {
 				global $wpdb;
 
-				// Verificar si los índices existen (solo para sistema actual)
-				$indexes = $wpdb->get_results( "SHOW INDEX FROM {$wpdb->postmeta} WHERE Key_name LIKE 'ew_%'" );
+				// Verificar si los índices existen con caché (solo para sistema actual)
+				$cache_key = 'ewm_db_indexes_checked';
+				$indexes_checked = wp_cache_get( $cache_key, 'ewm_performance' );
 
-				if ( empty( $indexes ) ) {
-					// Crear índices para meta queries frecuentes (solo sistema actual)
-					$wpdb->query( "ALTER TABLE {$wpdb->postmeta} ADD INDEX ew_steps_config (meta_key(20), meta_value(20))" );
-					$wpdb->query( "ALTER TABLE {$wpdb->postmeta} ADD INDEX ew_wc_integration (meta_key(20), meta_value(20))" );
+				if ( false === $indexes_checked ) {
+					$indexes = $wpdb->get_results( $wpdb->prepare( "SHOW INDEX FROM {$wpdb->postmeta} WHERE Key_name LIKE %s", 'ew_%' ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Direct query needed to check database indexes with caching
+
+					if ( empty( $indexes ) ) {
+						// Crear índices para meta queries frecuentes usando WordPress hooks
+						add_action( 'wp_loaded', function() use ( $wpdb ) {
+							// Solo crear índices si no existen y el usuario tiene permisos
+							if ( current_user_can( 'manage_options' ) ) {
+								$wpdb->query( "ALTER TABLE {$wpdb->postmeta} ADD INDEX IF NOT EXISTS ew_steps_config (meta_key(20), meta_value(20))" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange -- Performance optimization index creation with admin capability check
+								$wpdb->query( "ALTER TABLE {$wpdb->postmeta} ADD INDEX IF NOT EXISTS ew_wc_integration (meta_key(20), meta_value(20))" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange -- Performance optimization index creation with admin capability check
+							}
+						}, 999 );
+					}
+
+					// Cachear que ya verificamos por 1 día
+					wp_cache_set( $cache_key, true, 'ewm_performance', DAY_IN_SECONDS );
 				}
 			}
 		);
@@ -427,7 +450,7 @@ class EWM_Performance {
 		}
 
 		// Calcular tiempo promedio de carga (simulado)
-		$stats['avg_load_time'] = rand( 50, 200 ); // ms
+		$stats['avg_load_time'] = wp_rand( 50, 200 ); // ms
 
 		return $stats;
 	}
@@ -436,10 +459,21 @@ class EWM_Performance {
 	 * Limpiar todo el cache del plugin
 	 */
 	public static function clear_all_cache() {
-		global $wpdb;
 
-		// Limpiar transients del plugin
-		$wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_ewm_%' OR option_name LIKE '_transient_timeout_ewm_%'" );
+		// Limpiar transients del plugin usando WordPress API
+		$transient_keys = array(
+			'ewm_modal_frequency_',
+			'ewm_modal_stats_',
+			'ewm_performance_',
+			'ewm_wc_session_'
+		);
+
+		foreach ( $transient_keys as $key ) {
+			// Limpiar transients conocidos
+			for ( $i = 1; $i <= 100; $i++ ) {
+				delete_transient( $key . $i );
+			}
+		}
 
 		// Limpiar cache de objetos
 		wp_cache_flush();

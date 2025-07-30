@@ -1,29 +1,59 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Call to static method run_all_tests\\(\\) on an unknown class EWM_Parity_Test\\.$#"
-			count: 1
-			path: admin/class-ewm-testing-page.php
-
-		-
-			message: "#^Function WC not found\\.$#"
-			count: 1
-			path: admin/class-ewm-testing-page.php
-
-		-
-			message: "#^Offset 'config' on array\\{id\\: int\\<min, \\-1\\>\\|int\\<1, max\\>, title\\: mixed, mode\\: mixed, steps\\: mixed, design\\: mixed, triggers\\: mixed, wc_integration\\: mixed, display_rules\\: mixed\\}\\|null in isset\\(\\) does not exist\\.$#"
+			message: "#^Method EWM_Admin_Page\\:\\:get_special_page_id\\(\\) is unused\\.$#"
 			count: 1
 			path: includes/class-ewm-admin-page.php
 
 		-
-			message: "#^Offset 'custom_css' on array\\{id\\: int\\<min, \\-1\\>\\|int\\<1, max\\>, title\\: mixed, mode\\: mixed, steps\\: mixed, design\\: mixed, triggers\\: mixed, wc_integration\\: mixed, display_rules\\: mixed\\}\\|null in isset\\(\\) does not exist\\.$#"
+			message: "#^Offset 'config' on array\\{id\\: int\\<min, \\-1\\>\\|int\\<1, max\\>, title\\: mixed, mode\\: 'formulario', steps\\: mixed, design\\: mixed, triggers\\: mixed, wc_integration\\: mixed, display_rules\\: mixed\\}\\|null in isset\\(\\) does not exist\\.$#"
 			count: 1
 			path: includes/class-ewm-admin-page.php
 
 		-
-			message: "#^Offset 'enabled' on array\\{id\\: int\\<min, \\-1\\>\\|int\\<1, max\\>, title\\: mixed, mode\\: mixed, steps\\: mixed, design\\: mixed, triggers\\: mixed, wc_integration\\: mixed, display_rules\\: mixed\\}\\|null in isset\\(\\) does not exist\\.$#"
+			message: "#^Offset 'custom_css' on array\\{id\\: int\\<min, \\-1\\>\\|int\\<1, max\\>, title\\: mixed, mode\\: 'formulario', steps\\: mixed, design\\: mixed, triggers\\: mixed, wc_integration\\: mixed, display_rules\\: mixed\\}\\|null in isset\\(\\) does not exist\\.$#"
 			count: 1
 			path: includes/class-ewm-admin-page.php
+
+		-
+			message: "#^Parameter \\#1 \\$text of function esc_attr expects string, \\(float\\|int\\) given\\.$#"
+			count: 1
+			path: includes/class-ewm-admin-page.php
+
+		-
+			message: "#^Parameter \\#1 \\$text of function esc_attr expects string, int given\\.$#"
+			count: 2
+			path: includes/class-ewm-admin-page.php
+
+		-
+			message: "#^Method EWM_Meta_Fields\\:\\:validate_design_config\\(\\) is unused\\.$#"
+			count: 1
+			path: includes/class-ewm-meta-fields.php
+
+		-
+			message: "#^Method EWM_Meta_Fields\\:\\:validate_display_rules\\(\\) is unused\\.$#"
+			count: 1
+			path: includes/class-ewm-meta-fields.php
+
+		-
+			message: "#^Method EWM_Meta_Fields\\:\\:validate_field_mapping\\(\\) is unused\\.$#"
+			count: 1
+			path: includes/class-ewm-meta-fields.php
+
+		-
+			message: "#^Method EWM_Meta_Fields\\:\\:validate_steps_config\\(\\) is unused\\.$#"
+			count: 1
+			path: includes/class-ewm-meta-fields.php
+
+		-
+			message: "#^Method EWM_Meta_Fields\\:\\:validate_trigger_config\\(\\) is unused\\.$#"
+			count: 1
+			path: includes/class-ewm-meta-fields.php
+
+		-
+			message: "#^Method EWM_Meta_Fields\\:\\:validate_wc_integration\\(\\) is unused\\.$#"
+			count: 1
+			path: includes/class-ewm-meta-fields.php
 
 		-
 			message: "#^Function is_cart not found\\.$#"
@@ -36,12 +66,17 @@ parameters:
 			path: includes/class-ewm-performance.php
 
 		-
-			message: "#^Offset 'custom_css' on array\\{steps\\: mixed, design\\: mixed, triggers\\: mixed, wc_integration\\: mixed, display_rules\\: mixed, modal_id\\: float\\|int\\<1, max\\>\\|numeric\\-string, title\\: mixed, mode\\: mixed\\} in isset\\(\\) does not exist\\.$#"
+			message: "#^Offset 'custom_css' on array\\{steps\\: mixed, design\\: mixed, triggers\\: mixed, wc_integration\\: mixed, display_rules\\: mixed, modal_id\\: float\\|int\\<1, max\\>\\|numeric\\-string, title\\: mixed, mode\\: 'formulario'\\} in isset\\(\\) does not exist\\.$#"
 			count: 1
 			path: includes/class-ewm-render-core.php
 
 		-
 			message: "#^Offset 'mode' on array\\{steps\\: mixed, design\\: mixed, triggers\\: mixed, wc_integration\\: mixed, display_rules\\: mixed, modal_id\\: float\\|int\\<1, max\\>\\|numeric\\-string, title\\: mixed\\} in isset\\(\\) does not exist\\.$#"
+			count: 1
+			path: includes/class-ewm-render-core.php
+
+		-
+			message: "#^Offset 'pattern' on array\\{id\\: mixed, name\\: mixed, class\\: 'ewm\\-field\\-input', placeholder\\: mixed, required\\?\\: 'required'\\} in isset\\(\\) does not exist\\.$#"
 			count: 1
 			path: includes/class-ewm-render-core.php
 
@@ -71,8 +106,18 @@ parameters:
 			path: includes/class-ewm-rest-api.php
 
 		-
-			message: "#^Instantiated class WC_Coupon not found\\.$#"
+			message: "#^Constant WP_PLUGIN_DIR not found\\.$#"
+			count: 6
+			path: includes/class-ewm-rest-api.php
+
+		-
+			message: "#^Function WC not found\\.$#"
 			count: 1
+			path: includes/class-ewm-rest-api.php
+
+		-
+			message: "#^Instantiated class WC_Coupon not found\\.$#"
+			count: 2
 			path: includes/class-ewm-rest-api.php
 
 		-
@@ -106,14 +151,74 @@ parameters:
 			path: includes/class-ewm-rest-api.php
 
 		-
-			message: "#^Variable \\$config in empty\\(\\) always exists and is not falsy\\.$#"
+			message: "#^Parameter \\#2 \\$timestamp of function date expects int\\|null, string given\\.$#"
 			count: 2
+			path: includes/class-ewm-rest-api.php
+
+		-
+			message: "#^Variable \\$config in empty\\(\\) always exists and is not falsy\\.$#"
+			count: 1
+			path: includes/class-ewm-rest-api.php
+
+		-
+			message: "#^Variable \\$context in empty\\(\\) always exists and is not falsy\\.$#"
+			count: 1
 			path: includes/class-ewm-rest-api.php
 
 		-
 			message: "#^Method EWM_Shortcodes\\:\\:check_frequency_limit\\(\\) is unused\\.$#"
 			count: 1
 			path: includes/class-ewm-shortcodes.php
+
+		-
+			message: "#^Class WooCommerce not found\\.$#"
+			count: 2
+			path: includes/class-ewm-wc-compatibility-manager.php
+
+		-
+			message: "#^Function WC not found\\.$#"
+			count: 2
+			path: includes/class-ewm-wc-compatibility-manager.php
+
+		-
+			message: "#^Function get_woocommerce_currency not found\\.$#"
+			count: 1
+			path: includes/class-ewm-wc-compatibility-manager.php
+
+		-
+			message: "#^Function is_product not found\\.$#"
+			count: 2
+			path: includes/class-ewm-wc-compatibility-manager.php
+
+		-
+			message: "#^Function is_product_category not found\\.$#"
+			count: 1
+			path: includes/class-ewm-wc-compatibility-manager.php
+
+		-
+			message: "#^Function is_product_tag not found\\.$#"
+			count: 1
+			path: includes/class-ewm-wc-compatibility-manager.php
+
+		-
+			message: "#^Function is_shop not found\\.$#"
+			count: 1
+			path: includes/class-ewm-wc-compatibility-manager.php
+
+		-
+			message: "#^Function is_woocommerce not found\\.$#"
+			count: 1
+			path: includes/class-ewm-wc-compatibility-manager.php
+
+		-
+			message: "#^Function wc_get_product not found\\.$#"
+			count: 1
+			path: includes/class-ewm-wc-compatibility-manager.php
+
+		-
+			message: "#^Anonymous function has an unused use \\$modal_id\\.$#"
+			count: 1
+			path: includes/class-ewm-woocommerce.php
 
 		-
 			message: "#^Call to method get_amount\\(\\) on an unknown class WC_Coupon\\.$#"

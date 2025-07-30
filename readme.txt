@@ -1,55 +1,151 @@
-=== Ewm Modal Cta ===
-Contributors:      The WordPress Contributors
-Tags:              block
-Tested up to:      6.7
-Stable tag:        0.1.0
-License:           GPL-2.0-or-later
-License URI:       https://www.gnu.org/licenses/gpl-2.0.html
+=== EWM Modal CTA ===
+Contributors: equipoewm
+Donate link: https://ewm.com/donate
+Tags: modal, woocommerce, lead-capture, popup, forms
+Requires at least: 5.8
+Tested up to: 6.8
+Requires PHP: 7.4
+Stable tag: 1.0.0
+License: GPL-2.0-or-later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Example block scaffolded with Create Block tool.
+Plugin profesional para crear modales interactivos de captura de leads con builder visual, integración WooCommerce e arquitectura modular.
 
 == Description ==
 
-This is the long description. No limit, and you can use Markdown (as well as in the following sections).
+**EWM Modal CTA** es un plugin avanzado de WordPress diseñado para crear modales interactivos de captura de leads con formularios multi-paso. Combina un potente builder visual con integración completa a WooCommerce y una arquitectura modular optimizada para performance.
 
-For backwards compatibility, if this section is missing, the full length of the short description will be used, and
-Markdown parsed.
+### ⭐ Características Principales
+
+* **Custom Post Type** `ew_modal` con gestión completa de modales
+* **Builder Visual Administrativo** para configuración avanzada sin código
+* **Sistema de Shortcodes** - `[ew_modal]`, `[ew_modal_trigger]`, `[ew_modal_stats]`
+* **API REST Completa** con 15+ endpoints para integración headless
+* **Integración Total WooCommerce** - Abandono de carrito, cupones, promociones
+* **Gestión de Leads** con Custom Post Type `ewm_submission` 
+* **Auto-inyección Inteligente** con reglas de páginas y exclusiones
+* **Performance Optimizada** - Carga condicional, cache y lazy loading
+* **Sistema de Logging** integrado para desarrollo y debugging
+* **Arquitectura Modular** con 12 clases independientes
+
+### 🚀 Funcionalidades WooCommerce
+
+* Detección de abandono de carrito en tiempo real
+* Modales promocionales por categoría de producto
+* Sistema de cupones integrado via AJAX
+* Endpoints REST para carrito y productos
+* Hooks nativos de WooCommerce (add_to_cart, checkout)
+
+### 📊 Gestión de Leads
+
+* Captura automática de datos de formulario
+* Almacenamiento seguro con Custom Post Type
+* Meta fields completos (IP, user agent, timestamp)
+* Sistema de estados (new, processed, archived)
+* Bulk actions en admin para gestión masiva
+
+### 🔧 Para Desarrolladores
+
+* **Hooks y Filtros** personalizados para extensibilidad
+* **API REST** completa con autenticación
+* **Sistema de Templates** personalizable
+* **Logging System** con DevPipe para debugging
+* **Performance Monitoring** integrado
 
 == Installation ==
 
-This section describes how to install the plugin and get it working.
+### Instalación Automática
 
-e.g.
+1. Ve a tu admin de WordPress > Plugins > Añadir nuevo
+2. Busca "EWM Modal CTA"
+3. Haz clic en "Instalar ahora" y luego "Activar"
 
-1. Upload the plugin files to the `/wp-content/plugins/ewm-modal-cta` directory, or install the plugin through the WordPress plugins screen directly.
-1. Activate the plugin through the 'Plugins' screen in WordPress
+### Instalación Manual
 
+1. Descarga el archivo ZIP del plugin
+2. Ve a WordPress Admin > Plugins > Añadir nuevo > Subir plugin
+3. Selecciona el archivo ZIP y haz clic en "Instalar ahora"
+4. Activa el plugin tras la instalación
+
+### Configuración Inicial
+
+1. Ve a **EWM Modals** en tu menú de administración
+2. Haz clic en "Añadir nuevo" para crear tu primer modal
+3. Usa el builder visual para configurar diseño, triggers y contenido
+4. Publica el modal y úsalo con shortcodes o auto-inyección
+
+### Requisitos del Sistema
+
+* WordPress 5.8 o superior
+* PHP 7.4 o superior
+* WooCommerce 5.0+ (opcional, para funcionalidades e-commerce)
 
 == Frequently Asked Questions ==
 
-= A question that someone might have =
+= ¿Cómo creo mi primer modal? =
 
-An answer to that question.
+Ve a **EWM Modals > Añadir nuevo** en tu admin. Usa el builder visual para configurar el diseño, triggers y contenido. Una vez publicado, puedes insertarlo con el shortcode `[ew_modal id="123"]` o usar auto-inyección.
 
-= What about foo bar? =
+= ¿Funciona con WooCommerce? =
 
-Answer to foo bar dilemma.
+Sí, incluye integración completa con WooCommerce: detección de abandono de carrito, modales promocionales, sistema de cupones y hooks nativos para add_to_cart y checkout.
+
+= ¿Cómo uso los shortcodes? =
+
+**Shortcodes disponibles:**
+* `[ew_modal id="123"]` - Muestra modal específico
+* `[ew_modal_trigger modal="123" text="Abrir Modal"]` - Botón trigger
+* `[ew_modal_stats modal="123"]` - Estadísticas del modal
+
+= ¿Puedo personalizar el diseño? =
+
+Sí, el plugin incluye un builder visual completo con opciones de diseño, colores, tipografías y animaciones. También puedes usar CSS personalizado.
+
+= ¿Dónde se almacenan los leads capturados? =
+
+Los leads se almacenan como Custom Post Type `ewm_submission` en tu base de datos WordPress. Puedes gestionarlos desde **EWM Modals > Leads** en tu admin.
+
+= ¿Es compatible con temas personalizados? =
+
+Sí, utiliza arquitectura modular y hooks estándar de WordPress. Compatible con cualquier tema que siga estándares de WordPress.
+
+= ¿Funciona con plugins de cache? =
+
+Sí, incluye optimizaciones específicas para plugins de cache como WP Rocket, W3 Total Cache y WP Super Cache.
+
+= ¿Hay API para desarrolladores? =
+
+Sí, incluye API REST completa con 15+ endpoints para integración headless y desarrollo personalizado. Documentación disponible en `/wp-json/ewm/v1/`.
 
 == Screenshots ==
 
-1. This screen shot description corresponds to screenshot-1.(png|jpg|jpeg|gif). Note that the screenshot is taken from
-the /assets directory or the directory that contains the stable readme.txt (tags or trunk). Screenshots in the /assets
-directory take precedence. For example, `/assets/screenshot-1.png` would win over `/tags/4.3/screenshot-1.png`
-(or jpg, jpeg, gif).
-2. This is the second screen shot
+1. Builder visual de modales con configuración completa de diseño y triggers
+2. Lista de modales en el admin con estadísticas de conversión
+3. Gestión de leads capturados con filtros y bulk actions
+4. Modal de ejemplo en frontend con formulario multi-paso
+5. Configuración de integración WooCommerce con reglas de abandono
+6. Panel de estadísticas y analytics de conversión
 
 == Changelog ==
 
-= 0.1.0 =
-* Release
+= 1.0.0 =
+* Lanzamiento inicial del plugin
+* Builder visual completo para creación de modales
+* Sistema de shortcodes: `[ew_modal]`, `[ew_modal_trigger]`, `[ew_modal_stats]`
+* Custom Post Type `ew_modal` para gestión de modales
+* Custom Post Type `ewm_submission` para gestión de leads
+* API REST completa con 15+ endpoints
+* Integración completa con WooCommerce
+* Sistema de auto-inyección con reglas inteligentes
+* Performance optimizada con carga condicional
+* Sistema de logging DevPipe para desarrollo
+* Arquitectura modular con 12 clases independientes
+* Soporte completo para formularios multi-paso
+* Sistema de triggers avanzado (tiempo, scroll, exit-intent)
+* Cache y optimización de queries
+* Hooks y filtros para desarrolladores
 
-== Arbitrary section ==
+== Upgrade Notice ==
 
-You may provide arbitrary sections, in the same format as the ones above. This may be of use for extremely complicated
-plugins where more information needs to be conveyed that doesn't fit into the categories of "description" or
-"installation." Arbitrary sections will be shown below the built-in sections outlined above.
+= 1.0.0 =
+Lanzamiento inicial. Instala para acceder a todas las funcionalidades de modales avanzados y captura de leads.

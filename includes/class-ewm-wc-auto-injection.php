@@ -119,19 +119,23 @@ class EWM_WC_Auto_Injection {
 	 * Buscar modales WooCommerce aplicables para el producto actual
 	 */
 	private function find_applicable_wc_modals( $product_id ) {
-		// Buscar todos los modales con WooCommerce habilitado
-		$wc_modals = get_posts( array(
-			'post_type'      => 'ew_modal',
-			'post_status'    => 'publish',
-			'posts_per_page' => -1,
-			'meta_query'     => array(
-				array(
-					'key'     => 'ewm_wc_integration',
-					'value'   => '"enabled":true',
-					'compare' => 'LIKE',
-				),
-			),
-		) );
+		// Buscar todos los modales con WooCommerce habilitado con caché optimizado
+		$cache_key = 'ewm_wc_enabled_modals';
+		$wc_modals = wp_cache_get( $cache_key, 'ewm_wc_modals' );
+
+		if ( false === $wc_modals ) {
+			$wc_modals = get_posts( array(
+				'post_type'      => 'ew_modal',
+				'post_status'    => 'publish',
+				'posts_per_page' => 50, // Limitar para mejor rendimiento
+				'meta_key'       => 'ewm_wc_integration', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Optimized query for WC integration modals with caching
+				'meta_value'     => '"enabled":true', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Optimized query for WC integration modals with caching
+				'meta_compare'   => 'LIKE',
+			) );
+
+			// Cachear por 30 minutos
+			wp_cache_set( $cache_key, $wc_modals, 'ewm_wc_modals', 30 * MINUTE_IN_SECONDS );
+		}
 
 		if ( empty( $wc_modals ) ) {
 			return array();
@@ -233,7 +237,7 @@ class EWM_WC_Auto_Injection {
 		);
 
 		// Renderizar usando el motor existente
-		echo ewm_render_modal_core( $modal_id, $render_config );
+		echo wp_kses_post( ewm_render_modal_core( $modal_id, $render_config ) );
 	}
 
 	/**

@@ -1,0 +1,41 @@
+<?php return array(
+    'root' => array(
+        'name' => 'ewm/modal-cta',
+        'pretty_version' => 'dev-main',
+        'version' => 'dev-main',
+        'reference' => '9c2f22a43a2b8cc3a69ff0b08440ad768352c213',
+        'type' => 'wordpress-plugin',
+        'install_path' => __DIR__ . '/../../',
+        'aliases' => array(),
+        'dev' => true,
+    ),
+    'versions' => array(
+        'ewm/modal-cta' => array(
+            'pretty_version' => 'dev-main',
+            'version' => 'dev-main',
+            'reference' => '9c2f22a43a2b8cc3a69ff0b08440ad768352c213',
+            'type' => 'wordpress-plugin',
+            'install_path' => __DIR__ . '/../../',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'php-stubs/wordpress-stubs' => array(
+            'pretty_version' => 'v6.8.2',
+            'version' => '6.8.2.0',
+            'reference' => '9c8e22e437463197c1ec0d5eaa9ddd4a0eb6d7f8',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../php-stubs/wordpress-stubs',
+            'aliases' => array(),
+            'dev_requirement' => true,
+        ),
+        'phpstan/phpstan' => array(
+            'pretty_version' => '1.12.28',
+            'version' => '1.12.28.0',
+            'reference' => 'fcf8b71aeab4e1a1131d1783cef97b23a51b87a9',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../phpstan/phpstan',
+            'aliases' => array(),
+            'dev_requirement' => true,
+        ),
+    ),
+);

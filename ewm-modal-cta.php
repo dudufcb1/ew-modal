@@ -1,17 +1,26 @@
 <?php
 /**
- * Plugin Name:       WP Modal Specialist
- * Description:       Modern WordPress plugin that allows creation of interactive lead capture modals with multi-step forms. System based on classic shortcodes.
+ * Plugin Name:       EWM Modal CTA
+ * Plugin URI:        https://ewm.com/plugins/ewm-modal-cta
+ * Description:       Plugin profesional para crear modales interactivos de captura de leads con builder visual, integración WooCommerce e arquitectura modular.
  * Version:           1.0.0
- * Requires at least: 5.0
+ * Requires at least: 5.8
  * Requires PHP:      7.4
- * Author:            Tu Nombre
+ * Author:            Equipo EWM
+ * Author URI:        https://ewm.com
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       ewm-modal-cta
- * Network:           false
+ * Domain Path:       /languages
  *
- * @package EWM_Modal_CTA
+ * @package           EWM_Modal_CTA
+ * @author            Equipo EWM
+ * @copyright         Copyright (c) 2025 EWM
+ * @link              https://ewm.com/plugins/ewm-modal-cta
+ *
+ * Plugin profesional para WordPress que permite crear modales interactivos de captura de leads 
+ * con formularios multi-paso, builder visual, integración completa a WooCommerce, performance 
+ * optimizada y arquitectura modular.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -42,10 +51,7 @@ require_once EWM_PLUGIN_DIR . 'includes/class-ewm-wc-auto-injection.php';
 require_once EWM_PLUGIN_DIR . 'includes/class-ewm-general-auto-injection.php';
 require_once EWM_PLUGIN_DIR . 'includes/class-ewm-performance.php';
 
-// Incluir página de testing (solo en admin)
-if ( is_admin() ) {
-	require_once EWM_PLUGIN_DIR . 'admin/class-ewm-testing-page.php';
-}
+
 
 /**
  * Initialize core components
@@ -66,11 +72,7 @@ add_action( 'init', 'ewm_init_core_components', 5 );
 add_action( 'plugins_loaded', function() {
 	EWM_Admin_Page::get_instance();
 	
-	// Inicializar página de limpieza legacy solo en admin
-	if ( is_admin() ) {
-		require_once plugin_dir_path( __FILE__ ) . 'admin/class-ewm-legacy-cleanup-admin.php';
-		EWM_Legacy_Cleanup_Admin::get_instance();
-	}
+
 }, 1 );
 
 /**
@@ -152,13 +154,11 @@ register_deactivation_hook( __FILE__, 'ewm_modal_cta_deactivate' );
 
 /**
  * Load plugin textdomain for translations
+ * Note: WordPress 4.6+ automatically loads translations for plugins hosted on WordPress.org
  */
 function ewm_modal_cta_load_textdomain() {
-	load_plugin_textdomain(
-		'ewm-modal-cta',
-		false,
-		dirname( plugin_basename( __FILE__ ) ) . '/languages'
-	);
+	// WordPress automatically loads translations since 4.6+
+	// This function is kept for backward compatibility if needed
 }
 add_action( 'plugins_loaded', 'ewm_modal_cta_load_textdomain' );
 
@@ -254,21 +254,26 @@ function ewm_has_modal_shortcode() {
 
 	// NUEVO: Verificar si es página de producto WooCommerce con modales WC configurados
 	if ( $post->post_type === 'product' && class_exists( 'WooCommerce' ) ) {
-		// Buscar si existen modales WooCommerce configurados (sin validar aplicabilidad específica)
-		$wc_modals = get_posts( array(
-			'post_type'      => 'ew_modal',
-			'post_status'    => 'publish',
-			'posts_per_page' => 1, // Solo necesitamos saber si existe al menos uno
-			'meta_query'     => array(
-				array(
-					'key'     => 'ewm_wc_integration',
-					'value'   => '"enabled":true',
-					'compare' => 'LIKE',
-				),
-			),
-		) );
+		// Buscar si existen modales WooCommerce configurados con caché optimizado
+		$cache_key = 'ewm_main_wc_check';
+		$has_wc_modals = wp_cache_get( $cache_key, 'ewm_main' );
 
-		if ( ! empty( $wc_modals ) ) {
+		if ( false === $has_wc_modals ) {
+			$wc_modals = get_posts( array(
+				'post_type'      => 'ew_modal',
+				'post_status'    => 'publish',
+				'posts_per_page' => 1, // Solo necesitamos saber si existe al menos uno
+				'meta_key'       => 'ewm_wc_integration', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Optimized query for WC integration check with caching
+				'meta_value'     => '"enabled":true', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Optimized query for WC integration check with caching
+				'meta_compare'   => 'LIKE',
+			) );
+
+			$has_wc_modals = !empty($wc_modals);
+			// Cachear por 1 hora
+			wp_cache_set( $cache_key, $has_wc_modals, 'ewm_main', HOUR_IN_SECONDS );
+		}
+
+		if ( $has_wc_modals ) {
 			return true;
 		}
 	}

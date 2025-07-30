@@ -61,7 +61,7 @@ class EWM_Render_Core {
 	 */
 	public function render_modal( $modal_id, $config = array() ) {
 		// Si es preview y se recibe config, asignar automáticamente al global
-		if ( $modal_id === 'preview' && !empty($config) && is_array($config) ) {
+		if ( $modal_id === 'preview' && ! empty( $config ) && is_array( $config ) ) {
 			$GLOBALS['ewm_preview_config'] = $config;
 		}
 
@@ -74,7 +74,7 @@ class EWM_Render_Core {
 		// Evitar renderizado duplicado
 		if ( isset( $this->rendered_modals[ $modal_id ] ) ) {
 			$previous_source = $this->rendered_modals[ $modal_id ]['source'] ?? 'unknown';
-			$current_source = $config['source'] ?? 'shortcode';
+			$current_source  = $config['source'] ?? 'shortcode';
 
 			return '';
 		}
@@ -131,7 +131,7 @@ class EWM_Render_Core {
 	 */
 	private function get_modal_configuration( $modal_id ) {
 		// Si es preview, retornar la configuración global temporal
-		if ( $modal_id === 'preview' && !empty($GLOBALS['ewm_preview_config']) && is_array($GLOBALS['ewm_preview_config']) ) {
+		if ( $modal_id === 'preview' && ! empty( $GLOBALS['ewm_preview_config'] ) && is_array( $GLOBALS['ewm_preview_config'] ) ) {
 			return $GLOBALS['ewm_preview_config'];
 		}
 
@@ -143,24 +143,24 @@ class EWM_Render_Core {
 		}
 
 		// ARQUITECTURA CONSISTENTE: Leer de campos separados (igual que admin)
-		$steps_json = get_post_meta( $modal_id, 'ewm_steps_config', true );
-		$design_json = get_post_meta( $modal_id, 'ewm_design_config', true );
+		$steps_json    = get_post_meta( $modal_id, 'ewm_steps_config', true );
+		$design_json   = get_post_meta( $modal_id, 'ewm_design_config', true );
 		$triggers_json = get_post_meta( $modal_id, 'ewm_trigger_config', true );
-		$wc_json = get_post_meta( $modal_id, 'ewm_wc_integration', true );
-		$rules_json = get_post_meta( $modal_id, 'ewm_display_rules', true );
+		$wc_json       = get_post_meta( $modal_id, 'ewm_wc_integration', true );
+		$rules_json    = get_post_meta( $modal_id, 'ewm_display_rules', true );
 
-		// Unificar datos en memoria para el frontend
+		// Unificar datos en memoria para el frontend con validación de tipos
 		$config = array(
-			'steps' => json_decode( $steps_json, true ) ?: array(),
-			'design' => json_decode( $design_json, true ) ?: array(),
-			'triggers' => json_decode( $triggers_json, true ) ?: array(),
-			'wc_integration' => json_decode( $wc_json, true ) ?: array(),
-			'display_rules' => json_decode( $rules_json, true ) ?: array(),
+			'steps'          => is_string( $steps_json ) ? ( json_decode( $steps_json, true ) ?: array() ) : array(),
+			'design'         => is_string( $design_json ) ? ( json_decode( $design_json, true ) ?: array() ) : array(),
+			'triggers'       => is_string( $triggers_json ) ? ( json_decode( $triggers_json, true ) ?: array() ) : array(),
+			'wc_integration' => is_string( $wc_json ) ? ( json_decode( $wc_json, true ) ?: array() ) : array(),
+			'display_rules'  => is_string( $rules_json ) ? ( json_decode( $rules_json, true ) ?: array() ) : array(),
 		);
 
 		// Agregar datos básicos del modal
 		$config['modal_id'] = $modal_id;
-		$config['title'] = get_the_title( $modal_id );
+		$config['title']    = get_the_title( $modal_id );
 
 		// Asegurar que existe un modo por defecto
 		if ( ! isset( $config['mode'] ) || empty( $config['mode'] ) ) {
@@ -233,17 +233,17 @@ class EWM_Render_Core {
 		if ( empty( $config['display_rules'] ) ) {
 			// Solo aplicar defaults si NO hay configuración
 			$config['display_rules'] = array(
-				'pages' => array(
+				'pages'      => array(
 					'include' => array(),
-					'exclude' => array(),
+					'exclude' => array(), // phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_exclude -- Default empty configuration array
 				),
 				'user_roles' => array(),
-				'devices' => array(
+				'devices'    => array(
 					'desktop' => true,
 					'tablet'  => true,
 					'mobile'  => true,
 				),
-				'frequency' => array(
+				'frequency'  => array(
 					'type'  => 'always',
 					'limit' => 0,
 				),
@@ -263,9 +263,9 @@ class EWM_Render_Core {
 
 		ob_start();
 		?>
-		<div id="ewm-modal-<?php echo $modal_id; ?>"
+		<div id="ewm-modal-<?php echo esc_attr( (string) $modal_id ); ?>"
 			class="<?php echo esc_attr( $modal_class ); ?>"
-			<?php echo $modal_data; ?>
+			<?php echo wp_kses( $modal_data, array( 'data-*' => array() ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Data attributes are sanitized with wp_kses ?>
 			style="display: none;">
 			
 			<div class="ewm-modal-backdrop"></div>
@@ -282,7 +282,7 @@ class EWM_Render_Core {
 					
 					<!-- Contenido del modal -->
 					<div class="ewm-modal-body">
-						<?php echo $this->generate_modal_content( $modal_id, $config ); ?>
+						<?php echo wp_kses_post( $this->generate_modal_content( $modal_id, $config ) ); ?>
 					</div>
 					
 				</div>
@@ -293,16 +293,16 @@ class EWM_Render_Core {
 
 		$html_output = ob_get_clean();
 
-	   // CONFIGURACIÓN DEL MODAL PARA AUTO-INICIALIZACIÓN (sin botón de test)
-	   $html_output .= "
+		// CONFIGURACIÓN DEL MODAL PARA AUTO-INICIALIZACIÓN (sin botón de test)
+		$html_output .= "
 	   <script>
 	   // Auto-inicializar modal {$modal_id}
 	   if (typeof window.ew_modal_configs === 'undefined') {
 		   window.ew_modal_configs = [];
 	   }
 
-	   window.ew_modal_configs.push(" . wp_json_encode( $config ) . ");
-	   </script>";
+	   window.ew_modal_configs.push(" . wp_json_encode( $config ) . ');
+	   </script>';
 
 		return $html_output;
 	}
@@ -335,7 +335,7 @@ class EWM_Render_Core {
 
 		ob_start();
 		?>
-		<div class="ewm-form-container" data-modal-id="<?php echo $modal_id; ?>">
+		<div class="ewm-form-container" data-modal-id="<?php echo esc_attr( (string) $modal_id ); ?>">
 			
 			<!-- Contenedor de notificaciones centralizado -->
 			<div id="ewm-notifications-container" class="ewm-notifications-container" style="display: none;">
@@ -354,9 +354,9 @@ class EWM_Render_Core {
 					$total_steps    = count( $steps ) + ( $has_final_step ? 1 : 0 );
 					?>
 					<?php for ( $i = 1; $i <= $total_steps; $i++ ) : ?>
-						<div class="ewm-progress-step <?php echo $i === 1 ? 'active' : ''; ?>"
-							data-step="<?php echo $i; ?>">
-							<span class="ewm-step-number"><?php echo $i; ?></span>
+						<div class="ewm-progress-step <?php echo esc_attr( $i === 1 ? 'active' : '' ); ?>"
+							data-step="<?php echo esc_attr( (string) $i ); ?>">
+							<span class="ewm-step-number"><?php echo esc_html( (string) $i ); ?></span>
 						</div>
 					<?php endfor; ?>
 				</div>
@@ -366,8 +366,8 @@ class EWM_Render_Core {
 			<form class="ewm-multi-step-form" method="post">
 				
 				<?php foreach ( $steps as $index => $step ) : ?>
-				<div class="ewm-form-step <?php echo $index === 0 ? 'active' : ''; ?>" 
-					data-step="<?php echo $step['id']; ?>">
+				<div class="ewm-form-step <?php echo esc_attr( $index === 0 ? 'active' : '' ); ?>"
+					data-step="<?php echo esc_attr( $step['id'] ?? '' ); ?>">
 					 
 					<?php if ( ! empty( $step['title'] ) ) : ?>
 						<h3 class="ewm-step-title"><?php echo esc_html( $step['title'] ); ?></h3>
@@ -382,7 +382,7 @@ class EWM_Render_Core {
 					<?php endif; ?>
 
 					<div class="ewm-step-fields">
-						<?php echo $this->generate_form_fields( $step['fields'] ?? array() ); ?>
+						<?php echo wp_kses_post( $this->generate_form_fields( $step['fields'] ?? array() ) ); ?>
 					</div>
 
 					<?php if ( ! empty( $step['description'] ) ) : ?>
@@ -392,7 +392,7 @@ class EWM_Render_Core {
 					<div class="ewm-step-navigation">
 						<?php if ( $index > 0 ) : ?>
 							<button type="button" class="ewm-btn ewm-btn-secondary ewm-btn-prev">
-								<?php _e( 'Previous', 'ewm-modal-cta' ); ?>
+								<?php esc_html_e( 'Previous', 'ewm-modal-cta' ); ?>
 							</button>
 						<?php endif; ?>
 
@@ -404,7 +404,7 @@ class EWM_Render_Core {
 
 						<?php if ( $is_last_step ) : ?>
 							<button type="submit" class="ewm-btn ewm-btn-primary ewm-btn-submit">
-								<?php _e( 'Submit', 'ewm-modal-cta' ); ?>
+								<?php esc_html_e( 'Submit', 'ewm-modal-cta' ); ?>
 							</button>
 						<?php else : ?>
 							<button type="button" class="ewm-btn ewm-btn-primary ewm-btn-next">
@@ -429,16 +429,16 @@ class EWM_Render_Core {
 					<?php endif; ?>
 					
 					<div class="ewm-step-fields">
-						<?php echo $this->generate_form_fields( $final_step['fields'] ?? array() ); ?>
+						<?php echo wp_kses_post( $this->generate_form_fields( $final_step['fields'] ?? array() ) ); ?>
 					</div>
 					
 					<div class="ewm-step-navigation">
 						<button type="button" class="ewm-btn ewm-btn-secondary ewm-btn-prev">
-							<?php _e( 'Previous', 'ewm-modal-cta' ); ?>
+							<?php esc_html_e( 'Previous', 'ewm-modal-cta' ); ?>
 						</button>
 
 						<button type="submit" class="ewm-btn ewm-btn-primary ewm-btn-submit">
-							<?php _e( 'Submit', 'ewm-modal-cta' ); ?>
+							<?php esc_html_e( 'Submit', 'ewm-modal-cta' ); ?>
 						</button>
 					</div>
 					
@@ -448,14 +448,14 @@ class EWM_Render_Core {
 				<!-- Mensaje de éxito -->
 				<div class="ewm-form-step ewm-success-step" data-step="success" style="display: none;">
 					<div class="ewm-success-content">
-						<h3><?php _e( 'Thank You!', 'ewm-modal-cta' ); ?></h3>
-						<p><?php _e( 'Your information has been submitted successfully.', 'ewm-modal-cta' ); ?></p>
+						<h3><?php esc_html_e( 'Thank You!', 'ewm-modal-cta' ); ?></h3>
+						<p><?php esc_html_e( 'Your information has been submitted successfully.', 'ewm-modal-cta' ); ?></p>
 					</div>
 				</div>
 				
 				<?php wp_nonce_field( 'ewm_form_submit', 'ewm_nonce' ); ?>
 				<input type="hidden" name="action" value="ewm_submit_form">
-				<input type="hidden" name="modal_id" value="<?php echo $modal_id; ?>">
+				<input type="hidden" name="modal_id" value="<?php echo esc_attr( (string) $modal_id ); ?>">
 				
 			</form>
 			
@@ -480,10 +480,15 @@ class EWM_Render_Core {
 		ob_start();
 
 		foreach ( $fields as $field ) {
-			$field_id          = esc_attr( $field['id'] ?? '' );
-			$field_type        = esc_attr( $field['type'] ?? 'text' );
-			$field_label       = esc_html( $field['label'] ?? '' );
-			$field_placeholder = esc_attr( $field['placeholder'] ?? '' );
+			// Validar que el campo es un array válido
+			if ( ! is_array( $field ) ) {
+				continue;
+			}
+
+			$field_id          = esc_attr( (string) ( $field['id'] ?? '' ) );
+			$field_type        = esc_attr( (string) ( $field['type'] ?? 'text' ) );
+			$field_label       = esc_html( (string) ( $field['label'] ?? '' ) );
+			$field_placeholder = esc_attr( (string) ( $field['placeholder'] ?? '' ) );
 			$field_required    = ! empty( $field['required'] );
 			$field_class       = 'ewm-field ewm-field-' . $field_type;
 
@@ -492,18 +497,18 @@ class EWM_Render_Core {
 			}
 
 			?>
-			<div class="<?php echo $field_class; ?>">
-				
+			<div class="<?php echo esc_attr( $field_class ); ?>">
+
 				<?php if ( $field_label ) : ?>
-					<label for="<?php echo $field_id; ?>" class="ewm-field-label">
-						<?php echo $field_label; ?>
+					<label for="<?php echo esc_attr( $field_id ); ?>" class="ewm-field-label">
+						<?php echo esc_html( $field_label ); ?>
 						<?php if ( $field_required ) : ?>
 							<span class="ewm-required">*</span>
 						<?php endif; ?>
 					</label>
 				<?php endif; ?>
-				
-				<?php echo $this->generate_field_input( $field ); ?>
+
+				<?php echo wp_kses_post( $this->generate_field_input( $field ) ); ?>
 				
 			</div>
 			<?php
@@ -676,18 +681,18 @@ class EWM_Render_Core {
 	 * Generar contenido especializado para modales WooCommerce
 	 */
 	private function generate_woocommerce_content( $modal_id, $config ) {
-		$wc_config = $config['wc_integration'] ?? array();
+		$wc_config    = $config['wc_integration'] ?? array();
 		$wc_promotion = $wc_config['wc_promotion'] ?? array();
 
 		// Obtener información del cupón
-		$discount_code = $wc_config['discount_code'] ?? '';
-		$promotion_title = $wc_promotion['title'] ?? 'Oferta Especial';
+		$discount_code         = $wc_config['discount_code'] ?? '';
+		$promotion_title       = $wc_promotion['title'] ?? 'Oferta Especial';
 		$promotion_description = $wc_promotion['description'] ?? 'Aprovecha esta oferta limitada';
-		$cta_text = $wc_promotion['cta_text'] ?? 'Aplicar Cupón';
+		$cta_text              = $wc_promotion['cta_text'] ?? 'Aplicar Cupón';
 
 		// Configuración del timer
-		$timer_config = $wc_promotion['timer_config'] ?? array();
-		$timer_enabled = $timer_config['enabled'] ?? false;
+		$timer_config    = $wc_promotion['timer_config'] ?? array();
+		$timer_enabled   = $timer_config['enabled'] ?? false;
 		$timer_threshold = $timer_config['threshold_seconds'] ?? 180;
 
 		$html = '<div class="ewm-woocommerce-content">';
@@ -835,13 +840,13 @@ class EWM_Render_Core {
 			'ewm-modal-frontend',
 			'ewmModal',
 			array(
-				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-				'restUrl' => rest_url( 'ewm/v1/' ),
+				'ajaxUrl'        => admin_url( 'admin-ajax.php' ),
+				'restUrl'        => rest_url( 'ewm/v1/' ),
 				// Para endpoints públicos REST, usar wp_rest nonce solo si el usuario está logueado
-				'nonce'   => is_user_logged_in() ? wp_create_nonce( 'wp_rest' ) : '',
-				'debug'   => defined( 'WP_DEBUG' ) && WP_DEBUG,
+				'nonce'          => is_user_logged_in() ? wp_create_nonce( 'wp_rest' ) : '',
+				'debug'          => defined( 'WP_DEBUG' ) && WP_DEBUG,
 				'frequencyDebug' => ( get_option( 'ewm_debug_frequency_enabled', '0' ) === '1' ),
-				'strings' => array(
+				'strings'        => array(
 					'loading'                => __( 'Loading...', 'ewm-modal-cta' ),
 					'error'                  => __( 'An error occurred. Please try again.', 'ewm-modal-cta' ),
 					'required_field'         => __( 'This field is required.', 'ewm-modal-cta' ),
@@ -869,18 +874,23 @@ class EWM_Render_Core {
 			return;
 		}
 
-		// Preparar configuraciones para JavaScript
+		// Preparar configuraciones para JavaScript con validación de tipos
 		$modal_configs = array();
 		foreach ( $this->rendered_modals as $modal_id => $config ) {
+			// Asegurar que $config es un array válido
+			if ( ! is_array( $config ) ) {
+				continue;
+			}
+
 			$modal_configs[] = array(
-				'modal_id'       => $modal_id,
-				'triggers'       => $config['triggers'] ?? array(),
-				'design'         => $config['design'] ?? array(),
-				'steps'          => $config['steps'] ?? array(),
-				'wc_integration' => $config['wc_integration'] ?? array(),
-				'display_rules'  => $config['display_rules'] ?? array(),
-				'title'          => $config['title'] ?? '',
-				'mode'           => $config['mode'] ?? 'formulario'
+				'modal_id'       => (string) $modal_id,
+				'triggers'       => is_array( $config['triggers'] ?? null ) ? $config['triggers'] : array(),
+				'design'         => is_array( $config['design'] ?? null ) ? $config['design'] : array(),
+				'steps'          => is_array( $config['steps'] ?? null ) ? $config['steps'] : array(),
+				'wc_integration' => is_array( $config['wc_integration'] ?? null ) ? $config['wc_integration'] : array(),
+				'display_rules'  => is_array( $config['display_rules'] ?? null ) ? $config['display_rules'] : array(),
+				'title'          => (string) ( $config['title'] ?? '' ),
+				'mode'           => (string) ( $config['mode'] ?? 'formulario' ),
 			);
 		}
 
