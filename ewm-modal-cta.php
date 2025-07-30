@@ -34,8 +34,6 @@ define( 'EWM_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'EWM_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'EWM_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
 
-
-
 /**
  * Load core classes
  */
@@ -51,8 +49,6 @@ require_once EWM_PLUGIN_DIR . 'includes/class-ewm-wc-auto-injection.php';
 require_once EWM_PLUGIN_DIR . 'includes/class-ewm-general-auto-injection.php';
 require_once EWM_PLUGIN_DIR . 'includes/class-ewm-performance.php';
 
-
-
 /**
  * Initialize core components
  */
@@ -64,15 +60,12 @@ function ewm_init_core_components() {
 	EWM_Render_Core::get_instance();
 	EWM_Shortcodes::get_instance();
 
-	
 }
 add_action( 'init', 'ewm_init_core_components', 5 );
 
 // FIX: Inicializar EWM_Admin_Page antes de admin_menu
 add_action( 'plugins_loaded', function() {
 	EWM_Admin_Page::get_instance();
-	
-
 }, 1 );
 
 /**
