@@ -92,3 +92,6 @@ languages/*.mo
 *~
 /memory/archive/
 *.backup
+
+# Personal documentation (private)
+/documentation/
