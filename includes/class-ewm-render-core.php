@@ -282,7 +282,7 @@ class EWM_Render_Core {
 					
 					<!-- Contenido del modal -->
 					<div class="ewm-modal-body">
-						<?php echo wp_kses_post( $this->generate_modal_content( $modal_id, $config ) ); ?>
+						<?php echo $this->generate_modal_content( $modal_id, $config ); ?>
 					</div>
 					
 				</div>
@@ -378,11 +378,11 @@ class EWM_Render_Core {
 					<?php endif; ?>
 
 					<?php if ( ! empty( $step['content'] ) ) : ?>
-						<div class="ewm-step-content"><?php echo wp_kses_post( $step['content'] ); ?></div>
+						<div class="ewm-step-content"><?php echo esc_html( $step['content'] ); ?></div>
 					<?php endif; ?>
 
 					<div class="ewm-step-fields">
-						<?php echo wp_kses_post( $this->generate_form_fields( $step['fields'] ?? array() ) ); ?>
+						<?php echo $this->generate_form_fields( $step['fields'] ?? array() ); ?>
 					</div>
 
 					<?php if ( ! empty( $step['description'] ) ) : ?>
@@ -429,7 +429,7 @@ class EWM_Render_Core {
 					<?php endif; ?>
 					
 					<div class="ewm-step-fields">
-						<?php echo wp_kses_post( $this->generate_form_fields( $final_step['fields'] ?? array() ) ); ?>
+						<?php echo $this->generate_form_fields( $final_step['fields'] ?? array() ); ?>
 					</div>
 					
 					<div class="ewm-step-navigation">
@@ -508,7 +508,7 @@ class EWM_Render_Core {
 					</label>
 				<?php endif; ?>
 
-				<?php echo wp_kses_post( $this->generate_field_input( $field ) ); ?>
+				<?php echo $this->generate_field_input( $field ); ?>
 				
 			</div>
 			<?php

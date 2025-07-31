@@ -101,7 +101,7 @@ class EWM_Meta_Fields {
 						'id'          => $step['id'] ?? 'step_' . $index, // Usar ID original del paso
 						'title'       => sanitize_text_field( $step['title'] ?? 'Paso ' . ( $index + 1 ) ),
 						'subtitle'    => sanitize_text_field( $step['subtitle'] ?? '' ),
-						'content'     => wp_kses_post( $step['content'] ?? '' ),
+						'content'     => sanitize_textarea_field( $step['content'] ?? '' ),
 						'fields'      => array(),
 						'button_text' => sanitize_text_field( $step['button_text'] ?? 'NEXT' ),
 						'description' => sanitize_text_field( $step['description'] ?? '' ),
@@ -132,7 +132,7 @@ class EWM_Meta_Fields {
 			$validated['final_step'] = array(
 				'title'    => sanitize_text_field( $final_step['title'] ?? '' ),
 				'subtitle' => sanitize_text_field( $final_step['subtitle'] ?? '' ),
-				'content'  => wp_kses_post( $final_step['content'] ?? '' ), // AÑADIDO: Campo content con sanitización
+				'content'  => sanitize_textarea_field( $final_step['content'] ?? '' ), // AÑADIDO: Campo content con sanitización
 				'fields'   => array(),
 			);
 
