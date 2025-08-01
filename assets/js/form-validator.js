@@ -37,16 +37,16 @@
                     const fieldName = this.getFieldName(field);
                     switch (field.type) {
                         case 'tel':
-                            errors.push(`${fieldName} debe contener solo números y caracteres válidos para teléfono`);
+                            errors.push(`${fieldName} must contain only numbers and valid phone characters`);
                             break;
                         case 'email':
-                            errors.push(`${fieldName} debe ser un email válido`);
+                            errors.push(`${fieldName} must be a valid email`);
                             break;
                         case 'url':
-                            errors.push(`${fieldName} debe ser una URL válida`);
+                            errors.push(`${fieldName} must be a valid URL`);
                             break;
                         default:
-                            errors.push(`${fieldName} no tiene un formato válido`);
+                            errors.push(`${fieldName} does not have a valid format`);
                     }
                 }
                 // Si falla la validación nativa, no continuar con validaciones personalizadas
@@ -301,7 +301,7 @@
             } else if (field.name && field.name !== field.id) {
                 return field.name;
             }
-            return 'Este campo';
+            return 'This field';
         }
 
         /**
@@ -312,14 +312,14 @@
             let fieldName = this.getFieldName(field);
             
             const messages = {
-                required: `${fieldName} es obligatorio`,
-                email: `${fieldName} debe ser un email válido`,
-                url: `${fieldName} debe ser una URL válida`,
-                phone: `${fieldName} debe ser un teléfono válido`,
-                number: `${fieldName} debe ser un número válido`,
-                minLength: `${fieldName} debe tener al menos ${ruleValue} caracteres`,
-                maxLength: `${fieldName} no puede tener más de ${ruleValue} caracteres`,
-                pattern: `${fieldName} no tiene el formato correcto`
+                required: `${fieldName} is required`,
+                email: `${fieldName} must be a valid email`,
+                url: `${fieldName} must be a valid URL`,
+                phone: `${fieldName} must be a valid phone`,
+                number: `${fieldName} must be a valid number`,
+                minLength: `${fieldName} must have at least ${ruleValue} characters`,
+                maxLength: `${fieldName} cannot have more than ${ruleValue} characters`,
+                pattern: `${fieldName} does not have the correct format`
             };
 
             return field.dataset.errorMessage || messages[ruleName] || `${fieldName} no es válido`;
@@ -334,7 +334,7 @@
             }
             
             const errorList = errors.map(error => `• ${error.errors[0]}`).join('\n');
-            return `Se encontraron ${errors.length} errores:\n${errorList}`;
+            return `Found ${errors.length} errors:\n${errorList}`;
         }
 
         /**

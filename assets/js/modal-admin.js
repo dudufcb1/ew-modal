@@ -131,7 +131,7 @@
             }
 
             this.isLoading = true;
-            this.showLoading('Cargando datos del modal...');
+            this.showLoading('Loading modal data...');
 
             try {
                 const response = await $.ajax({
@@ -163,7 +163,7 @@
 
                     console.log('EWM Modal Admin: Modal data loaded successfully');
                 } else {
-                    this.showError('Error al cargar el modal: ' + response.data);
+                    this.showError('Error loading modal: ' + response.data);
                 }
             } catch (error) {
                 console.error('EWM Modal Admin: AJAX error loading modal', error);
@@ -232,7 +232,7 @@
 
             // Precargar cupones de WooCommerce 
             console.log('EWM Modal Admin: Preloading WooCommerce coupons...');
-            this.showLoading('Preparando cupones de WooCommerce...');
+            this.showLoading('Preparing WooCommerce coupons...');
 
             try {
                 if (window.EWMWCBuilderIntegration.loadCouponsAsync) {
@@ -379,7 +379,7 @@
             }
 
             this.isLoading = true;
-            this.showLoading('Guardando modal...');
+            this.showLoading('Saving modal...');
 
             const formData = this.collectFormData();
 
@@ -413,7 +413,7 @@
                     console.log('[EWM LOG] [GUARDAR] Respuesta backend:', JSON.stringify(response, null, 2));
 
                     if (response.success) {
-                        EWMModalAdmin.showSuccess('Modal guardado correctamente');
+                        EWMModalAdmin.showSuccess('Modal saved successfully');
 
                         // Si es un modal nuevo, actualizar la URL
                         if (!EWMModalAdmin.currentModalId && response.data.modal_id) {
@@ -425,7 +425,7 @@
                             EWMModalAdmin.showShortcode(response.data.modal_id);
                         }
                     } else {
-                        EWMModalAdmin.showError('Error al guardar: ' + response.data);
+                        EWMModalAdmin.showError('Error saving: ' + response.data);
                     }
                 },
                 error: function(xhr, status, error) {
@@ -450,7 +450,7 @@
             }
 
             this.isLoading = true;
-            this.showLoading('Generando vista previa...');
+            this.showLoading('Generating preview...');
 
             const formData = this.collectFormData();
 
@@ -471,7 +471,7 @@
 
                         console.log('EWM Modal Admin: Preview generated successfully');
                     } else {
-                        EWMModalAdmin.showError('Error al generar preview: ' + response.data);
+                        EWMModalAdmin.showError('Error generating preview: ' + response.data);
                     }
                 },
                 error: function(xhr, status, error) {
@@ -495,7 +495,7 @@
                 const stepTitle = $(this).find('.ewm-step-title').val();
                 const stepData = {
                     id: index + 1,
-                    title: stepTitle || `Paso ${index + 1}`,
+                    title: stepTitle || `Step ${index + 1}`,
                     subtitle: $(this).find('.ewm-step-subtitle').val(),
                     description: $(this).find('.ewm-step-description').val(),
                     fields: []
@@ -506,7 +506,7 @@
                     const fieldId = $(this).find('.ewm-field-id').val();
                     const fieldType = $(this).find('.ewm-field-type').val();
                     const fieldData = {
-                        id: fieldId || `campo_${stepData.fields.length + 1}`,
+                        id: fieldId || `field_${stepData.fields.length + 1}`,
                         type: fieldType || 'text',
                         label: $(this).find('.ewm-field-label').val(),
                         placeholder: $(this).find('.ewm-field-placeholder').val(),
@@ -861,7 +861,7 @@
             e.preventDefault();
             const shortcode = $(e.target).siblings('code').text();
             navigator.clipboard.writeText(shortcode).then(function() {
-                EWMModalAdmin.showSuccess('Shortcode copiado al portapapeles');
+                EWMModalAdmin.showSuccess('Shortcode copied to clipboard');
             });
         },
 

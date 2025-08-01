@@ -135,7 +135,7 @@
             e.preventDefault();
 
             if ($('.ewm-step-config').length <= 1) {
-                alert('Debe haber al menos un paso en el formulario');
+                alert('There must be at least one step in the form');
                 return;
             }
 
@@ -364,10 +364,10 @@
                 <div class="ewm-step-config" data-step="${stepNumber}">
                     <div class="ewm-step-header">
                         <span class="ewm-step-handle">⋮⋮</span>
-                        <h4>Paso <span class="ewm-step-number">${stepNumber}</span></h4>
+                        <h4>Step <span class="ewm-step-number">${stepNumber}</span></h4>
                         <div class="ewm-step-actions">
-                            <button type="button" class="ewm-btn small ewm-duplicate-step">Duplicar</button>
-                            <button type="button" class="ewm-btn small danger ewm-remove-step">Eliminar</button>
+                            <button type="button" class="ewm-btn small ewm-duplicate-step">Duplicate</button>
+                            <button type="button" class="ewm-btn small danger ewm-remove-step">Delete</button>
                         </div>
                     </div>
 
@@ -388,9 +388,9 @@
                         </div>
 
                         <div class="ewm-fields-section">
-                            <h5>Campos del Paso</h5>
+                            <h5>Step Fields</h5>
                             <div class="ewm-fields-container"></div>
-                            <button type="button" class="ewm-btn secondary small ewm-add-field">+ Agregar Campo</button>
+                            <button type="button" class="ewm-btn secondary small ewm-add-field">+ Add Field</button>
                         </div>
                     </div>
                 </div>
@@ -423,19 +423,19 @@
                 <div class="ewm-field-config" data-field="${fieldNumber}">
                     <div class="ewm-field-header">
                         <span class="ewm-field-handle">⋮⋮</span>
-                        <span class="ewm-field-title">Campo ${fieldNumber}</span>
+                        <span class="ewm-field-title">Field ${fieldNumber}</span>
                         <button type="button" class="ewm-btn small danger ewm-remove-field">×</button>
                     </div>
 
                     <div class="ewm-field-content">
                         <div class="ewm-form-row">
                             <div class="ewm-form-group">
-                                <label>ID del Campo</label>
-                                <input type="text" class="ewm-field-id ewm-form-control small" placeholder="campo_${fieldNumber}">
+                                <label>Field ID</label>
+                                <input type="text" class="ewm-field-id ewm-form-control small" placeholder="field_${fieldNumber}">
                             </div>
 
                             <div class="ewm-form-group">
-                                <label>Tipo de Campo</label>
+                                <label>Field Type</label>
                                 <select class="ewm-field-type ewm-form-control small">
                                     ${optionsHtml}
                                 </select>
@@ -443,19 +443,19 @@
                         </div>
 
                         <div class="ewm-form-group">
-                            <label>Etiqueta del Campo</label>
+                            <label>Field Label</label>
                             <input type="text" class="ewm-field-label ewm-form-control" placeholder="Etiqueta del campo...">
                         </div>
 
                         <div class="ewm-form-group">
-                            <label>Placeholder (opcional)</label>
-                            <input type="text" class="ewm-field-placeholder ewm-form-control" placeholder="Texto de ayuda...">
+                            <label>Placeholder (optional)</label>
+                            <input type="text" class="ewm-field-placeholder ewm-form-control" placeholder="Help text...">
                         </div>
 
                         <div class="ewm-form-group">
                             <div class="ewm-checkbox">
                                 <input type="checkbox" class="ewm-field-required" id="required_${fieldNumber}">
-                                <label for="required_${fieldNumber}">Campo obligatorio</label>
+                                <label for="required_${fieldNumber}">Required field</label>
                             </div>
                         </div>
 

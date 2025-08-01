@@ -52,7 +52,7 @@
         // Método moderno
         if (navigator.clipboard && window.isSecureContext) {
             navigator.clipboard.writeText(text).then(() => {
-                showCopyFeedback(button, 'Copiado!');
+                showCopyFeedback(button, 'Copied!');
             }).catch(err => {
                 console.error('[EWM WooCommerce] Error copying to clipboard:', err);
                 fallbackCopyToClipboard(text, button);
@@ -78,7 +78,7 @@
         
         try {
             document.execCommand('copy');
-            showCopyFeedback(button, 'Copiado!');
+            showCopyFeedback(button, 'Copied!');
         } catch (err) {
             console.error('[EWM WooCommerce] Fallback copy failed:', err);
             showCopyFeedback(button, 'Copy error');
@@ -145,7 +145,7 @@
     function applyCoupon(couponCode, button) {
         // Cambiar estado del botón
         const originalText = button.textContent;
-        button.textContent = 'Aplicando...';
+        button.textContent = 'Applying...';
         button.disabled = true;
         
         // Si WooCommerce está disponible, intentar aplicar el cupón
@@ -228,7 +228,7 @@
             
             if (timeLeft <= 0) {
                 // Timer terminado
-                timerElement.textContent = '¡Tiempo agotado!';
+                timerElement.textContent = 'Time\'s up!';
                 timerElement.classList.add('expired');
                 return;
             }
