@@ -517,19 +517,50 @@
 
             // Mostrar paso de éxito
             let successStep = form.querySelector('.ewm-success-step');
+            
+            // Valores por defecto (fallback)
+            const defaultTitle = '¡Gracias!';
+            const defaultMessage = 'Tu información ha sido enviada correctamente.';
+
             if (successStep) {
+                // Obtener mensajes personalizados de los atributos data
+                const customTitle = successStep.getAttribute('data-success-title');
+                const customMessage = successStep.getAttribute('data-success-message');
+
+                // Actualizar contenido usando textContent para prevenir XSS
+                const titleElement = successStep.querySelector('h3');
+                const messageElement = successStep.querySelector('p');
+
+                if (titleElement) {
+                    titleElement.textContent = customTitle || defaultTitle;
+                }
+                if (messageElement) {
+                    messageElement.textContent = customMessage || defaultMessage;
+                }
+
                 successStep.style.display = 'block';
             } else {
                 // Crear paso de éxito si no existe
                 successStep = document.createElement('div');
                 successStep.className = 'ewm-form-step ewm-success-step';
-                successStep.innerHTML = `
-                    <div class="ewm-success-content">
-                        <h3>¡Gracias!</h3>
-                        <p>Tu información ha sido enviada exitosamente.</p>
-                        <div class="ewm-success-icon">✓</div>
-                    </div>
-                `;
+                
+                const successContent = document.createElement('div');
+                successContent.className = 'ewm-success-content';
+
+                const title = document.createElement('h3');
+                title.textContent = defaultTitle;
+
+                const message = document.createElement('p');
+                message.textContent = defaultMessage;
+
+                const icon = document.createElement('div');
+                icon.className = 'ewm-success-icon';
+                icon.textContent = '✓';
+
+                successContent.appendChild(title);
+                successContent.appendChild(message);
+                successContent.appendChild(icon);
+                successStep.appendChild(successContent);
                 form.appendChild(successStep);
             }
 

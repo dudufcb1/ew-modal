@@ -446,10 +446,14 @@ class EWM_Render_Core {
 				<?php endif; ?>
 				
 				<!-- Mensaje de éxito -->
-				<div class="ewm-form-step ewm-success-step" data-step="success" style="display: none;">
+				<div class="ewm-form-step ewm-success-step"
+					data-step="success"
+					data-success-title="<?php echo esc_attr( $config['steps']['success']['title'] ?? __( '¡Gracias!', 'ewm-modal-cta' ) ); ?>"
+					data-success-message="<?php echo esc_attr( $config['steps']['success']['message'] ?? __( 'Tu información ha sido enviada correctamente.', 'ewm-modal-cta' ) ); ?>"
+					style="display: none;">
 					<div class="ewm-success-content">
-						<h3><?php esc_html_e( 'Thank You!', 'ewm-modal-cta' ); ?></h3>
-						<p><?php esc_html_e( 'Your information has been submitted successfully.', 'ewm-modal-cta' ); ?></p>
+						<h3><?php echo esc_html( $config['steps']['success']['title'] ?? __( '¡Gracias!', 'ewm-modal-cta' ) ); ?></h3>
+						<p><?php echo esc_html( $config['steps']['success']['message'] ?? __( 'Tu información ha sido enviada correctamente.', 'ewm-modal-cta' ) ); ?></p>
 					</div>
 				</div>
 				

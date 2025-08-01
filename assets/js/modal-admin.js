@@ -532,6 +532,10 @@
                         enabled: progressBarEnabled,
                         style: 'line',
                         color: $('#primary-color').val() || '#ff6b35'
+                    },
+                    success: {
+                        title: $('#success-title').val() || '',
+                        message: $('#success-message').val() || ''
                     }
                 },
                 design: this.collectDesignData(),
@@ -665,6 +669,16 @@
             $('#modal-title').val(data.title || '');
             $('#modal-mode').val(data.mode || 'formulario');
             $('#custom-css').val(data.custom_css || '');
+
+            // Mensajes de éxito - Asegurar que los campos existan
+            if (data.steps?.success) {
+                $('#success-title').val(data.steps.success.title || '');
+                $('#success-message').val(data.steps.success.message || '');
+            } else {
+                // Si no existen, inicializar vacíos para compatibilidad hacia atrás
+                $('#success-title').val('');
+                $('#success-message').val('');
+            }
         
             // Diseño
             if (data.design) {
