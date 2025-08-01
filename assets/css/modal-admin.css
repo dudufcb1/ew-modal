@@ -114,6 +114,12 @@
     margin: 5px 0 0;
     opacity: 0.9;
     font-size: 14px;
+    color: #fff !important;
+}
+
+/* Regla más específica para asegurar texto blanco */
+.ewm-modal-builder .ewm-builder-header p.description {
+    color: #ffffff !important;
 }
 
 /* Navegación por pestañas */

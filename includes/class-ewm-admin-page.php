@@ -316,7 +316,12 @@ class EWM_Admin_Page {
 		<div class="wrap">
 			<div class="ewm-modal-builder">
 				<div class="ewm-builder-header">
-					<h1><?php echo $modal_id ? esc_html__( 'Edit Modal', 'ewm-modal-cta' ) : esc_html__( 'Create New Modal', 'ewm-modal-cta' ); ?></h1>
+					<h1>
+						<?php echo $modal_id ? esc_html__( 'Edit Modal', 'ewm-modal-cta' ) : esc_html__( 'Create New Modal', 'ewm-modal-cta' ); ?>
+						<?php if ( $modal_id && isset( $modal_post ) && $modal_post->post_status !== 'publish' ) : ?>
+							<span title="<?php esc_attr_e( 'Modal is not published, will not be shown to users unless previewing or published.', 'ewm-modal-cta' ); ?>">⚠️</span>
+						<?php endif; ?>
+					</h1>
 					<p class="description">
 						<?php esc_html_e( 'Configure your modal step by step using the tabs below.', 'ewm-modal-cta' ); ?>
 					</p>
