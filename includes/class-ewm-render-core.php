@@ -340,19 +340,8 @@ class EWM_Render_Core {
 
 		$html_output = ob_get_clean();
 
-		// CONFIGURACIÓN DEL MODAL PARA AUTO-INICIALIZACIÓN (sin botón de test)
-		// Asegurar codificación UTF-8 antes de wp_json_encode
-		$config_utf8 = $this->ensure_utf8_encoding( $config );
-
-		$html_output .= "
-	   <script>
-	   // Auto-inicializar modal {$modal_id}
-	   if (typeof window.ew_modal_configs === 'undefined') {
-		   window.ew_modal_configs = [];
-	   }
-
-	   window.ew_modal_configs.push(" . wp_json_encode( $config_utf8 ) . ');
-	   </script>';
+		// NOTA: La configuración del modal se maneja centralizadamente en render_modal_scripts()
+		// No necesitamos JavaScript inline aquí ya que puede causar problemas de escapado
 
 		return $html_output;
 	}
