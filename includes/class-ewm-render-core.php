@@ -210,10 +210,9 @@ class EWM_Render_Core {
 		// Asegurar que el título está en UTF-8 usando la función auxiliar
 		$config['title'] = $this->ensure_utf8_encoding($title);
 
-		// Asegurar que existe un modo por defecto
-		if ( ! isset( $config['mode'] ) || empty( $config['mode'] ) ) {
-			$config['mode'] = 'formulario';
-		}
+		// Leer el modo guardado del modal
+		$saved_mode = get_post_meta( $modal_id, 'ewm_modal_mode', true );
+		$config['mode'] = $saved_mode ?: 'formulario';
 
 		// Mantener compatibilidad con custom_css por separado
 		if ( ! isset( $config['custom_css'] ) || empty( $config['custom_css'] ) ) {
@@ -803,8 +802,59 @@ class EWM_Render_Core {
 	 * Generar contenido de anuncio genérico
 	 */
 	private function generate_generic_announcement_content( $modal_id, $config ) {
-		// Contenido de anuncio genérico básico
-		return '<div class="ewm-announcement-content"><p>Contenido de anuncio aquí</p></div>';
+		// Obtener el primer paso de la configuración
+		$steps = $config['steps']['steps'] ?? array();
+
+		// Si no hay pasos configurados, mostrar mensaje informativo
+		if ( empty( $steps ) ) {
+			return '<div class="ewm-announcement-content-generic">
+				<div class="ewm-announcement-message">
+					<p>' . esc_html__( 'Announcement content not configured.', 'ewm-modal-cta' ) . '</p>
+				</div>
+				<div class="ewm-announcement-actions">
+					<button type="button" class="ewm-btn ewm-btn-primary ewm-btn-close-announcement">
+						' . esc_html__( 'OK', 'ewm-modal-cta' ) . '
+					</button>
+				</div>
+			</div>';
+		}
+
+		// Usar el primer paso como contenido del anuncio
+		$first_step = reset( $steps );
+
+		ob_start();
+		?>
+		<div class="ewm-announcement-content-generic">
+
+			<?php if ( ! empty( $first_step['title'] ) ) : ?>
+				<h2 class="ewm-announcement-title"><?php echo esc_html( $first_step['title'] ); ?></h2>
+			<?php endif; ?>
+
+			<?php if ( ! empty( $first_step['subtitle'] ) ) : ?>
+				<h3 class="ewm-announcement-subtitle"><?php echo esc_html( $first_step['subtitle'] ); ?></h3>
+			<?php endif; ?>
+
+			<?php if ( ! empty( $first_step['content'] ) ) : ?>
+				<div class="ewm-announcement-description">
+					<p><?php echo esc_html( $first_step['content'] ); ?></p>
+				</div>
+			<?php endif; ?>
+
+			<?php if ( ! empty( $first_step['description'] ) ) : ?>
+				<div class="ewm-announcement-description">
+					<p><?php echo esc_html( $first_step['description'] ); ?></p>
+				</div>
+			<?php endif; ?>
+
+			<div class="ewm-announcement-actions">
+				<button type="button" class="ewm-btn ewm-btn-primary ewm-btn-close-announcement">
+					<?php echo esc_html__( 'OK', 'ewm-modal-cta' ); ?>
+				</button>
+			</div>
+
+		</div>
+		<?php
+		return ob_get_clean();
 	}
 
 	/**

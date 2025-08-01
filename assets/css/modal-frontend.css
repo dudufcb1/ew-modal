@@ -1325,3 +1325,97 @@ html body .ewm-modal.ewm-modal-visible {
         margin-bottom: 20px;
     }
 }
+
+/* ==========================================================================
+   Announcement Modal Styles - Clean & Modern
+   ========================================================================== */
+
+.ewm-announcement-content-generic {
+    text-align: center;
+    padding: clamp(32px, 6vw, 48px) var(--ewm-modal-padding);
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.ewm-announcement-title {
+    font-size: clamp(24px, 4vw, 32px);
+    font-weight: 700;
+    color: var(--ewm-text-primary);
+    margin: 0 0 16px 0;
+    line-height: 1.2;
+    letter-spacing: -0.025em;
+}
+
+.ewm-announcement-subtitle {
+    font-size: clamp(18px, 3vw, 22px);
+    font-weight: 600;
+    color: var(--ewm-text-secondary);
+    margin: 0 0 20px 0;
+    line-height: 1.3;
+}
+
+.ewm-announcement-description {
+    margin: 0 0 32px 0;
+}
+
+.ewm-announcement-description p {
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--ewm-text-secondary);
+    margin: 0 0 16px 0;
+}
+
+.ewm-announcement-description p:last-child {
+    margin-bottom: 0;
+}
+
+.ewm-announcement-actions {
+    margin-top: 32px;
+}
+
+.ewm-btn-close-announcement {
+    min-width: 140px;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 14px 32px;
+    border-radius: 12px;
+    transition: var(--ewm-transition-smooth);
+}
+
+.ewm-btn-close-announcement:hover {
+    transform: translateY(-2px);
+}
+
+.ewm-btn-close-announcement:active {
+    transform: translateY(0);
+}
+
+/* Responsive adjustments for announcements */
+@media (max-width: 640px) {
+    .ewm-announcement-content-generic {
+        padding: 24px 20px;
+    }
+
+    .ewm-announcement-title {
+        font-size: 24px;
+        margin-bottom: 12px;
+    }
+
+    .ewm-announcement-subtitle {
+        font-size: 18px;
+        margin-bottom: 16px;
+    }
+
+    .ewm-announcement-description p {
+        font-size: 15px;
+    }
+
+    .ewm-announcement-actions {
+        margin-top: 24px;
+    }
+
+    .ewm-btn-close-announcement {
+        width: 100%;
+        padding: 16px 24px;
+    }
+}

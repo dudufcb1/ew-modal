@@ -67,6 +67,9 @@
             // WooCommerce integration toggle
             $(document).on('change', '#wc-integration-enabled', this.toggleWCIntegration.bind(this));
 
+            // Modal mode change
+            $(document).on('change', '#modal-mode', this.updateModeIndicator.bind(this));
+
             // WooCommerce timer toggle
             $(document).on('change', '#wc-timer-enabled', this.toggleWCTimer.bind(this));
         },
@@ -667,7 +670,24 @@
         
             // Datos generales
             $('#modal-title').val(data.title || '');
-            $('#modal-mode').val(data.mode || 'formulario');
+
+            // Usar el modo del backend, pero respetar el valor inicial del HTML si existe
+            const $modalMode = $('#modal-mode');
+            const initialMode = $modalMode.attr('data-initial-mode');
+            const backendMode = data.mode || 'formulario';
+
+            // Si hay un modo inicial en el HTML y coincide con el backend, no cambiar
+            // Esto evita el parpadeo visual
+            if (initialMode && initialMode === backendMode) {
+                // El valor ya está correcto en el HTML, no hacer nada
+            } else {
+                // Solo cambiar si es diferente
+                $modalMode.val(backendMode);
+            }
+
+            // Actualizar indicador visual del modo y elementos específicos
+            this.updateModeIndicator();
+
             $('#custom-css').val(data.custom_css || '');
 
             // Mensajes de éxito - Asegurar que los campos existan
@@ -991,6 +1011,10 @@
 
             // Aplicar estado inicial basado en valores actuales
             this.applyInitialModalTypeState();
+
+            // Aplicar estado inicial del modo (ocultar elementos si es anuncio)
+            const initialMode = $('#modal-mode').val() || $('#modal-mode').attr('data-initial-mode') || 'formulario';
+            this.toggleModeSpecificElements(initialMode);
         },
 
         /**
@@ -1159,6 +1183,66 @@
             const shortcode = '[ew_modal id="' + modalId + '"]';
             console.log('EWM Modal Admin: Generated shortcode:', shortcode);
             // Mostrar shortcode en la interfaz
+        },
+
+        /**
+         * Actualizar indicador visual del modo
+         */
+        updateModeIndicator: function() {
+            const $modalMode = $('#modal-mode');
+            const currentMode = $modalMode.val();
+
+            // Actualizar el atributo value para que CSS pueda detectarlo
+            $modalMode.attr('value', currentMode);
+
+            // Forzar re-render del pseudo-elemento CSS
+            const $description = $modalMode.closest('.ewm-form-group').find('.description');
+            $description.removeClass('mode-updated').addClass('mode-updated');
+
+            setTimeout(() => {
+                $description.removeClass('mode-updated');
+            }, 100);
+
+            // Mostrar/ocultar elementos según el modo
+            this.toggleModeSpecificElements(currentMode);
+        },
+
+        /**
+         * Mostrar/ocultar elementos específicos del modo
+         */
+        toggleModeSpecificElements: function(mode) {
+            const $announcementInfo = $('#announcement-mode-info');
+            const $addStepBtn = $('.ewm-add-step');
+            const $successMessages = $('.ewm-success-messages');
+            const $fieldsSection = $('.ewm-fields-section'); // Sección de campos
+            const $stepHeader = $('.ewm-step-header'); // Header con botones Duplicate/Delete
+
+            if (mode === 'anuncio') {
+                // Ocultar elementos específicos que no son relevantes para anuncios
+                $addStepBtn.hide(); // Botón "Add Step"
+                $successMessages.hide(); // Sección de mensajes de éxito
+                $fieldsSection.hide(); // Sección "Step Fields" con botón "Add Field"
+                $stepHeader.hide(); // Header con botones "Duplicate" y "Delete"
+
+                // TODO: Agregar validación en backend para no permitir datos que contradigan
+                // la lógica de un anuncio (ej: múltiples pasos, campos de formulario, etc.)
+
+                // Mostrar panel informativo
+                $announcementInfo.slideDown(300);
+
+                console.log('EWM Modal Admin: Hidden form-specific elements for announcement mode');
+            } else {
+                // Mostrar elementos para modo formulario
+                $addStepBtn.show(); // Botón "Add Step"
+                $successMessages.show(); // Sección de mensajes de éxito
+                $fieldsSection.show(); // Sección "Step Fields"
+                $stepHeader.show(); // Header con botones "Duplicate" y "Delete"
+
+                // Ocultar panel informativo
+                $announcementInfo.slideUp(300);
+
+                console.log('EWM Modal Admin: Shown form-specific elements for form mode');
+            }
         }
     };
 

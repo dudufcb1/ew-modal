@@ -976,6 +976,72 @@ select.ewm-form-control {
     transition: var(--ewm-transition);
 }
 
+/* Modal Mode Visual Indicators */
+.ewm-form-group:has(#modal-mode) {
+    position: relative;
+}
+
+.ewm-form-group:has(#modal-mode[value="anuncio"]) .description::after {
+    content: "📢 Announcement mode active";
+    display: inline-block;
+    margin-left: 10px;
+    padding: 4px 8px;
+    background: #e8f4fd;
+    color: #0073aa;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.ewm-form-group:has(#modal-mode[value="formulario"]) .description::after {
+    content: "📝 Form mode active";
+    display: inline-block;
+    margin-left: 10px;
+    padding: 4px 8px;
+    background: #f0f6fc;
+    color: #2c3e50;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* Smooth transitions for mode-specific elements */
+.ewm-tabs-nav a,
+.ewm-tab-pane,
+.ewm-add-step,
+.ewm-steps-config {
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+/* Hidden state for announcement mode */
+.ewm-mode-announcement-hidden {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+/* Announcement mode info panel */
+.ewm-announcement-mode-info {
+    background: #e8f4fd;
+    border: 1px solid #0073aa;
+    border-radius: var(--ewm-border-radius);
+    padding: 15px;
+    margin: 20px 0;
+    color: #0073aa;
+}
+
+.ewm-announcement-mode-info h3 {
+    margin: 0 0 10px 0;
+    color: #0073aa;
+    font-size: 16px;
+}
+
+.ewm-announcement-mode-info p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
 .ewm-coupon-details-panel h4 {
     color: var(--ewm-primary);
     margin-top: 0;

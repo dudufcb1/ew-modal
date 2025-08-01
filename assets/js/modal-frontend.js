@@ -222,7 +222,13 @@
             if (closeBtn) {
                 closeBtn.addEventListener('click', () => this.hide());
             }
-            
+
+            // Cerrar modal de anuncio
+            const closeAnnouncementBtn = this.modal.querySelector('.ewm-btn-close-announcement');
+            if (closeAnnouncementBtn) {
+                closeAnnouncementBtn.addEventListener('click', () => this.hide());
+            }
+
             // Cerrar al hacer clic en el overlay
             this.modal.addEventListener('click', (e) => {
                 if (e.target === this.modal) {

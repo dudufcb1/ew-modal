@@ -356,15 +356,30 @@ class EWM_Admin_Page {
 
 							<div class="ewm-form-group">
 								<label for="modal-mode"><?php esc_html_e( 'Modal Mode', 'ewm-modal-cta' ); ?></label>
-								<select id="modal-mode" name="mode" class="ewm-form-control">
-									<option value="formulario" <?php selected( $modal_data['mode'] ?? 'formulario', 'formulario' ); ?>>
+								<?php
+								// Obtener el modo correcto: si es modal existente, leer de BD; si es nuevo, usar 'formulario'
+								$current_mode = 'formulario'; // Por defecto para modales nuevos
+								if ( $modal_id ) {
+									$saved_mode = get_post_meta( $modal_id, 'ewm_modal_mode', true );
+									$current_mode = $saved_mode ?: 'formulario';
+								}
+								?>
+								<select id="modal-mode" name="mode" class="ewm-form-control" data-initial-mode="<?php echo esc_attr( $current_mode ); ?>">
+									<option value="formulario" <?php selected( $current_mode, 'formulario' ); ?>>
 										<?php esc_html_e( 'Multi-Step Form', 'ewm-modal-cta' ); ?>
 									</option>
-									<option value="anuncio" <?php selected( $modal_data['mode'] ?? 'formulario', 'anuncio' ); ?>>
+									<option value="anuncio" <?php selected( $current_mode, 'anuncio' ); ?>>
 										<?php esc_html_e( 'Announcement/Notification', 'ewm-modal-cta' ); ?>
 									</option>
 								</select>
 								<p class="description"><?php esc_html_e( 'Select the type of modal you want to create.', 'ewm-modal-cta' ); ?></p>
+
+								<!-- Panel informativo para modo anuncio -->
+								<div id="announcement-mode-info" class="ewm-announcement-mode-info" style="display: none;">
+									<h3>📢 <?php esc_html_e( 'Announcement Mode', 'ewm-modal-cta' ); ?></h3>
+									<p><?php esc_html_e( 'In announcement mode, the modal will display the title, subtitle, and description from the first step you configure in the Steps tab. Form fields and success messages are not needed for announcements.', 'ewm-modal-cta' ); ?></p>
+									<p><strong><?php esc_html_e( 'Next:', 'ewm-modal-cta' ); ?></strong> <?php esc_html_e( 'Go to the Steps tab and configure the first step with your announcement content.', 'ewm-modal-cta' ); ?></p>
+								</div>
 							</div>
 
 							<div class="ewm-form-group">
@@ -1119,10 +1134,15 @@ class EWM_Admin_Page {
 			$wc_json       = get_post_meta( $modal_id, 'ewm_wc_integration', true );
 			$rules_json    = get_post_meta( $modal_id, 'ewm_display_rules', true );
 
+			// Leer el modo guardado del modal
+			$saved_mode = get_post_meta( $modal_id, 'ewm_modal_mode', true );
+
+
+
 			$modal_data = array(
 				'id'             => $modal_id,
 				'title'          => $modal_post->post_title,
-				'mode'           => 'formulario', // Modo por defecto del sistema actual
+				'mode'           => $saved_mode ?: 'formulario', // Usar modo guardado o por defecto
 				'steps'          => $steps_json ? json_decode( $steps_json, true ) : array(),
 				'design'         => $design_json ? json_decode( $design_json, true ) : array(),
 				'triggers'       => $triggers_json ? json_decode( $triggers_json, true ) : array(),
@@ -1130,6 +1150,8 @@ class EWM_Admin_Page {
 				'display_rules'  => $rules_json ? json_decode( $rules_json, true ) : array(),
 				'custom_css'     => get_post_meta( $modal_id, 'ewm_custom_css', true ) ?: '',
 			);
+
+
 
 			// LOG TEMPORAL: Datos enviados del servidor al frontend (modal-enabled y enable-manual-trigger)
 
@@ -1237,6 +1259,11 @@ class EWM_Admin_Page {
 				'title'   => sanitize_text_field( $modal_data['steps']['success']['title'] ?? '' ),
 				'message' => sanitize_textarea_field( $modal_data['steps']['success']['message'] ?? '' ),
 			);
+		}
+
+		// Guardar el modo del modal
+		if ( isset( $modal_data['mode'] ) ) {
+			update_post_meta( $modal_id, 'ewm_modal_mode', sanitize_text_field( $modal_data['mode'] ) );
 		}
 
 		// Guardar configuración de pasos
