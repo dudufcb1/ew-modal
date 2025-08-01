@@ -292,14 +292,57 @@
          */
         async handleFormSubmit(e) {
             e.preventDefault();
-            
+
             console.log('EWM Modal Frontend: Form submit initiated');
             console.log('EWM Modal Frontend: Modal ID:', this.config.modal_id);
             console.log('EWM Modal Frontend: Window ewmModal config:', window.ewmModal);
 
             const submitButton = e.target.closest('.ewm-btn-submit') || e.target;
-            
-            // Deshabilitar botón durante envío
+            const form = this.modal.querySelector('.ewm-multi-step-form');
+
+            // VALIDACIÓN HTML5 NATIVA ANTES DEL ENVÍO
+            if (form && !form.checkValidity()) {
+                console.log('EWM Modal Frontend: Form validation failed (HTML5)');
+
+                // Mostrar errores nativos del navegador
+                form.reportValidity();
+
+                // Rehabilitar botón si estaba deshabilitado
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    if (submitButton.textContent === 'Enviando...') {
+                        submitButton.textContent = 'Enviar';
+                    }
+                }
+
+                return; // Detener el envío
+            }
+
+            // VALIDACIÓN ADICIONAL DE JAVASCRIPT
+            if (window.EWMFormValidator && form) {
+                const currentStep = form.querySelector('.ewm-form-step.active');
+                if (currentStep) {
+                    const validationResult = window.EWMFormValidator.validateStep(currentStep);
+                    if (!validationResult.isValid) {
+                        console.log('EWM Modal Frontend: Form validation failed (JavaScript)');
+
+                        // Mostrar errores específicos
+                        this.showErrorMessage('Por favor, corrige los errores en el formulario antes de continuar.');
+
+                        // Rehabilitar botón
+                        if (submitButton) {
+                            submitButton.disabled = false;
+                            if (submitButton.textContent === 'Enviando...') {
+                                submitButton.textContent = 'Enviar';
+                            }
+                        }
+
+                        return; // Detener el envío
+                    }
+                }
+            }
+
+            // Deshabilitar botón durante envío (solo si pasó todas las validaciones)
             if (submitButton) {
                 submitButton.disabled = true;
                 submitButton.textContent = 'Enviando...';

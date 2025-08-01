@@ -127,15 +127,47 @@ class EWM_Render_Core {
 	}
 
 	/**
+	 * Función auxiliar para asegurar codificación UTF-8 en datos
+	 */
+	private function ensure_utf8_encoding( $data ) {
+		if ( is_string( $data ) ) {
+			// Verificar si ya está en UTF-8
+			if ( ! mb_check_encoding( $data, 'UTF-8' ) ) {
+				// Convertir a UTF-8 detectando la codificación original
+				$data = mb_convert_encoding( $data, 'UTF-8', mb_detect_encoding( $data ) );
+			}
+			return $data;
+		} elseif ( is_array( $data ) ) {
+			// Aplicar recursivamente a arrays
+			return array_map( array( $this, 'ensure_utf8_encoding' ), $data );
+		}
+
+		// Para otros tipos de datos, retornar sin cambios
+		return $data;
+	}
+
+	/**
 	 * Obtener configuración completa del modal
 	 */
 	private function get_modal_configuration( $modal_id ) {
+		global $wpdb;
+
+		// Verificar charset de la conexión
+		$charset = $wpdb->charset;
+		if ($charset !== 'utf8' && $charset !== 'utf8mb4') {
+			// Solo emitir warning si WP_DEBUG está activado
+			if (defined('WP_DEBUG') && WP_DEBUG) {
+				trigger_error(
+					sprintf('Warning: La conexión de WordPress no está usando UTF-8 (charset actual: %s)', $charset),
+					E_USER_WARNING
+				);
+			}
+		}
+
 		// Si es preview, retornar la configuración global temporal
 		if ( $modal_id === 'preview' && ! empty( $GLOBALS['ewm_preview_config'] ) && is_array( $GLOBALS['ewm_preview_config'] ) ) {
 			return $GLOBALS['ewm_preview_config'];
 		}
-
-		// DEBUGGING PROFUNDO según recomendación del consultor
 
 		// Validación robusta del ID según consultor
 		if ( ! is_numeric( $modal_id ) || $modal_id <= 0 ) {
@@ -150,17 +182,33 @@ class EWM_Render_Core {
 		$rules_json    = get_post_meta( $modal_id, 'ewm_display_rules', true );
 
 		// Unificar datos en memoria para el frontend con validación de tipos
+		// Función auxiliar para decodificar JSON y asegurar UTF-8
+		$decode_json = function($json) {
+			if (!is_string($json)) {
+				return array();
+			}
+
+			// Usar la función auxiliar para asegurar UTF-8
+			$json = $this->ensure_utf8_encoding($json);
+
+			$decoded = json_decode($json, true);
+			return $decoded ?: array();
+		};
+
 		$config = array(
-			'steps'          => is_string( $steps_json ) ? ( json_decode( $steps_json, true ) ?: array() ) : array(),
-			'design'         => is_string( $design_json ) ? ( json_decode( $design_json, true ) ?: array() ) : array(),
-			'triggers'       => is_string( $triggers_json ) ? ( json_decode( $triggers_json, true ) ?: array() ) : array(),
-			'wc_integration' => is_string( $wc_json ) ? ( json_decode( $wc_json, true ) ?: array() ) : array(),
-			'display_rules'  => is_string( $rules_json ) ? ( json_decode( $rules_json, true ) ?: array() ) : array(),
+			'steps'          => $decode_json($steps_json),
+			'design'         => $decode_json($design_json),
+			'triggers'       => $decode_json($triggers_json),
+			'wc_integration' => $decode_json($wc_json),
+			'display_rules'  => $decode_json($rules_json),
 		);
 
 		// Agregar datos básicos del modal
 		$config['modal_id'] = $modal_id;
-		$config['title']    = get_the_title( $modal_id );
+		$title = get_the_title($modal_id);
+
+		// Asegurar que el título está en UTF-8 usando la función auxiliar
+		$config['title'] = $this->ensure_utf8_encoding($title);
 
 		// Asegurar que existe un modo por defecto
 		if ( ! isset( $config['mode'] ) || empty( $config['mode'] ) ) {
@@ -294,6 +342,9 @@ class EWM_Render_Core {
 		$html_output = ob_get_clean();
 
 		// CONFIGURACIÓN DEL MODAL PARA AUTO-INICIALIZACIÓN (sin botón de test)
+		// Asegurar codificación UTF-8 antes de wp_json_encode
+		$config_utf8 = $this->ensure_utf8_encoding( $config );
+
 		$html_output .= "
 	   <script>
 	   // Auto-inicializar modal {$modal_id}
@@ -301,7 +352,7 @@ class EWM_Render_Core {
 		   window.ew_modal_configs = [];
 	   }
 
-	   window.ew_modal_configs.push(" . wp_json_encode( $config ) . ');
+	   window.ew_modal_configs.push(" . wp_json_encode( $config_utf8 ) . ');
 	   </script>';
 
 		return $html_output;
@@ -781,20 +832,22 @@ class EWM_Render_Core {
 		// Determinar si WooCommerce está habilitado
 		$is_woocommerce = isset( $config['wc_integration']['enabled'] ) && $config['wc_integration']['enabled'] === true;
 
+		// Preparar datos de configuración asegurando UTF-8
+		$config_data = array(
+			'triggers'       => $config['triggers'],
+			'design'         => $config['design'],
+			'wc_integration' => $config['wc_integration'],
+			'display_rules'  => $config['display_rules'],
+			'is_woocommerce' => $is_woocommerce,
+		);
+
+		// Asegurar codificación UTF-8 antes de wp_json_encode
+		$config_data_utf8 = $this->ensure_utf8_encoding( $config_data );
+
 		$data_attrs = array(
 			'data-modal-id' => $modal_id,
 			'data-trigger'  => $config['trigger'] ?? 'manual',
-			'data-config'   => esc_attr(
-				wp_json_encode(
-					array(
-						'triggers'       => $config['triggers'],
-						'design'         => $config['design'],
-						'wc_integration' => $config['wc_integration'],
-						'display_rules'  => $config['display_rules'],
-						'is_woocommerce' => $is_woocommerce,
-					)
-				)
-			),
+			'data-config'   => esc_attr( wp_json_encode( $config_data_utf8 ) ),
 		);
 
 		if ( ! empty( $config['delay'] ) ) {
@@ -878,7 +931,7 @@ class EWM_Render_Core {
 			return;
 		}
 
-		// Preparar configuraciones para JavaScript con validación de tipos
+		// Preparar configuraciones para JavaScript con validación de tipos y UTF-8
 		$modal_configs = array();
 		foreach ( $this->rendered_modals as $modal_id => $config ) {
 			// Asegurar que $config es un array válido
@@ -886,7 +939,8 @@ class EWM_Render_Core {
 				continue;
 			}
 
-			$modal_configs[] = array(
+			// Preparar configuración asegurando codificación UTF-8
+			$modal_config = array(
 				'modal_id'       => (string) $modal_id,
 				'triggers'       => is_array( $config['triggers'] ?? null ) ? $config['triggers'] : array(),
 				'design'         => is_array( $config['design'] ?? null ) ? $config['design'] : array(),
@@ -896,6 +950,9 @@ class EWM_Render_Core {
 				'title'          => (string) ( $config['title'] ?? '' ),
 				'mode'           => (string) ( $config['mode'] ?? 'formulario' ),
 			);
+
+			// Asegurar codificación UTF-8 en toda la configuración
+			$modal_configs[] = $this->ensure_utf8_encoding( $modal_config );
 		}
 
 		?>

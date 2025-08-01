@@ -20,6 +20,21 @@
         }
 
         /**
+         * Función debounce para optimizar validaciones en tiempo real
+         */
+        debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        /**
          * Validar un campo individual
          */
         validateField(field, rules = {}) {
@@ -442,31 +457,27 @@
          */
         enableRealTimeValidation(form) {
             const fields = form.querySelectorAll('input, select, textarea');
-            
-            fields.forEach(field => {
-                let validationTimeout;
 
+            fields.forEach(field => {
                 // Validar al perder el foco (inmediato)
                 field.addEventListener('blur', () => {
                     this.validateFieldRealTime(field, form);
                 });
 
-                // Validar al escribir con delay para evitar spam de notificaciones
+                // Crear función debounced para validación en input (250ms para mejor UX)
+                const debouncedValidation = this.debounce(() => {
+                    this.validateFieldRealTime(field, form);
+                }, 250);
+
+                // Validar al escribir con debounce optimizado
                 field.addEventListener('input', () => {
                     // Limpiar error visual inmediatamente al escribir
                     if (field.classList.contains('ewm-error')) {
                         field.classList.remove('ewm-error');
                     }
 
-                    // Cancelar validación pendiente
-                    if (validationTimeout) {
-                        clearTimeout(validationTimeout);
-                    }
-
-                    // Validar después de 1 segundo de inactividad
-                    validationTimeout = setTimeout(() => {
-                        this.validateFieldRealTime(field, form);
-                    }, 1000);
+                    // Ejecutar validación con debounce
+                    debouncedValidation();
                 });
 
                 // Validar inmediatamente al presionar Enter o cambiar valor (para selects)
@@ -482,18 +493,76 @@
         validateFieldRealTime(field, form) {
             const rules = this.getFieldRules(field);
             const result = this.validateField(field, rules);
-            
+
             if (!result.isValid) {
                 field.classList.add('ewm-error');
-                // Mostrar notificación inmediatamente
+
+                // Mostrar error directamente debajo del campo
+                this.showFieldError(field, result.errors[0]);
+
+                // También mostrar notificación centralizada para errores críticos
                 this.showNotification('error', 'Validation Error', result.errors[0]);
             } else {
                 field.classList.remove('ewm-error');
+
+                // Ocultar error del campo
+                this.hideFieldError(field);
+
                 // Si no hay más campos con error, limpiar notificaciones
                 if (!form.querySelector('.ewm-error')) {
                     this.clearNotifications();
                 }
             }
+
+            // Actualizar estado del botón de envío
+            this.updateSubmitButtonState(form);
+        }
+
+        /**
+         * Mostrar error directamente debajo del campo
+         */
+        showFieldError(field, message) {
+            // Buscar o crear elemento de error
+            let errorElement = field.parentNode.querySelector('.ewm-field-error');
+
+            if (!errorElement) {
+                errorElement = document.createElement('div');
+                errorElement.className = 'ewm-field-error';
+                field.parentNode.appendChild(errorElement);
+            }
+
+            errorElement.textContent = message;
+            errorElement.classList.add('visible');
+        }
+
+        /**
+         * Ocultar error del campo
+         */
+        hideFieldError(field) {
+            const errorElement = field.parentNode.querySelector('.ewm-field-error');
+            if (errorElement) {
+                errorElement.classList.remove('visible');
+            }
+        }
+
+        /**
+         * Actualizar estado del botón de envío basado en validación
+         */
+        updateSubmitButtonState(form) {
+            const submitButtons = form.querySelectorAll('.ewm-btn-submit');
+            const hasErrors = form.querySelector('.ewm-error');
+
+            submitButtons.forEach(button => {
+                if (hasErrors) {
+                    button.disabled = true;
+                    button.classList.add('ewm-btn-disabled');
+                    button.title = 'Corrige los errores antes de enviar';
+                } else {
+                    button.disabled = false;
+                    button.classList.remove('ewm-btn-disabled');
+                    button.title = '';
+                }
+            });
         }
     }
 

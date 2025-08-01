@@ -1202,9 +1202,30 @@ class EWM_Admin_Page {
 	}
 
 	/**
+	 * Función auxiliar para asegurar codificación UTF-8 en datos (admin context)
+	 */
+	private function ensure_utf8_encoding_admin( $data ) {
+		if ( is_string( $data ) ) {
+			// Verificar si ya está en UTF-8
+			if ( ! mb_check_encoding( $data, 'UTF-8' ) ) {
+				// Convertir a UTF-8 detectando la codificación original
+				$data = mb_convert_encoding( $data, 'UTF-8', mb_detect_encoding( $data ) );
+			}
+			return $data;
+		} elseif ( is_array( $data ) ) {
+			// Aplicar recursivamente a arrays
+			return array_map( array( $this, 'ensure_utf8_encoding_admin' ), $data );
+		}
+
+		// Para otros tipos de datos, retornar sin cambios
+		return $data;
+	}
+
+	/**
 	 * Guardar meta fields del modal
 	 */
 	private function save_modal_meta( $modal_id, $modal_data ) {
+
 		// Sanitizar mensajes de éxito
 		if ( isset( $modal_data['steps']['success'] ) ) {
 			$modal_data['steps']['success'] = array(
@@ -1222,27 +1243,34 @@ class EWM_Admin_Page {
 					'message' => '',
 				);
 			}
-			$result = update_post_meta( $modal_id, 'ewm_steps_config', wp_json_encode( $modal_data['steps'] ) );
+
+			// Asegurar codificación UTF-8 antes de wp_json_encode
+			$steps_data_utf8 = $this->ensure_utf8_encoding_admin( $modal_data['steps'] );
+			$result = update_post_meta( $modal_id, 'ewm_steps_config', wp_json_encode( $steps_data_utf8, JSON_UNESCAPED_UNICODE ) );
 		}
 
 		// Guardar configuración de diseño
 		if ( isset( $modal_data['design'] ) ) {
-			update_post_meta( $modal_id, 'ewm_design_config', wp_json_encode( $modal_data['design'] ) );
+			$design_data_utf8 = $this->ensure_utf8_encoding_admin( $modal_data['design'] );
+			update_post_meta( $modal_id, 'ewm_design_config', wp_json_encode( $design_data_utf8, JSON_UNESCAPED_UNICODE ) );
 		}
 
 		// Guardar configuración de triggers
 		if ( isset( $modal_data['triggers'] ) ) {
-			update_post_meta( $modal_id, 'ewm_trigger_config', wp_json_encode( $modal_data['triggers'] ) );
+			$triggers_data_utf8 = $this->ensure_utf8_encoding_admin( $modal_data['triggers'] );
+			update_post_meta( $modal_id, 'ewm_trigger_config', wp_json_encode( $triggers_data_utf8, JSON_UNESCAPED_UNICODE ) );
 		}
 
 		// Guardar integración WooCommerce
 		if ( isset( $modal_data['wc_integration'] ) ) {
-			update_post_meta( $modal_id, 'ewm_wc_integration', wp_json_encode( $modal_data['wc_integration'] ) );
+			$wc_data_utf8 = $this->ensure_utf8_encoding_admin( $modal_data['wc_integration'] );
+			update_post_meta( $modal_id, 'ewm_wc_integration', wp_json_encode( $wc_data_utf8, JSON_UNESCAPED_UNICODE ) );
 		}
 
 		// Guardar reglas de visualización
 		if ( isset( $modal_data['display_rules'] ) ) {
-			update_post_meta( $modal_id, 'ewm_display_rules', wp_json_encode( $modal_data['display_rules'] ) );
+			$rules_data_utf8 = $this->ensure_utf8_encoding_admin( $modal_data['display_rules'] );
+			update_post_meta( $modal_id, 'ewm_display_rules', wp_json_encode( $rules_data_utf8, JSON_UNESCAPED_UNICODE ) );
 		}
 	}
 
