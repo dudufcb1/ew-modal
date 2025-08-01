@@ -73,32 +73,32 @@ class EWM_Modal_CPT {
 	 * Registrar el Custom Post Type
 	 */
 	public function register_post_type() {
-	   $labels = array(
-		   'name'                  => _x( 'Modals', 'Post type general name', 'ewm-modal-cta' ),
-		   'singular_name'         => _x( 'Modal', 'Post type singular name', 'ewm-modal-cta' ),
-		   'menu_name'             => _x( 'EWM Modals', 'Admin Menu text', 'ewm-modal-cta' ),
-		   'name_admin_bar'        => _x( 'Modal', 'Add New on Toolbar', 'ewm-modal-cta' ),
-		   'add_new'               => __( 'Add New', 'ewm-modal-cta' ),
-		   'add_new_item'          => __( 'Add New Modal', 'ewm-modal-cta' ),
-		   'new_item'              => __( 'New Modal', 'ewm-modal-cta' ),
-		   'edit_item'             => __( 'Edit Modal', 'ewm-modal-cta' ),
-		   'view_item'             => __( 'View Modal', 'ewm-modal-cta' ),
-		   'all_items'             => __( 'All Modals', 'ewm-modal-cta' ),
-		   'search_items'          => __( 'Search Modals', 'ewm-modal-cta' ),
-		   'parent_item_colon'     => __( 'Parent Modal:', 'ewm-modal-cta' ),
-		   'not_found'             => __( 'No modals found.', 'ewm-modal-cta' ),
-		   'not_found_in_trash'    => __( 'No modals found in Trash.', 'ewm-modal-cta' ),
-		   'featured_image'        => _x( 'Modal Image', 'Overrides the "Featured Image" phrase', 'ewm-modal-cta' ),
-		   'set_featured_image'    => _x( 'Set modal image', 'Overrides the "Set featured image" phrase', 'ewm-modal-cta' ),
-		   'remove_featured_image' => _x( 'Remove modal image', 'Overrides the "Remove featured image" phrase', 'ewm-modal-cta' ),
-		   'use_featured_image'    => _x( 'Use as modal image', 'Overrides the "Use as featured image" phrase', 'ewm-modal-cta' ),
-		   'archives'              => _x( 'Modal Archives', 'The post type archive label used in nav menus', 'ewm-modal-cta' ),
-		   'insert_into_item'      => _x( 'Insert into modal', 'Overrides the "Insert into post" phrase', 'ewm-modal-cta' ),
-		   'uploaded_to_this_item' => _x( 'Uploaded to this modal', 'Overrides the "Uploaded to this post" phrase', 'ewm-modal-cta' ),
-		   'filter_items_list'     => _x( 'Filter modals list', 'Screen reader text for the filter links', 'ewm-modal-cta' ),
-		   'items_list_navigation' => _x( 'Modals list navigation', 'Screen reader text for the pagination', 'ewm-modal-cta' ),
-		   'items_list'            => _x( 'Modals list', 'Screen reader text for the items list', 'ewm-modal-cta' ),
-	   );
+		$labels = array(
+			'name'                  => _x( 'Modals', 'Post type general name', 'ewm-modal-cta' ),
+			'singular_name'         => _x( 'Modal', 'Post type singular name', 'ewm-modal-cta' ),
+			'menu_name'             => _x( 'EWM Modals', 'Admin Menu text', 'ewm-modal-cta' ),
+			'name_admin_bar'        => _x( 'Modal', 'Add New on Toolbar', 'ewm-modal-cta' ),
+			'add_new'               => __( 'Add New', 'ewm-modal-cta' ),
+			'add_new_item'          => __( 'Add New Modal', 'ewm-modal-cta' ),
+			'new_item'              => __( 'New Modal', 'ewm-modal-cta' ),
+			'edit_item'             => __( 'Edit Modal', 'ewm-modal-cta' ),
+			'view_item'             => __( 'View Modal', 'ewm-modal-cta' ),
+			'all_items'             => __( 'All Modals', 'ewm-modal-cta' ),
+			'search_items'          => __( 'Search Modals', 'ewm-modal-cta' ),
+			'parent_item_colon'     => __( 'Parent Modal:', 'ewm-modal-cta' ),
+			'not_found'             => __( 'No modals found.', 'ewm-modal-cta' ),
+			'not_found_in_trash'    => __( 'No modals found in Trash.', 'ewm-modal-cta' ),
+			'featured_image'        => _x( 'Modal Image', 'Overrides the "Featured Image" phrase', 'ewm-modal-cta' ),
+			'set_featured_image'    => _x( 'Set modal image', 'Overrides the "Set featured image" phrase', 'ewm-modal-cta' ),
+			'remove_featured_image' => _x( 'Remove modal image', 'Overrides the "Remove featured image" phrase', 'ewm-modal-cta' ),
+			'use_featured_image'    => _x( 'Use as modal image', 'Overrides the "Use as featured image" phrase', 'ewm-modal-cta' ),
+			'archives'              => _x( 'Modal Archives', 'The post type archive label used in nav menus', 'ewm-modal-cta' ),
+			'insert_into_item'      => _x( 'Insert into modal', 'Overrides the "Insert into post" phrase', 'ewm-modal-cta' ),
+			'uploaded_to_this_item' => _x( 'Uploaded to this modal', 'Overrides the "Uploaded to this post" phrase', 'ewm-modal-cta' ),
+			'filter_items_list'     => _x( 'Filter modals list', 'Screen reader text for the filter links', 'ewm-modal-cta' ),
+			'items_list_navigation' => _x( 'Modals list navigation', 'Screen reader text for the pagination', 'ewm-modal-cta' ),
+			'items_list'            => _x( 'Modals list', 'Screen reader text for the items list', 'ewm-modal-cta' ),
+		);
 
 		$args = array(
 			'labels'                => $labels,
@@ -120,8 +120,6 @@ class EWM_Modal_CPT {
 		);
 
 		register_post_type( self::POST_TYPE, $args );
-
-
 	}
 
 	/**
@@ -142,8 +140,6 @@ class EWM_Modal_CPT {
 				)
 			);
 		}
-
-
 	}
 
 	/**
@@ -173,22 +169,22 @@ class EWM_Modal_CPT {
 	 * Renderizar meta box de configuración
 	 */
 	public function render_config_meta_box( $post ) {
-   wp_nonce_field( 'ewm_modal_meta_box', 'ewm_modal_meta_box_nonce' );
+		wp_nonce_field( 'ewm_modal_meta_box', 'ewm_modal_meta_box_nonce' );
 
-   // Opción de almacenamiento serializado eliminada del DOM (solo backend la mantiene)
-   // Si se requiere reactivar, restaurar el bloque HTML correspondiente aquí.
+		// Opción de almacenamiento serializado eliminada del DOM (solo backend la mantiene)
+		// Si se requiere reactivar, restaurar el bloque HTML correspondiente aquí.
 
-   ?>
-   <div id="ewm-modal-builder">
-	   <p><?php esc_html_e( 'Advanced configuration will be done through the Modal Builder.', 'ewm-modal-cta' ); ?></p>
-	   <p>
-		   <a href="<?php echo esc_url( admin_url( 'admin.php?page=ewm-modal-builder&modal_id=' . $post->ID ) ); ?>"
-			   class="button button-secondary">
-			   <?php esc_html_e( 'Open Modal Builder', 'ewm-modal-cta' ); ?>
-		   </a>
-	   </p>
-   </div>
-   <?php
+		?>
+	<div id="ewm-modal-builder">
+		<p><?php esc_html_e( 'Advanced configuration will be done through the Modal Builder.', 'ewm-modal-cta' ); ?></p>
+		<p>
+			<a href="<?php echo esc_url( admin_url( 'admin.php?page=ewm-modal-builder&modal_id=' . $post->ID ) ); ?>"
+				class="button button-secondary">
+				<?php esc_html_e( 'Open Modal Builder', 'ewm-modal-cta' ); ?>
+			</a>
+		</p>
+	</div>
+		<?php
 	}
 
 	/**
@@ -240,18 +236,17 @@ class EWM_Modal_CPT {
 		// Guardar campos
 		$use_serialized = isset( $_POST['ewm_use_serialized'] ) ? '1' : '0';
 		update_post_meta( $post_id, 'ewm_use_serialized', $use_serialized );
-
 	}
 
 	/**
 	 * Agregar columnas personalizadas
 	 */
 	public function add_custom_columns( $columns ) {
-		$new_columns               = array();
-		$new_columns['cb']         = $columns['cb'];
-		$new_columns['title']      = $columns['title'];
-		$new_columns['shortcode']  = __( 'Shortcode', 'ewm-modal-cta' );
-		$new_columns['date']       = $columns['date'];
+		$new_columns              = array();
+		$new_columns['cb']        = $columns['cb'];
+		$new_columns['title']     = $columns['title'];
+		$new_columns['shortcode'] = __( 'Shortcode', 'ewm-modal-cta' );
+		$new_columns['date']      = $columns['date'];
 
 		return $new_columns;
 	}
@@ -297,6 +292,5 @@ class EWM_Modal_CPT {
 		} else {
 			update_post_meta( $modal_id, 'ewm_steps_config', wp_json_encode( $config ) );
 		}
-
 	}
 }

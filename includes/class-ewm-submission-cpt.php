@@ -655,7 +655,7 @@ class EWM_Submission_CPT {
 
 		// Crear título en formato: "Lead obtenido de: nombre_de_la_pagina fecha"
 		$current_date = date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ) );
-		$title = sprintf(
+		$title        = sprintf(
 			/* translators: %1$s: page name, %2$s: current date */
 			__( 'Lead obtenido de: %1$s %2$s', 'ewm-modal-cta' ),
 			$page_name,
@@ -821,7 +821,7 @@ class EWM_Submission_CPT {
 		}
 
 		// Crear clave de caché
-		$cache_key = 'ewm_post_by_path_' . md5( $path . serialize( $post_types ) );
+		$cache_key = 'ewm_post_by_path_' . md5( $path . wp_json_encode( $post_types ) );
 		$post_id   = wp_cache_get( $cache_key, 'ewm_submissions' );
 
 		if ( false === $post_id ) {
@@ -1028,7 +1028,7 @@ class EWM_Submission_CPT {
 			);
 
 			// Redireccionar para evitar reenvío
-			wp_redirect( remove_query_arg( array( 'ewm_update_titles', '_wpnonce' ) ) );
+			wp_safe_redirect( remove_query_arg( array( 'ewm_update_titles', '_wpnonce' ) ) );
 			exit;
 		}
 	}

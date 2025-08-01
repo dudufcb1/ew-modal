@@ -161,7 +161,7 @@ class EWM_WooCommerce {
 	public function get_coupons( $request ) {
 		// Optimizar consulta de cupones con caché
 		$cache_key = 'ewm_active_coupons_' . md5( current_time( 'Y-m-d-H' ) );
-		$coupons = wp_cache_get( $cache_key, 'ewm_wc_coupons' );
+		$coupons   = wp_cache_get( $cache_key, 'ewm_wc_coupons' );
 
 		if ( false === $coupons ) {
 			$coupons = get_posts(
@@ -301,7 +301,7 @@ class EWM_WooCommerce {
 		// Buscar modales con abandono de carrito habilitado
 		// Optimizar consulta de modales de abandono con caché
 		$cache_key = 'ewm_cart_abandonment_modals';
-		$modals = wp_cache_get( $cache_key, 'ewm_wc_modals' );
+		$modals    = wp_cache_get( $cache_key, 'ewm_wc_modals' );
 
 		if ( false === $modals ) {
 			$modals = get_posts(
@@ -337,7 +337,7 @@ class EWM_WooCommerce {
 		// Buscar modales con upsell habilitado
 		// Optimizar consulta de modales de upsell con caché
 		$cache_key = 'ewm_upsell_modals';
-		$modals = wp_cache_get( $cache_key, 'ewm_wc_modals' );
+		$modals    = wp_cache_get( $cache_key, 'ewm_wc_modals' );
 
 		if ( false === $modals ) {
 			$modals = get_posts(
@@ -495,7 +495,7 @@ class EWM_WooCommerce {
 	public function maybe_show_checkout_modal() {
 		// Buscar modales configurados para checkout con caché
 		$cache_key = 'ewm_checkout_modal';
-		$modals = wp_cache_get( $cache_key, 'ewm_wc_modals' );
+		$modals    = wp_cache_get( $cache_key, 'ewm_wc_modals' );
 
 		if ( false === $modals ) {
 			$modals = get_posts(

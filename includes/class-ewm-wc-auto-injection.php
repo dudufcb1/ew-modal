@@ -124,14 +124,16 @@ class EWM_WC_Auto_Injection {
 		$wc_modals = wp_cache_get( $cache_key, 'ewm_wc_modals' );
 
 		if ( false === $wc_modals ) {
-			$wc_modals = get_posts( array(
-				'post_type'      => 'ew_modal',
-				'post_status'    => 'publish',
-				'posts_per_page' => 50, // Limitar para mejor rendimiento
-				'meta_key'       => 'ewm_wc_integration', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Optimized query for WC integration modals with caching
-				'meta_value'     => '"enabled":true', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Optimized query for WC integration modals with caching
-				'meta_compare'   => 'LIKE',
-			) );
+			$wc_modals = get_posts(
+				array(
+					'post_type'      => 'ew_modal',
+					'post_status'    => 'publish',
+					'posts_per_page' => 50, // Limitar para mejor rendimiento
+					'meta_key'       => 'ewm_wc_integration', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Optimized query for WC integration modals with caching
+				'meta_value'         => '"enabled":true', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Optimized query for WC integration modals with caching
+				'meta_compare'       => 'LIKE',
+				)
+			);
 
 			// Cachear por 30 minutos
 			wp_cache_set( $cache_key, $wc_modals, 'ewm_wc_modals', 30 * MINUTE_IN_SECONDS );
@@ -163,12 +165,15 @@ class EWM_WC_Auto_Injection {
 	private function test_modal_visibility( $modal_id, $product_id ) {
 		$url = home_url( "/wp-json/ewm/v1/test-modal-visibility/{$modal_id}/{$product_id}" );
 
-		$response = wp_remote_get( $url, array(
-			'timeout' => 10,
-			'headers' => array(
-				'Content-Type' => 'application/json',
-			),
-		) );
+		$response = wp_remote_get(
+			$url,
+			array(
+				'timeout' => 10,
+				'headers' => array(
+					'Content-Type' => 'application/json',
+				),
+			)
+		);
 
 		if ( is_wp_error( $response ) ) {
 			return false;
@@ -189,13 +194,13 @@ class EWM_WC_Auto_Injection {
 	 */
 	private function get_modal_wc_config( $modal_id ) {
 		$wc_config_json = get_post_meta( $modal_id, 'ewm_wc_integration', true );
-		
+
 		if ( empty( $wc_config_json ) ) {
 			return array();
 		}
 
 		$wc_config = json_decode( $wc_config_json, true );
-		
+
 		if ( json_last_error() !== JSON_ERROR_NONE ) {
 			return array();
 		}
@@ -223,7 +228,7 @@ class EWM_WC_Auto_Injection {
 	 * Renderizar modal WooCommerce
 	 */
 	private function render_wc_modal( $modal_data ) {
-		$modal_id = $modal_data['id'];
+		$modal_id  = $modal_data['id'];
 		$wc_config = $modal_data['config'];
 
 		// Usar el sistema de renderizado existente pero con configuración WooCommerce

@@ -18,8 +18,8 @@
  * @copyright         Copyright (c) 2025 EWM
  * @link              https://ewm.com/plugins/ewm-modal-cta
  *
- * Plugin profesional para WordPress que permite crear modales interactivos de captura de leads 
- * con formularios multi-paso, builder visual, integración completa a WooCommerce, performance 
+ * Plugin profesional para WordPress que permite crear modales interactivos de captura de leads
+ * con formularios multi-paso, builder visual, integración completa a WooCommerce, performance
  * optimizada y arquitectura modular.
  */
 
@@ -59,19 +59,21 @@ function ewm_init_core_components() {
 	EWM_Submission_CPT::get_instance();
 	EWM_Render_Core::get_instance();
 	EWM_Shortcodes::get_instance();
-
 }
 add_action( 'init', 'ewm_init_core_components', 5 );
 
 // FIX: Inicializar EWM_Admin_Page antes de admin_menu
-add_action( 'plugins_loaded', function() {
-	EWM_Admin_Page::get_instance();
-}, 1 );
+add_action(
+	'plugins_loaded',
+	function () {
+		EWM_Admin_Page::get_instance();
+	},
+	1
+);
 
 /**
  * Initialize REST API endpoints
  */
-
 function ewm_init_rest_api() {
 	// Incluir endpoints REST personalizados de WooCommerce
 	if ( file_exists( EWM_PLUGIN_DIR . 'includes/class-ewm-woocommerce-endpoints.php' ) ) {
@@ -87,7 +89,7 @@ function ewm_init_rest_api() {
 		if ( class_exists( 'EWM_REST_API' ) ) {
 			$rest_api = EWM_REST_API::get_instance();
 			// Registrar rutas directamente para evitar problemas de timing de hooks.
-			$rest_api->register_routes();            
+			$rest_api->register_routes();
 		}
 	}
 }
@@ -95,20 +97,29 @@ function ewm_init_rest_api() {
 add_action( 'rest_api_init', 'ewm_init_rest_api' );
 
 // ENDPOINT TEMPORAL: Devuelve el nonce wp_rest para el usuario autenticado
-add_action( 'rest_api_init', function() {
-	register_rest_route( 'ewm/v1', '/get-wp-rest-nonce', array(
-		'methods'  => 'GET',
-		'permission_callback' => function () {
-			return is_user_logged_in();
-		},
-		'callback' => function () {
-			return rest_ensure_response( array(
-				'nonce' => wp_create_nonce( 'wp_rest' ),
-				'user'  => get_current_user_id(),
-			) );
-		},
-	) );
-} );
+add_action(
+	'rest_api_init',
+	function () {
+		register_rest_route(
+			'ewm/v1',
+			'/get-wp-rest-nonce',
+			array(
+				'methods'             => 'GET',
+				'permission_callback' => function () {
+					return is_user_logged_in();
+				},
+				'callback'            => function () {
+					return rest_ensure_response(
+						array(
+							'nonce' => wp_create_nonce( 'wp_rest' ),
+							'user'  => get_current_user_id(),
+						)
+					);
+				},
+			)
+		);
+	}
+);
 
 /**
  * Plugin activation hook
@@ -256,20 +267,22 @@ function ewm_has_modal_shortcode() {
 	// NUEVO: Verificar si es página de producto WooCommerce con modales WC configurados
 	if ( $post->post_type === 'product' && class_exists( 'WooCommerce' ) ) {
 		// Buscar si existen modales WooCommerce configurados con caché optimizado
-		$cache_key = 'ewm_main_wc_check';
+		$cache_key     = 'ewm_main_wc_check';
 		$has_wc_modals = wp_cache_get( $cache_key, 'ewm_main' );
 
 		if ( false === $has_wc_modals ) {
-			$wc_modals = get_posts( array(
-				'post_type'      => 'ew_modal',
-				'post_status'    => 'publish',
-				'posts_per_page' => 1, // Solo necesitamos saber si existe al menos uno
-				'meta_key'       => 'ewm_wc_integration', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Optimized query for WC integration check with caching
-				'meta_value'     => '"enabled":true', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Optimized query for WC integration check with caching
-				'meta_compare'   => 'LIKE',
-			) );
+			$wc_modals = get_posts(
+				array(
+					'post_type'      => 'ew_modal',
+					'post_status'    => 'publish',
+					'posts_per_page' => 1, // Solo necesitamos saber si existe al menos uno
+					'meta_key'       => 'ewm_wc_integration', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Optimized query for WC integration check with caching
+				'meta_value'         => '"enabled":true', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Optimized query for WC integration check with caching
+				'meta_compare'       => 'LIKE',
+				)
+			);
 
-			$has_wc_modals = !empty($wc_modals);
+			$has_wc_modals = ! empty( $wc_modals );
 			// Cachear por 1 hora
 			wp_cache_set( $cache_key, $has_wc_modals, 'ewm_main', HOUR_IN_SECONDS );
 		}
@@ -333,11 +346,13 @@ function ewm_simulate_modal_detection() {
 	$page_type = ewm_get_current_page_type();
 
 	// Buscar todos los modales publicados
-	$all_modals = get_posts( array(
-		'post_type'      => 'ew_modal',
-		'post_status'    => 'publish',
-		'posts_per_page' => -1,
-	) );
+	$all_modals = get_posts(
+		array(
+			'post_type'      => 'ew_modal',
+			'post_status'    => 'publish',
+			'posts_per_page' => -1,
+		)
+	);
 
 	if ( empty( $all_modals ) ) {
 		return array();
@@ -459,7 +474,7 @@ function ewm_should_modal_show_on_page( $config, $page_type ) {
 		return true; // Sin restricciones = mostrar en todas
 	}
 
-	$page_rules = $config['display_rules']['pages'];
+	$page_rules    = $config['display_rules']['pages'];
 	$include_pages = $page_rules['include'] ?? array();
 	$exclude_pages = $page_rules['exclude'] ?? array();
 
@@ -486,11 +501,11 @@ function ewm_should_modal_show_on_page( $config, $page_type ) {
  * Construir configuración desde campos separados (para compatibilidad)
  */
 function ewm_build_config_from_separate_fields( $modal_id ) {
-	$display_rules = get_post_meta( $modal_id, 'ewm_display_rules', true );
+	$display_rules  = get_post_meta( $modal_id, 'ewm_display_rules', true );
 	$wc_integration = get_post_meta( $modal_id, 'ewm_wc_integration', true );
 	$trigger_config = get_post_meta( $modal_id, 'ewm_trigger_config', true );
-	$design_config = get_post_meta( $modal_id, 'ewm_design_config', true );
-	$steps_config = get_post_meta( $modal_id, 'ewm_steps_config', true );
+	$design_config  = get_post_meta( $modal_id, 'ewm_design_config', true );
+	$steps_config   = get_post_meta( $modal_id, 'ewm_steps_config', true );
 
 	// Decodificar JSON si es necesario
 	if ( is_string( $display_rules ) ) {

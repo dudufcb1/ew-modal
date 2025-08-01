@@ -318,18 +318,18 @@ class EWM_Admin_Page {
 				<div class="ewm-builder-header">
 					<h1><?php echo $modal_id ? esc_html__( 'Edit Modal', 'ewm-modal-cta' ) : esc_html__( 'Create New Modal', 'ewm-modal-cta' ); ?></h1>
 					<p class="description">
-					   <?php esc_html_e( 'Configure your modal step by step using the tabs below.', 'ewm-modal-cta' ); ?>
+						<?php esc_html_e( 'Configure your modal step by step using the tabs below.', 'ewm-modal-cta' ); ?>
 					</p>
 				</div>
 
 				<ul class="ewm-tabs-nav">
-				   <li><a href="#general" class="active"><?php esc_html_e( 'General', 'ewm-modal-cta' ); ?></a></li>
-				   <li><a href="#woocommerce" id="woocommerce-tab" style="display: none;"><?php esc_html_e( 'WooCommerce', 'ewm-modal-cta' ); ?></a></li>
-				   <li><a href="#pasos" class="non-wc-tab"><?php esc_html_e( 'Steps', 'ewm-modal-cta' ); ?></a></li>
-				   <li><a href="#diseno" class="non-wc-tab"><?php esc_html_e( 'Design', 'ewm-modal-cta' ); ?></a></li>
-				   <li><a href="#triggers" class="non-wc-tab"><?php esc_html_e( 'Triggers', 'ewm-modal-cta' ); ?></a></li>
-				   <li><a href="#avanzado" class="non-wc-tab"><?php esc_html_e( 'Advanced', 'ewm-modal-cta' ); ?></a></li>
-				   <li><a href="#preview" class="non-wc-tab"><?php esc_html_e( 'Preview', 'ewm-modal-cta' ); ?></a></li>
+					<li><a href="#general" class="active"><?php esc_html_e( 'General', 'ewm-modal-cta' ); ?></a></li>
+					<li><a href="#woocommerce" id="woocommerce-tab" style="display: none;"><?php esc_html_e( 'WooCommerce', 'ewm-modal-cta' ); ?></a></li>
+					<li><a href="#pasos" class="non-wc-tab"><?php esc_html_e( 'Steps', 'ewm-modal-cta' ); ?></a></li>
+					<li><a href="#diseno" class="non-wc-tab"><?php esc_html_e( 'Design', 'ewm-modal-cta' ); ?></a></li>
+					<li><a href="#triggers" class="non-wc-tab"><?php esc_html_e( 'Triggers', 'ewm-modal-cta' ); ?></a></li>
+					<li><a href="#avanzado" class="non-wc-tab"><?php esc_html_e( 'Advanced', 'ewm-modal-cta' ); ?></a></li>
+					<li><a href="#preview" class="non-wc-tab"><?php esc_html_e( 'Preview', 'ewm-modal-cta' ); ?></a></li>
 				</ul>
 
 				<form id="ewm-modal-form" method="post">
@@ -1208,8 +1208,8 @@ class EWM_Admin_Page {
 		// Sanitizar mensajes de éxito
 		if ( isset( $modal_data['steps']['success'] ) ) {
 			$modal_data['steps']['success'] = array(
-				'title' => sanitize_text_field( $modal_data['steps']['success']['title'] ?? '' ),
-				'message' => sanitize_textarea_field( $modal_data['steps']['success']['message'] ?? '' )
+				'title'   => sanitize_text_field( $modal_data['steps']['success']['title'] ?? '' ),
+				'message' => sanitize_textarea_field( $modal_data['steps']['success']['message'] ?? '' ),
 			);
 		}
 
@@ -1218,8 +1218,8 @@ class EWM_Admin_Page {
 			// Asegurar que existe la estructura de success si no está presente
 			if ( ! isset( $modal_data['steps']['success'] ) ) {
 				$modal_data['steps']['success'] = array(
-					'title' => '',
-					'message' => ''
+					'title'   => '',
+					'message' => '',
 				);
 			}
 			$result = update_post_meta( $modal_id, 'ewm_steps_config', wp_json_encode( $modal_data['steps'] ) );

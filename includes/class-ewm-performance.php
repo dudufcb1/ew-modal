@@ -181,7 +181,7 @@ class EWM_Performance {
 		}
 
 		// Verificar si hay modales configurados para WooCommerce con caché
-		$cache_key = 'ewm_performance_wc_check';
+		$cache_key     = 'ewm_performance_wc_check';
 		$has_wc_modals = wp_cache_get( $cache_key, 'ewm_performance' );
 
 		if ( false === $has_wc_modals ) {
@@ -196,7 +196,7 @@ class EWM_Performance {
 				)
 			);
 
-			$has_wc_modals = !empty($wc_modals);
+			$has_wc_modals = ! empty( $wc_modals );
 			// Cachear por 1 hora
 			wp_cache_set( $cache_key, $has_wc_modals, 'ewm_performance', HOUR_IN_SECONDS );
 		}
@@ -358,7 +358,7 @@ class EWM_Performance {
 	private function clear_related_cache( $modal_id ) {
 		// Limpiar cache de páginas que usan este modal
 		// Optimizar consulta de páginas con modal usando caché
-		$cache_key = 'ewm_pages_with_modal_' . $modal_id;
+		$cache_key        = 'ewm_pages_with_modal_' . $modal_id;
 		$pages_with_modal = wp_cache_get( $cache_key, 'ewm_performance' );
 
 		if ( false === $pages_with_modal ) {
@@ -393,7 +393,7 @@ class EWM_Performance {
 				global $wpdb;
 
 				// Verificar si los índices existen con caché (solo para sistema actual)
-				$cache_key = 'ewm_db_indexes_checked';
+				$cache_key       = 'ewm_db_indexes_checked';
 				$indexes_checked = wp_cache_get( $cache_key, 'ewm_performance' );
 
 				if ( false === $indexes_checked ) {
@@ -401,13 +401,17 @@ class EWM_Performance {
 
 					if ( empty( $indexes ) ) {
 						// Crear índices para meta queries frecuentes usando WordPress hooks
-						add_action( 'wp_loaded', function() use ( $wpdb ) {
-							// Solo crear índices si no existen y el usuario tiene permisos
-							if ( current_user_can( 'manage_options' ) ) {
-								$wpdb->query( "ALTER TABLE {$wpdb->postmeta} ADD INDEX IF NOT EXISTS ew_steps_config (meta_key(20), meta_value(20))" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange -- Performance optimization index creation with admin capability check
-								$wpdb->query( "ALTER TABLE {$wpdb->postmeta} ADD INDEX IF NOT EXISTS ew_wc_integration (meta_key(20), meta_value(20))" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange -- Performance optimization index creation with admin capability check
-							}
-						}, 999 );
+						add_action(
+							'wp_loaded',
+							function () use ( $wpdb ) {
+								// Solo crear índices si no existen y el usuario tiene permisos
+								if ( current_user_can( 'manage_options' ) ) {
+									$wpdb->query( "ALTER TABLE {$wpdb->postmeta} ADD INDEX IF NOT EXISTS ew_steps_config (meta_key(20), meta_value(20))" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange -- Performance optimization index creation with admin capability check
+									$wpdb->query( "ALTER TABLE {$wpdb->postmeta} ADD INDEX IF NOT EXISTS ew_wc_integration (meta_key(20), meta_value(20))" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange -- Performance optimization index creation with admin capability check
+								}
+							},
+							999
+						);
 					}
 
 					// Cachear que ya verificamos por 1 día
@@ -465,7 +469,7 @@ class EWM_Performance {
 			'ewm_modal_frequency_',
 			'ewm_modal_stats_',
 			'ewm_performance_',
-			'ewm_wc_session_'
+			'ewm_wc_session_',
 		);
 
 		foreach ( $transient_keys as $key ) {

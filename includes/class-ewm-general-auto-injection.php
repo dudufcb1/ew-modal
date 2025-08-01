@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Clase para		if ( ! isset( $config['display_rules']['user_roles'] ) || empty( $conf	private function render_general_modal( $modal_data ) {
+ * Clase para       if ( ! isset( $config['display_rules']['user_roles'] ) || empty( $conf  private function render_general_modal( $modal_data ) {
 		$modal_id = $modal_data['id'];
 		$config = $modal_data['config'];
 
@@ -94,7 +94,7 @@ class EWM_General_Auto_Injection {
 
 		// Determinar tipo de página
 		$this->current_page_type = $this->get_page_type();
-		$this->current_page_id = $post ? $post->ID : null;
+		$this->current_page_id   = $post ? $post->ID : null;
 
 		// Buscar modales aplicables para esta página
 		$this->detected_modals = $this->find_applicable_general_modals();
@@ -180,11 +180,13 @@ class EWM_General_Auto_Injection {
 	 */
 	private function find_applicable_general_modals() {
 		// Buscar todos los modales publicados
-		$all_modals = get_posts( array(
-			'post_type'      => 'ew_modal',
-			'post_status'    => 'publish',
-			'posts_per_page' => -1,
-		) );
+		$all_modals = get_posts(
+			array(
+				'post_type'      => 'ew_modal',
+				'post_status'    => 'publish',
+				'posts_per_page' => -1,
+			)
+		);
 
 		if ( empty( $all_modals ) ) {
 			return array();
@@ -303,7 +305,7 @@ class EWM_General_Auto_Injection {
 			return true; // Sin restricciones = mostrar en todas
 		}
 
-		$page_rules = $config['display_rules']['pages'];
+		$page_rules    = $config['display_rules']['pages'];
 		$include_pages = $page_rules['include'] ?? array();
 		$exclude_pages = $page_rules['exclude'] ?? array();
 
@@ -315,7 +317,7 @@ class EWM_General_Auto_Injection {
 		// Si hay páginas incluidas, verificar que estemos en una de ellas
 		if ( ! empty( $include_pages ) ) {
 			// Si 'all' o -1 (como string o número) está en las páginas incluidas, mostrar en todas
-			$has_all = in_array( 'all', $include_pages, true );
+			$has_all       = in_array( 'all', $include_pages, true );
 			$has_minus_one = in_array( -1, $include_pages, true ) || in_array( '-1', $include_pages, true );
 
 			if ( $has_all || $has_minus_one ) {
@@ -396,7 +398,7 @@ class EWM_General_Auto_Injection {
 			}
 
 			$this->render_general_modal( $modal_data );
-			$injected_count++;
+			++$injected_count;
 		}
 
 		// Inyectar JavaScript para manejar triggers generales
@@ -410,7 +412,7 @@ class EWM_General_Auto_Injection {
 	 */
 	private function render_general_modal( $modal_data ) {
 		$modal_id = $modal_data['id'];
-		$config = $modal_data['config'];
+		$config   = $modal_data['config'];
 
 		// Usar el sistema de renderizado existente con configuración para auto-inyección
 		$render_config = array(

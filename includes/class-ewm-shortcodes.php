@@ -71,8 +71,6 @@ class EWM_Shortcodes {
 		foreach ( $this->shortcodes as $tag => $callback ) {
 			add_shortcode( $tag, array( $this, $callback ) );
 		}
-
-		
 	}
 
 	/**
@@ -80,8 +78,6 @@ class EWM_Shortcodes {
 	 */
 	public function render_modal_shortcode( $atts, $content = null ) {
 		$start_time = microtime( true );
-
-		
 
 		// Atributos por defecto
 		$atts = shortcode_atts(
@@ -96,18 +92,12 @@ class EWM_Shortcodes {
 			'ew_modal'
 		);
 
-		
-
-		
-
 		// Validar ID del modal
 		$modal_id = $this->validate_modal_id( $atts['id'] );
 
 		if ( ! $modal_id ) {
 			return '';
 		}
-
-		
 
 		// Verificar permisos de visualización
 		$can_display = $this->can_display_modal( $modal_id );
@@ -116,13 +106,8 @@ class EWM_Shortcodes {
 			return '';
 		}
 
-		
-
 		// Preparar configuración para el renderizado (solo atributos del shortcode)
 		$render_config = $this->prepare_render_config( $modal_id, $atts );
-		
-
-		
 
 		// Usar el motor de renderizado universal
 		$output = ewm_render_modal_core( $modal_id, $render_config );
@@ -201,28 +186,25 @@ class EWM_Shortcodes {
 	 * Validar ID del modal
 	 */
 	private function validate_modal_id( $id ) {
-		
 
 		if ( empty( $id ) ) {
-			
+
 			return false;
 		}
 
 		// Si es numérico, verificar que existe
 		if ( is_numeric( $id ) ) {
 			$post = get_post( $id );
-			
 
 			if ( $post && $post->post_type === 'ew_modal' && $post->post_status === 'publish' ) {
-				
+
 				return intval( $id );
 			} else {
-				
+
 			}
 		}
 
 		// Si es string, buscar por slug o título
-		
 
 		$query = new WP_Query(
 			array(
@@ -234,15 +216,12 @@ class EWM_Shortcodes {
 			)
 		);
 
-		
-
 		if ( $query->have_posts() ) {
-			
+
 			return $query->posts[0];
 		}
 
 		// Buscar por título
-		
 
 		$query = new WP_Query(
 			array(
@@ -254,14 +233,11 @@ class EWM_Shortcodes {
 			)
 		);
 
-		
-
 		if ( $query->have_posts() ) {
-			
+
 			return $query->posts[0];
 		}
 
-		
 		return false;
 	}
 
@@ -270,56 +246,55 @@ class EWM_Shortcodes {
 	 */
 	private function can_display_modal( $modal_id ) {
 
-	   // USAR CAMPOS SEPARADOS ACTUALES: Obtener configuración completa
-	   $modal_config = $this->get_current_modal_config( $modal_id );
-	   $display_rules = $modal_config['display_rules'];
-		
+		// USAR CAMPOS SEPARADOS ACTUALES: Obtener configuración completa
+		$modal_config  = $this->get_current_modal_config( $modal_id );
+		$display_rules = $modal_config['display_rules'];
 
-	   // Si no hay reglas, permitir siempre.
-	   if ( empty( $display_rules ) ) {
-			   return true;
-	   }
+		// Si no hay reglas, permitir siempre.
+		if ( empty( $display_rules ) ) {
+				return true;
+		}
 
-	   // --- 1. VALIDACIÓN DE PÁGINAS ELIMINADA PARA SHORTCODES ---
-	   // Los shortcodes no deben tener restricciones de páginas ya que el usuario
-	   // decide conscientemente dónde insertarlos. Las restricciones de páginas
-	   // son para el sistema de auto-inyección.
+		// --- 1. VALIDACIÓN DE PÁGINAS ELIMINADA PARA SHORTCODES ---
+		// Los shortcodes no deben tener restricciones de páginas ya que el usuario
+		// decide conscientemente dónde insertarlos. Las restricciones de páginas
+		// son para el sistema de auto-inyección.
 
-	   // --- 2. VALIDACIÓN DE ROLES DE USUARIO ---
-	   if ( ! empty( $display_rules['user_roles'] ) ) {
-		   $user       = wp_get_current_user();
-		   $user_roles = ! empty( $user->roles ) ? $user->roles : array( 'guest' );
-		   if ( ! in_array( 'all', $display_rules['user_roles'] ) && count( array_intersect( $user_roles, $display_rules['user_roles'] ) ) === 0 ) {
-			   return false;
-		   }
-	   }
+		// --- 2. VALIDACIÓN DE ROLES DE USUARIO ---
+		if ( ! empty( $display_rules['user_roles'] ) ) {
+			$user       = wp_get_current_user();
+			$user_roles = ! empty( $user->roles ) ? $user->roles : array( 'guest' );
+			if ( ! in_array( 'all', $display_rules['user_roles'] ) && count( array_intersect( $user_roles, $display_rules['user_roles'] ) ) === 0 ) {
+				return false;
+			}
+		}
 
-	   // --- 3. VALIDACIÓN DE DISPOSITIVOS ---
-	   if ( ! empty( $display_rules['devices'] ) ) {
-		   $device = $this->detect_device();
-		   $devices_config = $display_rules['devices'];
-		   if ( isset( $devices_config[ $device ] ) && $devices_config[ $device ] === false ) {
-			   $all_devices_false = ( $devices_config['desktop'] === false &&
-									  $devices_config['tablet'] === false &&
-									  $devices_config['mobile'] === false );
-			   if ( ! $all_devices_false ) {
-				   return false;
-			   }
-		   }
-	   }
+		// --- 3. VALIDACIÓN DE DISPOSITIVOS ---
+		if ( ! empty( $display_rules['devices'] ) ) {
+			$device         = $this->detect_device();
+			$devices_config = $display_rules['devices'];
+			if ( isset( $devices_config[ $device ] ) && $devices_config[ $device ] === false ) {
+				$all_devices_false = ( $devices_config['desktop'] === false &&
+										$devices_config['tablet'] === false &&
+										$devices_config['mobile'] === false );
+				if ( ! $all_devices_false ) {
+					return false;
+				}
+			}
+		}
 
 		// --- 4. VALIDACIÓN DE FRECUENCIA CON TRANSIENTS ---
-	   $frequency_config = $this->get_modal_frequency_config( $modal_id );
-	   if ( $frequency_config['type'] === 'always' ) {
-		   return true;
-	   }
-	   $transient_key = $this->get_modal_transient_key( $modal_id );
-	   $view_count = intval( get_transient( $transient_key ) ?: 0 );
-	   $limit = intval( $frequency_config['limit'] ?? 1 );
-	   if ( $view_count >= $limit ) {
-		   return false;
-	   }
-	   return true;
+		$frequency_config = $this->get_modal_frequency_config( $modal_id );
+		if ( $frequency_config['type'] === 'always' ) {
+			return true;
+		}
+		$transient_key = $this->get_modal_transient_key( $modal_id );
+		$view_count    = intval( get_transient( $transient_key ) ?: 0 );
+		$limit         = intval( $frequency_config['limit'] ?? 1 );
+		if ( $view_count >= $limit ) {
+			return false;
+		}
+		return true;
 	}
 
 	/**
@@ -347,25 +322,22 @@ class EWM_Shortcodes {
 
 		// CORRECCIÓN: "always" significa mostrar siempre, ignorar límite
 		if ( $type === 'always' ) {
-			
+
 			return true;
 		}
 
 		$cookie_name   = "ewm_modal_{$modal_id}_count";
 		$current_count = intval( $_COOKIE[ $cookie_name ] ?? 0 );
 
-		
-
 		if ( $current_count >= $limit ) {
-			
+
 			return false;
 		}
 
 		// Incrementar contador
-		$expiry = $this->get_frequency_expiry( $type );
+		$expiry    = $this->get_frequency_expiry( $type );
 		$new_count = $current_count + 1;
 		setcookie( $cookie_name, (string) $new_count, $expiry, '/' );
-		
 
 		return true;
 	}
@@ -396,10 +368,10 @@ class EWM_Shortcodes {
 
 		// Obtener la configuración de frecuencia ACTUAL del modal
 		$frequency_config = $this->get_modal_frequency_config( $modal_id );
-		$frequency_type = $frequency_config['type'] ?? 'session';
+		$frequency_type   = $frequency_config['type'] ?? 'session';
 
 		// Usar user_id si está logueado, sino usar hash de IP
-		$identifier = $user_id ? "user_{$user_id}" : "ip_" . md5( $user_ip );
+		$identifier = $user_id ? "user_{$user_id}" : 'ip_' . md5( $user_ip );
 
 		// La clave ahora incluye el tipo de frecuencia, aislando el estado
 		return "ewm_modal_{$modal_id}_{$frequency_type}_{$identifier}";
@@ -556,16 +528,18 @@ class EWM_Shortcodes {
 		// Incrementar contador en transient
 		$transient_key = $this->get_modal_transient_key( $modal_id );
 		$current_count = intval( get_transient( $transient_key ) ?: 0 );
-		$new_count = $current_count + 1;
+		$new_count     = $current_count + 1;
 
 		// Establecer expiración según tipo de frecuencia
 		$expiration = $this->get_transient_expiration( $frequency_config['type'] );
 		set_transient( $transient_key, $new_count, $expiration );
 
-		wp_send_json_success( array(
-			'count' => $new_count,
-			'key' => $transient_key
-		) );
+		wp_send_json_success(
+			array(
+				'count' => $new_count,
+				'key'   => $transient_key,
+			)
+		);
 	}
 
 	/**
@@ -588,23 +562,25 @@ class EWM_Shortcodes {
 		}
 
 		// Buscar y eliminar todos los transients de este modal usando WordPress API
-		$deleted = 0;
+		$deleted        = 0;
 		$transient_keys = array( 'session', 'daily', 'weekly', 'monthly' );
 
 		foreach ( $transient_keys as $key ) {
 			$transient_name = 'ewm_modal_' . $modal_id . '_' . $key;
 			if ( delete_transient( $transient_name ) ) {
-				$deleted++;
+				++$deleted;
 			}
 		}
 
 		// También limpiar caché relacionado
 		wp_cache_delete( 'ewm_modal_frequency_' . $modal_id, 'ewm_modals' );
 
-		wp_send_json_success( array(
-			'deleted' => $deleted,
-			'message' => "Cleared {$deleted} transient records for modal {$modal_id}"
-		) );
+		wp_send_json_success(
+			array(
+				'deleted' => $deleted,
+				'message' => "Cleared {$deleted} transient records for modal {$modal_id}",
+			)
+		);
 	}
 
 	/**
@@ -612,23 +588,23 @@ class EWM_Shortcodes {
 	 */
 	private function get_current_modal_config( $modal_id ) {
 		// Leer todos los campos separados que usa el sistema actual
-		$triggers_json = get_post_meta( $modal_id, 'ewm_trigger_config', true );
+		$triggers_json      = get_post_meta( $modal_id, 'ewm_trigger_config', true );
 		$display_rules_json = get_post_meta( $modal_id, 'ewm_display_rules', true );
-		$content_json = get_post_meta( $modal_id, 'ewm_content_config', true );
-		$design_json = get_post_meta( $modal_id, 'ewm_design_config', true );
+		$content_json       = get_post_meta( $modal_id, 'ewm_content_config', true );
+		$design_json        = get_post_meta( $modal_id, 'ewm_design_config', true );
 
 		// Decodificar cada configuración
-		$triggers = json_decode( $triggers_json, true ) ?: array();
+		$triggers      = json_decode( $triggers_json, true ) ?: array();
 		$display_rules = json_decode( $display_rules_json, true ) ?: array();
-		$content = json_decode( $content_json, true ) ?: array();
-		$design = json_decode( $design_json, true ) ?: array();
+		$content       = json_decode( $content_json, true ) ?: array();
+		$design        = json_decode( $design_json, true ) ?: array();
 
 		// Construir configuración completa
 		return array(
-			'triggers' => $triggers,
+			'triggers'      => $triggers,
 			'display_rules' => $display_rules,
-			'content' => $content,
-			'design' => $design
+			'content'       => $content,
+			'design'        => $design,
 		);
 	}
 
@@ -637,8 +613,11 @@ class EWM_Shortcodes {
 	 */
 	private function get_modal_frequency_config( $modal_id ) {
 		// USAR CAMPOS SEPARADOS ACTUALES
-		$config = $this->get_current_modal_config( $modal_id );
-		$frequency = $config['triggers']['frequency'] ?? array( 'type' => 'always', 'limit' => 0 );
+		$config    = $this->get_current_modal_config( $modal_id );
+		$frequency = $config['triggers']['frequency'] ?? array(
+			'type'  => 'always',
+			'limit' => 0,
+		);
 
 		return $frequency;
 	}
@@ -659,41 +638,47 @@ class EWM_Shortcodes {
 
 		// Obtener configuración de frecuencia
 		$frequency_config = $this->get_modal_frequency_config( $modal_id );
-		$frequency_type = $frequency_config['type'] ?? 'always';
+		$frequency_type   = $frequency_config['type'] ?? 'always';
 
 		// Si es tipo 'always', permitir siempre
 		if ( $frequency_type === 'always' ) {
-			wp_send_json_success( array(
-				'can_show' => true,
-				'reason' => 'always_type',
-				'frequency_config' => $frequency_config
-			) );
+			wp_send_json_success(
+				array(
+					'can_show'         => true,
+					'reason'           => 'always_type',
+					'frequency_config' => $frequency_config,
+				)
+			);
 		}
 
 		// Validar límite de frecuencia usando transients
 		$transient_key = $this->get_modal_transient_key( $modal_id );
-		$view_count = intval( get_transient( $transient_key ) ?: 0 );
-		$limit = intval( $frequency_config['limit'] ?? 1 );
+		$view_count    = intval( get_transient( $transient_key ) ?: 0 );
+		$limit         = intval( $frequency_config['limit'] ?? 1 );
 
 		// Si ya se alcanzó el límite, no mostrar
 		if ( $view_count >= $limit ) {
-			wp_send_json_success( array(
-				'can_show' => false,
-				'reason' => 'limit_reached',
-				'current_count' => $view_count,
-				'limit' => $limit,
-				'frequency_config' => $frequency_config
-			) );
+			wp_send_json_success(
+				array(
+					'can_show'         => false,
+					'reason'           => 'limit_reached',
+					'current_count'    => $view_count,
+					'limit'            => $limit,
+					'frequency_config' => $frequency_config,
+				)
+			);
 		}
 
 		// Puede mostrarse
-		wp_send_json_success( array(
-			'can_show' => true,
-			'reason' => 'within_limit',
-			'current_count' => $view_count,
-			'limit' => $limit,
-			'frequency_config' => $frequency_config
-		) );
+		wp_send_json_success(
+			array(
+				'can_show'         => true,
+				'reason'           => 'within_limit',
+				'current_count'    => $view_count,
+				'limit'            => $limit,
+				'frequency_config' => $frequency_config,
+			)
+		);
 	}
 
 	/**

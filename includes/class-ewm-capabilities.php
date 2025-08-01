@@ -170,7 +170,6 @@ class EWM_Capabilities {
 			$this->add_capabilities_to_roles();
 			update_option( 'ewm_capabilities_setup', EWM_VERSION );
 
-
 		}
 	}
 
@@ -185,8 +184,6 @@ class EWM_Capabilities {
 				foreach ( $capabilities as $capability ) {
 					$role->add_cap( $capability );
 				}
-
-			
 			}
 		}
 	}
@@ -202,8 +199,6 @@ class EWM_Capabilities {
 				foreach ( $capabilities as $capability ) {
 					$role->remove_cap( $capability );
 				}
-
-		
 			}
 		}
 
@@ -414,8 +409,6 @@ class EWM_Capabilities {
 					$role->add_cap( $capability );
 				}
 			}
-
-			
 		}
 	}
 
@@ -434,8 +427,6 @@ class EWM_Capabilities {
 					$role->remove_cap( $capability );
 				}
 			}
-
-		
 		}
 	}
 

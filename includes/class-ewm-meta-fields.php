@@ -15,44 +15,44 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Class to manage flexible meta fields with JSON and serialized support
  */
 class EWM_Meta_Fields {
-   /**
-	* Singleton instance
-	*/
-   private static $instance = null;
-   /**
-	* Resolve a special page/category slug or numeric value to its ID or logical value.
-	* Returns int for numeric values, or null if not found.
-	*/
-   public static function resolve_to_id($value) {
-	   if (is_numeric($value)) {
-		   return (int)$value;
-	   }
-	   switch ($value) {
-		   case 'home':
-			   $id = (int) get_option('page_on_front');
-			   return $id > 0 ? $id : null;
-		   case 'blog':
-			   $id = (int) get_option('page_for_posts');
-			   return $id > 0 ? $id : null;
-		   case 'none':
-			   return 0;
-		   case 'all':
-			   return -1;
-		   default:
-			   $page = get_page_by_path($value);
-			   if ($page) {
-				   return (int)$page->ID;
-			   }
-			   // Soporte para categorías por slug
-			   if (function_exists('get_category_by_slug')) {
-				   $cat = get_category_by_slug($value);
-				   if ($cat && isset($cat->term_id)) {
-					   return (int)$cat->term_id;
-				   }
-			   }
-			   return null;
-	   }
-   }
+	/**
+	 * Singleton instance
+	 */
+	private static $instance = null;
+	/**
+	 * Resolve a special page/category slug or numeric value to its ID or logical value.
+	 * Returns int for numeric values, or null if not found.
+	 */
+	public static function resolve_to_id( $value ) {
+		if ( is_numeric( $value ) ) {
+			return (int) $value;
+		}
+		switch ( $value ) {
+			case 'home':
+				$id = (int) get_option( 'page_on_front' );
+				return $id > 0 ? $id : null;
+			case 'blog':
+				$id = (int) get_option( 'page_for_posts' );
+				return $id > 0 ? $id : null;
+			case 'none':
+				return 0;
+			case 'all':
+				return -1;
+			default:
+				$page = get_page_by_path( $value );
+				if ( $page ) {
+					return (int) $page->ID;
+				}
+				// Soporte para categorías por slug
+				if ( function_exists( 'get_category_by_slug' ) ) {
+					$cat = get_category_by_slug( $value );
+					if ( $cat && isset( $cat->term_id ) ) {
+						return (int) $cat->term_id;
+					}
+				}
+				return null;
+		}
+	}
 	public static function get_instance() {
 		if ( null === self::$instance ) {
 			self::$instance = new self();
@@ -76,7 +76,7 @@ class EWM_Meta_Fields {
 
 
 
-   /**
+	/**
 	 * Validate steps configuration
 	 */
 	private function validate_steps_config( $config ) {
@@ -90,7 +90,6 @@ class EWM_Meta_Fields {
 				'style'   => 'line',
 			),
 		);
-
 
 		// Validar pasos
 		if ( isset( $config['steps'] ) && is_array( $config['steps'] ) ) {
@@ -106,7 +105,6 @@ class EWM_Meta_Fields {
 						'button_text' => sanitize_text_field( $step['button_text'] ?? 'NEXT' ),
 						'description' => sanitize_text_field( $step['description'] ?? '' ),
 					);
-
 
 					// Validar campos del paso - CORREGIR para manejar strings simples
 					if ( isset( $step['fields'] ) && is_array( $step['fields'] ) ) {
@@ -124,7 +122,6 @@ class EWM_Meta_Fields {
 				}
 			}
 		}
-
 
 		// Validar paso final
 		if ( isset( $config['final_step'] ) && is_array( $config['final_step'] ) ) {
@@ -167,26 +164,26 @@ class EWM_Meta_Fields {
 	 */
 	public static function get_supported_field_types() {
 		return array(
-	   'text'           => __( 'Text', 'ewm-modal-cta' ),
-	   'email'          => __( 'Email', 'ewm-modal-cta' ),
-	   'tel'            => __( 'Phone', 'ewm-modal-cta' ),
-	   'textarea'       => __( 'Textarea', 'ewm-modal-cta' ),
-	   'select'         => __( 'Dropdown', 'ewm-modal-cta' ),
-	   'radio'          => __( 'Radio Buttons', 'ewm-modal-cta' ),
-	   'checkbox'       => __( 'Checkboxes', 'ewm-modal-cta' ),
-	   'number'         => __( 'Number', 'ewm-modal-cta' ),
-	   'url'            => __( 'URL', 'ewm-modal-cta' ),
-	   'date'           => __( 'Date', 'ewm-modal-cta' ),
-	   'hidden'         => __( 'Hidden', 'ewm-modal-cta' ),
+			'text'           => __( 'Text', 'ewm-modal-cta' ),
+			'email'          => __( 'Email', 'ewm-modal-cta' ),
+			'tel'            => __( 'Phone', 'ewm-modal-cta' ),
+			'textarea'       => __( 'Textarea', 'ewm-modal-cta' ),
+			'select'         => __( 'Dropdown', 'ewm-modal-cta' ),
+			'radio'          => __( 'Radio Buttons', 'ewm-modal-cta' ),
+			'checkbox'       => __( 'Checkboxes', 'ewm-modal-cta' ),
+			'number'         => __( 'Number', 'ewm-modal-cta' ),
+			'url'            => __( 'URL', 'ewm-modal-cta' ),
+			'date'           => __( 'Date', 'ewm-modal-cta' ),
+			'hidden'         => __( 'Hidden', 'ewm-modal-cta' ),
 			// Nuevos tipos de campo
-	   'time'           => __( 'Time', 'ewm-modal-cta' ),
-	   'datetime-local' => __( 'Local Date and Time', 'ewm-modal-cta' ),
-	   'range'          => __( 'Range (Slider)', 'ewm-modal-cta' ),
-	   'color'          => __( 'Color Picker', 'ewm-modal-cta' ),
-	   'password'       => __( 'Password', 'ewm-modal-cta' ),
-	   'search'         => __( 'Search', 'ewm-modal-cta' ),
-	   'month'          => __( 'Month', 'ewm-modal-cta' ),
-	   'week'           => __( 'Week', 'ewm-modal-cta' ),
+			'time'           => __( 'Time', 'ewm-modal-cta' ),
+			'datetime-local' => __( 'Local Date and Time', 'ewm-modal-cta' ),
+			'range'          => __( 'Range (Slider)', 'ewm-modal-cta' ),
+			'color'          => __( 'Color Picker', 'ewm-modal-cta' ),
+			'password'       => __( 'Password', 'ewm-modal-cta' ),
+			'search'         => __( 'Search', 'ewm-modal-cta' ),
+			'month'          => __( 'Month', 'ewm-modal-cta' ),
+			'week'           => __( 'Week', 'ewm-modal-cta' ),
 		);
 	}
 
@@ -289,14 +286,14 @@ class EWM_Meta_Fields {
 	/**
 	 * Validar integración WooCommerce
 	 */
-private function validate_wc_integration( $config ) {
-	// Asegurar que la configuración es un array. Si no, devolver array vacío.
-	if ( ! is_array( $config ) ) {
-		return array();
+	private function validate_wc_integration( $config ) {
+		// Asegurar que la configuración es un array. Si no, devolver array vacío.
+		if ( ! is_array( $config ) ) {
+			return array();
+		}
+		// Devolver la configuración recibida sin modificarla.
+		return $config;
 	}
-	// Devolver la configuración recibida sin modificarla.
-	return $config;
-}
 
 	/**
 	 * Optimizar procesamiento de IDs de páginas
@@ -308,15 +305,16 @@ private function validate_wc_integration( $config ) {
 
 		// Procesar en lotes para mejor rendimiento
 		$batch_size = 50;
-		$result = array();
+		$result     = array();
 
 		for ( $i = 0; $i < count( $pages ); $i += $batch_size ) {
-			$batch = array_slice( $pages, $i, $batch_size );
+			$batch        = array_slice( $pages, $i, $batch_size );
 			$batch_result = array_filter(
-				array_map( [self::class, 'resolve_to_id'], $batch ),
-				function( $v ) { return $v !== null; }
+				array_map( array( self::class, 'resolve_to_id' ), $batch ),
+				function ( $v ) {
+					return $v !== null; }
 			);
-			$result = array_merge( $result, $batch_result );
+			$result       = array_merge( $result, $batch_result );
 		}
 
 		return $result;
@@ -330,8 +328,8 @@ private function validate_wc_integration( $config ) {
 		$is_wc_modal = ! empty( $config['wc_integration_enabled'] );
 
 		$validated = array(
-			'enabled'           => ! empty( $config['enabled'] ),
-			'pages'             => array(
+			'enabled'    => ! empty( $config['enabled'] ),
+			'pages'      => array(
 				'include' => self::optimize_page_ids( $config['pages']['include'] ?? array() ),
 				'exclude' => self::optimize_page_ids( $config['pages']['exclude'] ?? array() ), // phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_exclude -- Optimized page exclusion with ID optimization
 			),
@@ -345,13 +343,13 @@ private function validate_wc_integration( $config ) {
 
 		if ( $is_wc_modal ) {
 			// Para modales WooCommerce: forzar valores específicos
-			$validated['use_global_config'] = false; // WooCommerce no usa configuración global
-			$validated['omit_wc_products']  = false; // No aplica (WC maneja su propia lógica)
+			$validated['use_global_config']  = false; // WooCommerce no usa configuración global
+			$validated['omit_wc_products']   = false; // No aplica (WC maneja su propia lógica)
 			$validated['omit_wc_categories'] = false; // No aplica (WC maneja su propia lógica)
 		} else {
 			// Para modales normales: usar valores del formulario
-			$validated['use_global_config'] = ! empty( $config['use_global_config'] );
-			$validated['omit_wc_products']  = ! empty( $config['omit_wc_products'] );
+			$validated['use_global_config']  = ! empty( $config['use_global_config'] );
+			$validated['omit_wc_products']   = ! empty( $config['omit_wc_products'] );
 			$validated['omit_wc_categories'] = ! empty( $config['omit_wc_categories'] );
 		}
 
@@ -400,5 +398,5 @@ private function validate_wc_integration( $config ) {
 		return is_array( $value ) ? $value : $default;
 	}
 
-// ...existing code...
+	// ...existing code...
 }

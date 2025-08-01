@@ -28,16 +28,16 @@ class EWM_REST_API {
 				'callback'            => array( $this, 'test_modal_visibility' ),
 				'permission_callback' => '__return_true', // Público
 				'args'                => array(
-					'modal_id' => array(
-						'description' => 'ID del modal a testear',
-						'type'        => 'integer',
-						'required'    => true,
+					'modal_id'   => array(
+						'description'       => 'ID del modal a testear',
+						'type'              => 'integer',
+						'required'          => true,
 						'sanitize_callback' => 'absint',
 					),
 					'product_id' => array(
-						'description' => 'ID del producto a testear',
-						'type'        => 'integer',
-						'required'    => true,
+						'description'       => 'ID del producto a testear',
+						'type'              => 'integer',
+						'required'          => true,
 						'sanitize_callback' => 'absint',
 					),
 				),
@@ -47,6 +47,7 @@ class EWM_REST_API {
 
 	/**
 	 * Callback para test_modal_visibility
+	 *
 	 * @param WP_REST_Request $request
 	 * @return WP_REST_Response
 	 */
@@ -54,10 +55,20 @@ class EWM_REST_API {
 		$modal_id   = absint( $request->get_param( 'modal_id' ) );
 		$product_id = absint( $request->get_param( 'product_id' ) );
 		if ( ! $modal_id ) {
-			return rest_ensure_response( array( 'result' => 'will not show', 'reason' => 'Invalid modal ID' ) );
+			return rest_ensure_response(
+				array(
+					'result' => 'will not show',
+					'reason' => 'Invalid modal ID',
+				)
+			);
 		}
 		if ( ! $product_id ) {
-			return rest_ensure_response( array( 'result' => 'will not show', 'reason' => 'Invalid product ID' ) );
+			return rest_ensure_response(
+				array(
+					'result' => 'will not show',
+					'reason' => 'Invalid product ID',
+				)
+			);
 		}
 		// Cargar WooCommerce si no está cargado
 		if ( ! class_exists( 'WooCommerce' ) ) {
@@ -66,16 +77,31 @@ class EWM_REST_API {
 			}
 		}
 		if ( ! function_exists( 'wc_get_product' ) ) {
-			return rest_ensure_response( array( 'result' => 'will not show', 'reason' => 'WooCommerce is not active' ) );
+			return rest_ensure_response(
+				array(
+					'result' => 'will not show',
+					'reason' => 'WooCommerce is not active',
+				)
+			);
 		}
 		$product = wc_get_product( $product_id );
 		if ( ! $product ) {
-			return rest_ensure_response( array( 'result' => 'will not show', 'reason' => 'product not found' ) );
+			return rest_ensure_response(
+				array(
+					'result' => 'will not show',
+					'reason' => 'product not found',
+				)
+			);
 		}
 		// Obtener el modal solicitado
 		$modal_post = get_post( $modal_id );
 		if ( ! $modal_post || $modal_post->post_type !== 'ew_modal' ) {
-			return rest_ensure_response( array( 'result' => 'will not show', 'reason' => 'modal not found' ) );
+			return rest_ensure_response(
+				array(
+					'result' => 'will not show',
+					'reason' => 'modal not found',
+				)
+			);
 		}
 		$config_json = get_post_meta( $modal_id, 'ewm_steps_config', true );
 		if ( empty( $config_json ) ) {
@@ -83,7 +109,12 @@ class EWM_REST_API {
 		} else {
 			$config = json_decode( $config_json, true );
 			if ( ! is_array( $config ) ) {
-				return rest_ensure_response( array( 'result' => 'will not show', 'reason' => 'invalid modal config' ) );
+				return rest_ensure_response(
+					array(
+						'result' => 'will not show',
+						'reason' => 'invalid modal config',
+					)
+				);
 			}
 		}
 		// Simular estructura de modal para el filtro
@@ -94,16 +125,16 @@ class EWM_REST_API {
 		);
 		// Reglas de display propias del modal
 		$display_rules = get_post_meta( $modal_id, 'ewm_display_rules', true );
-		$display_rules = $display_rules ? json_decode($display_rules, true) : array();
-		$reasons = array();
+		$display_rules = $display_rules ? json_decode( $display_rules, true ) : array();
+		$reasons       = array();
 		// Modal activo
-		if ( isset($display_rules['enabled']) && !$display_rules['enabled'] ) {
+		if ( isset( $display_rules['enabled'] ) && ! $display_rules['enabled'] ) {
 			$reasons[] = 'modal not active';
 		}
 		// Dispositivo objetivo (simulado: desktop)
 		$device = 'desktop'; // Se puede mejorar con User-Agent
-		if ( isset($display_rules['devices']) && is_array($display_rules['devices']) ) {
-			if ( empty($display_rules['devices'][$device]) ) {
+		if ( isset( $display_rules['devices'] ) && is_array( $display_rules['devices'] ) ) {
+			if ( empty( $display_rules['devices'][ $device ] ) ) {
 				$reasons[] = 'device not allowed';
 			}
 		}
@@ -117,10 +148,24 @@ class EWM_REST_API {
 			$reasons[] = $wc_reason ? $wc_reason : 'product/coupon restriction';
 		}
 
-		if ( empty($reasons) ) {
-			return rest_ensure_response( array( 'result' => 'will show', 'reason' => 'all conditions passed', 'modal_id' => $modal_id, 'product_id' => $product_id ) );
+		if ( empty( $reasons ) ) {
+			return rest_ensure_response(
+				array(
+					'result'     => 'will show',
+					'reason'     => 'all conditions passed',
+					'modal_id'   => $modal_id,
+					'product_id' => $product_id,
+				)
+			);
 		} else {
-			return rest_ensure_response( array( 'result' => 'will not show', 'reason' => implode('; ', $reasons), 'modal_id' => $modal_id, 'product_id' => $product_id ) );
+			return rest_ensure_response(
+				array(
+					'result'     => 'will not show',
+					'reason'     => implode( '; ', $reasons ),
+					'modal_id'   => $modal_id,
+					'product_id' => $product_id,
+				)
+			);
 		}
 	}
 	/**
@@ -132,8 +177,8 @@ class EWM_REST_API {
 			self::NAMESPACE,
 			'/user-profile',
 			array(
-				'methods'  => WP_REST_Server::READABLE,
-				'callback' => array( $this, 'get_user_profile' ),
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'get_user_profile' ),
 				'permission_callback' => function () {
 					return is_user_logged_in();
 				},
@@ -222,8 +267,6 @@ class EWM_REST_API {
 			)
 		);
 
-	
-
 		// Endpoint para gestión de modales (simplificado para debugging)
 		$modals_route_registered = register_rest_route(
 			self::NAMESPACE,
@@ -242,8 +285,6 @@ class EWM_REST_API {
 				),
 			)
 		);
-
-
 
 		// Endpoint para modal específico (simplificado para debugging)
 		$modal_id_route_registered = register_rest_route(
@@ -269,7 +310,6 @@ class EWM_REST_API {
 			)
 		);
 
-
 		// Endpoint para envío de formularios (simplificado para debugging)
 		$submit_form_route_registered = register_rest_route(
 			self::NAMESPACE,
@@ -292,8 +332,6 @@ class EWM_REST_API {
 				'permission_callback' => array( $this, 'check_permissions' ),
 			)
 		);
-
-	
 
 		// Endpoint para cupones de WooCommerce
 		register_rest_route(
@@ -370,32 +408,32 @@ class EWM_REST_API {
 				'callback'            => array( $this, 'get_active_modals_endpoint' ),
 				'permission_callback' => '__return_true', // Público para uso en frontend
 				'args'                => array(
-					'page_type' => array(
-						'description' => 'Tipo de página (product, shop, cart, home)',
-						'type'        => 'string',
-						'required'    => false,
+					'page_type'  => array(
+						'description'       => 'Tipo de página (product, shop, cart, home)',
+						'type'              => 'string',
+						'required'          => false,
 						'sanitize_callback' => 'sanitize_text_field',
-						'validate_callback' => function( $param ) {
+						'validate_callback' => function ( $param ) {
 							$valid_types = array( 'product', 'shop', 'cart', 'home', 'category', 'tag' );
 							return in_array( $param, $valid_types, true );
 						},
 					),
 					'product_id' => array(
-						'description' => 'ID del producto actual (opcional)',
-						'type'        => 'integer',
-						'required'    => false,
+						'description'       => 'ID del producto actual (opcional)',
+						'type'              => 'integer',
+						'required'          => false,
 						'sanitize_callback' => 'absint',
 					),
 					'user_agent' => array(
-						'description' => 'User agent para detección de dispositivo',
-						'type'        => 'string',
-						'required'    => false,
+						'description'       => 'User agent para detección de dispositivo',
+						'type'              => 'string',
+						'required'          => false,
 						'sanitize_callback' => 'sanitize_text_field',
 					),
-					'context' => array(
-						'description' => 'Contexto adicional en formato JSON',
-						'type'        => 'string',
-						'required'    => false,
+					'context'    => array(
+						'description'       => 'Contexto adicional en formato JSON',
+						'type'              => 'string',
+						'required'          => false,
 						'sanitize_callback' => 'sanitize_text_field',
 					),
 				),
@@ -410,8 +448,6 @@ class EWM_REST_API {
 				return strpos( $route, '/' . self::NAMESPACE . '/' ) === 0;
 			}
 		);
-
-	
 	}
 
 	/**
@@ -424,8 +460,6 @@ class EWM_REST_API {
 		}
 
 		$start_time = microtime( true );
-
-	
 
 		try {
 			$args = array(
@@ -450,12 +484,9 @@ class EWM_REST_API {
 
 			$execution_time = microtime( true ) - $start_time;
 
-		
-
 			return rest_ensure_response( $response );
 
 		} catch ( Exception $e ) {
-		
 
 			return new WP_Error(
 				'ewm_get_modals_error',
@@ -516,7 +547,6 @@ class EWM_REST_API {
 			// Limpiar output buffer en caso de error también
 			ob_end_clean();
 
-
 			return new WP_Error(
 				'ewm_get_modal_error',
 				'Failed to retrieve modal',
@@ -531,7 +561,6 @@ class EWM_REST_API {
 	public function create_modal( $request ) {
 		$start_time = microtime( true );
 
-
 		try {
 			$title      = sanitize_text_field( $request->get_param( 'title' ) );
 			$config     = $request->get_param( 'config' );
@@ -543,8 +572,6 @@ class EWM_REST_API {
 			if ( empty( $title ) ) {
 
 			}
-
-
 
 			// Crear post
 			$post_id = wp_insert_post(
@@ -560,7 +587,6 @@ class EWM_REST_API {
 				EWM_Modal_CPT::save_modal_config( $post_id, $config );
 			}
 
-
 			if ( is_wp_error( $post_id ) ) {
 				return new WP_Error(
 					'ewm_create_failed',
@@ -573,7 +599,6 @@ class EWM_REST_API {
 			$response = $this->prepare_modal_for_response( $modal );
 
 			$execution_time = microtime( true ) - $start_time;
-
 
 			return rest_ensure_response( $response );
 
@@ -670,8 +695,6 @@ class EWM_REST_API {
 			$config     = $request->get_param( 'config' );
 			$all_params = $request->get_params();
 
-		
-
 			// Actualizar post si hay título
 			if ( ! empty( $title ) ) {
 				$update_result = wp_update_post(
@@ -682,7 +705,6 @@ class EWM_REST_API {
 				);
 
 			}
-
 
 			// Verificar que hay configuración válida
 			if ( empty( $config ) ) {
@@ -705,7 +727,6 @@ class EWM_REST_API {
 
 			$execution_time = microtime( true ) - $start_time;
 
-		
 			return new WP_REST_Response(
 				array(
 					'id'             => $modal_id,
@@ -734,7 +755,6 @@ class EWM_REST_API {
 	public function preview_modal( $request ) {
 		$start_time = microtime( true );
 
-	
 		try {
 			// Obtener datos del modal desde el request
 			$modal_data = $request->get_json_params();
@@ -756,8 +776,6 @@ class EWM_REST_API {
 			$preview_html = $this->generate_preview_html( $modal_data );
 
 			$execution_time = microtime( true ) - $start_time;
-
-
 
 			return new WP_REST_Response(
 				array(
@@ -889,7 +907,6 @@ class EWM_REST_API {
 	public function get_wc_coupons( $request ) {
 		$start_time = microtime( true );
 
-
 		try {
 			if ( ! class_exists( 'WooCommerce' ) ) {
 				return new WP_Error(
@@ -926,7 +943,7 @@ class EWM_REST_API {
 			return rest_ensure_response( $coupon_data );
 
 		} catch ( Exception $e ) {
-		
+
 			return new WP_Error(
 				'ewm_wc_coupons_error',
 				'Failed to retrieve coupons',
@@ -964,12 +981,15 @@ class EWM_REST_API {
 			$modals = $this->get_all_published_modals();
 
 			// Aplicar filtros inteligentes
-			$filtered_modals = $this->apply_modal_filters( $modals, array(
-				'page_type'    => $page_type,
-				'product_id'   => $product_id,
-				'user_agent'   => $user_agent,
-				'context_data' => $context_data,
-			) );
+			$filtered_modals = $this->apply_modal_filters(
+				$modals,
+				array(
+					'page_type'    => $page_type,
+					'product_id'   => $product_id,
+					'user_agent'   => $user_agent,
+					'context_data' => $context_data,
+				)
+			);
 
 			// Preparar respuesta
 			$response_data = array(
@@ -1013,14 +1033,14 @@ class EWM_REST_API {
 
 		foreach ( $query->posts as $post ) {
 			$config = EWM_Modal_CPT::get_modal_config( $post->ID );
-			
+
 			if ( ! empty( $config ) ) {
 				$modals[] = array(
-					'id'           => $post->ID,
-					'title'        => $post->post_title,
-					'config'       => $config,
-					'created_date' => $post->post_date,
-					'modified_date'=> $post->post_modified,
+					'id'            => $post->ID,
+					'title'         => $post->post_title,
+					'config'        => $config,
+					'created_date'  => $post->post_date,
+					'modified_date' => $post->post_modified,
 				);
 			}
 		}
@@ -1062,33 +1082,36 @@ class EWM_REST_API {
 	 */
 	private function filter_modals_by_page_context( $modals, $context ) {
 		$page_type = $context['page_type'];
-		
-		return array_filter( $modals, function( $modal ) use ( $page_type ) {
-			$config = $modal['config'];
-			
-			// Si no hay reglas de display, mostrar en todas las páginas
-			if ( ! isset( $config['display_rules'] ) || ! is_array( $config['display_rules'] ) ) {
-				return true;
-			}
 
-			$display_rules = $config['display_rules'];
-			
-			// Verificar reglas de páginas
-			if ( isset( $display_rules['pages'] ) && is_array( $display_rules['pages'] ) ) {
-				$allowed_pages = $display_rules['pages'];
-				
-				// Si 'all' está en las páginas permitidas, mostrar en todas
-				if ( in_array( 'all', $allowed_pages, true ) ) {
+		return array_filter(
+			$modals,
+			function ( $modal ) use ( $page_type ) {
+				$config = $modal['config'];
+
+				// Si no hay reglas de display, mostrar en todas las páginas
+				if ( ! isset( $config['display_rules'] ) || ! is_array( $config['display_rules'] ) ) {
 					return true;
 				}
-				
-				// Verificar si la página actual está permitida
-				return in_array( $page_type, $allowed_pages, true );
-			}
 
-			// Por defecto, mostrar el modal si no hay reglas específicas
-			return true;
-		} );
+				$display_rules = $config['display_rules'];
+
+				// Verificar reglas de páginas
+				if ( isset( $display_rules['pages'] ) && is_array( $display_rules['pages'] ) ) {
+					$allowed_pages = $display_rules['pages'];
+
+					// Si 'all' está en las páginas permitidas, mostrar en todas
+					if ( in_array( 'all', $allowed_pages, true ) ) {
+						return true;
+					}
+
+					// Verificar si la página actual está permitida
+					return in_array( $page_type, $allowed_pages, true );
+				}
+
+				// Por defecto, mostrar el modal si no hay reglas específicas
+				return true;
+			}
+		);
 	}
 
 	/**
@@ -1099,27 +1122,30 @@ class EWM_REST_API {
 	 * @return array Modales filtrados.
 	 */
 	private function filter_modals_by_device( $modals, $context ) {
-		$user_agent = $context['user_agent'];
+		$user_agent  = $context['user_agent'];
 		$device_type = $this->detect_device_type( $user_agent );
-		
-		return array_filter( $modals, function( $modal ) use ( $device_type ) {
-			$config = $modal['config'];
-			
-			// Si no hay reglas de dispositivo, mostrar en todos
-			if ( ! isset( $config['display_rules']['devices'] ) ) {
-				return true;
-			}
 
-			$allowed_devices = $config['display_rules']['devices'];
-			
-			// Si 'all' está en los dispositivos, mostrar en todos
-			if ( in_array( 'all', $allowed_devices, true ) ) {
-				return true;
+		return array_filter(
+			$modals,
+			function ( $modal ) use ( $device_type ) {
+				$config = $modal['config'];
+
+				// Si no hay reglas de dispositivo, mostrar en todos
+				if ( ! isset( $config['display_rules']['devices'] ) ) {
+					return true;
+				}
+
+				$allowed_devices = $config['display_rules']['devices'];
+
+				// Si 'all' está en los dispositivos, mostrar en todos
+				if ( in_array( 'all', $allowed_devices, true ) ) {
+					return true;
+				}
+
+				// Verificar si el dispositivo actual está permitido
+				return in_array( $device_type, $allowed_devices, true );
 			}
-			
-			// Verificar si el dispositivo actual está permitido
-			return in_array( $device_type, $allowed_devices, true );
-		} );
+		);
 	}
 
 	/**
@@ -1131,36 +1157,39 @@ class EWM_REST_API {
 	 */
 	private function filter_modals_by_user_role( $modals, $context ) {
 		$current_user = wp_get_current_user();
-		$user_roles = $current_user->roles;
+		$user_roles   = $current_user->roles;
 		$is_logged_in = is_user_logged_in();
-		
-		return array_filter( $modals, function( $modal ) use ( $user_roles, $is_logged_in ) {
-			$config = $modal['config'];
-			
-			// Si no hay reglas de usuario, mostrar para todos
-			if ( ! isset( $config['display_rules']['user_roles'] ) ) {
-				return true;
-			}
 
-			$allowed_roles = $config['display_rules']['user_roles'];
-			
-			// Si 'all' está permitido, mostrar para todos
-			if ( in_array( 'all', $allowed_roles, true ) ) {
-				return true;
+		return array_filter(
+			$modals,
+			function ( $modal ) use ( $user_roles, $is_logged_in ) {
+				$config = $modal['config'];
+
+				// Si no hay reglas de usuario, mostrar para todos
+				if ( ! isset( $config['display_rules']['user_roles'] ) ) {
+					return true;
+				}
+
+				$allowed_roles = $config['display_rules']['user_roles'];
+
+				// Si 'all' está permitido, mostrar para todos
+				if ( in_array( 'all', $allowed_roles, true ) ) {
+					return true;
+				}
+
+				// Verificar guest users
+				if ( ! $is_logged_in && in_array( 'guest', $allowed_roles, true ) ) {
+					return true;
+				}
+
+				// Verificar roles del usuario logueado
+				if ( $is_logged_in && ! empty( $user_roles ) ) {
+					return ! empty( array_intersect( $user_roles, $allowed_roles ) );
+				}
+
+				return false;
 			}
-			
-			// Verificar guest users
-			if ( ! $is_logged_in && in_array( 'guest', $allowed_roles, true ) ) {
-				return true;
-			}
-			
-			// Verificar roles del usuario logueado
-			if ( $is_logged_in && ! empty( $user_roles ) ) {
-				return ! empty( array_intersect( $user_roles, $allowed_roles ) );
-			}
-			
-			return false;
-		} );
+		);
 	}
 
 	/**
@@ -1199,87 +1228,90 @@ class EWM_REST_API {
 		// Caching de cupones para eficiencia
 		static $coupon_cache = array();
 
-	   return array_filter( $modals, function( $modal ) use ( $product, $product_id, &$coupon_cache ) {
-		   $config = $modal['config'];
+		return array_filter(
+			$modals,
+			function ( $modal ) use ( $product, $product_id, &$coupon_cache ) {
+				$config = $modal['config'];
 
-		   // Obtener configuración WooCommerce del modal
-		   $wc_config = null;
-		   if ( isset( $config['woocommerce'] ) ) {
-			   $wc_config = $config['woocommerce'];
-		   } else {
-			   $wc_config = $this->get_modal_wc_config( $modal['id'] );
-		   }
+				// Obtener configuración WooCommerce del modal
+				$wc_config = null;
+				if ( isset( $config['woocommerce'] ) ) {
+						$wc_config = $config['woocommerce'];
+				} else {
+					$wc_config = $this->get_modal_wc_config( $modal['id'] );
+				}
 
-		   if ( ! $wc_config || ! isset( $wc_config['enabled'] ) || ! $wc_config['enabled'] ) {
-			   return true;
-		   }
+				if ( ! $wc_config || ! isset( $wc_config['enabled'] ) || ! $wc_config['enabled'] ) {
+					return true;
+				}
 
-		   $discount_code = isset($wc_config['discount_code']) ? $wc_config['discount_code'] : null;
-		   if ( empty( $discount_code ) ) {
-			   // Si no hay código de cupón, mostrar el modal (no hay restricción)
-			   return true;
-		   }
+				$discount_code = isset( $wc_config['discount_code'] ) ? $wc_config['discount_code'] : null;
+				if ( empty( $discount_code ) ) {
+					// Si no hay código de cupón, mostrar el modal (no hay restricción)
+					return true;
+				}
 
-		// NUEVA VERIFICACIÓN: Si el cupón ya está aplicado, no mostrar el modal
-		if ( $this->is_coupon_applied_to_cart( $discount_code ) ) {
-			$this->set_wc_filter_reason( "coupon '{$discount_code}' already applied to cart" );
-			return false;
-		}
+				// NUEVA VERIFICACIÓN: Si el cupón ya está aplicado, no mostrar el modal
+				if ( $this->is_coupon_applied_to_cart( $discount_code ) ) {
+						$this->set_wc_filter_reason( "coupon '{$discount_code}' already applied to cart" );
+						return false;
+				}
 
-		   // Obtener el objeto WC_Coupon usando caché
-		   if ( isset( $coupon_cache[ $discount_code ] ) ) {
-			   $coupon = $coupon_cache[ $discount_code ];
-		   } else {
-			   if ( ! class_exists( 'WC_Coupon' ) ) {
-				   if ( file_exists( WP_PLUGIN_DIR . '/woocommerce/includes/class-wc-coupon.php' ) ) {
-					   include_once WP_PLUGIN_DIR . '/woocommerce/includes/class-wc-coupon.php';
-				   } else {
-					   return false;
-				   }
-			   }
-			   $coupon = new \WC_Coupon( $discount_code );
-			   $coupon_cache[ $discount_code ] = $coupon;
-		   }
+				// Obtener el objeto WC_Coupon usando caché
+				if ( isset( $coupon_cache[ $discount_code ] ) ) {
+					$coupon = $coupon_cache[ $discount_code ];
+				} else {
+					if ( ! class_exists( 'WC_Coupon' ) ) {
+						if ( file_exists( WP_PLUGIN_DIR . '/woocommerce/includes/class-wc-coupon.php' ) ) {
+							include_once WP_PLUGIN_DIR . '/woocommerce/includes/class-wc-coupon.php';
+						} else {
+							return false;
+						}
+					}
+					$coupon                         = new \WC_Coupon( $discount_code );
+					$coupon_cache[ $discount_code ] = $coupon;
+				}
 
-		   // Si el cupón no existe o es inválido, no mostrar el modal
-		   if ( ! $coupon->get_id() ) {
-			   $this->set_wc_filter_reason( "coupon '{$discount_code}' does not exist or is invalid" );
-			   return false;
-		   }
+				// Si el cupón no existe o es inválido, no mostrar el modal
+				if ( ! $coupon->get_id() ) {
+					$this->set_wc_filter_reason( "coupon '{$discount_code}' does not exist or is invalid" );
+					return false;
+				}
 
-		   // 1. Exclusión de productos: prioridad absoluta
-		   $excluded_product_ids = $coupon->get_excluded_product_ids();
-		   $pid = (int) $product_id;
-		   if ( ! empty( $excluded_product_ids ) && in_array( $pid, $excluded_product_ids, true ) ) {
-			   // Si el producto está excluido, siempre retorna false, aunque esté en permitidos
-			   $this->set_wc_filter_reason( "product {$product_id} is excluded from coupon '{$discount_code}'" );
-			   return false;
-		   }
+				// 1. Exclusión de productos: prioridad absoluta
+				$excluded_product_ids = $coupon->get_excluded_product_ids();
+				$pid                  = (int) $product_id;
+				if ( ! empty( $excluded_product_ids ) && in_array( $pid, $excluded_product_ids, true ) ) {
+					// Si el producto está excluido, siempre retorna false, aunque esté en permitidos
+					$this->set_wc_filter_reason( "product {$product_id} is excluded from coupon '{$discount_code}'" );
+					return false;
+				}
 
-		   // 2. Exclusión de categorías
-		   $excluded_category_ids = $coupon->get_excluded_product_categories();
-		   $product_category_ids = $product->get_category_ids();
-		   if ( ! empty( $excluded_category_ids ) && ! empty( array_intersect( $product_category_ids, $excluded_category_ids ) ) ) {
-			   $this->set_wc_filter_reason( "product {$product_id} category is excluded from coupon '{$discount_code}'" );
-			   return false;
-		   }
+				// 2. Exclusión de categorías
+				$excluded_category_ids = $coupon->get_excluded_product_categories();
+				$product_category_ids  = $product->get_category_ids();
+				if ( ! empty( $excluded_category_ids ) && ! empty( array_intersect( $product_category_ids, $excluded_category_ids ) ) ) {
+					$this->set_wc_filter_reason( "product {$product_id} category is excluded from coupon '{$discount_code}'" );
+					return false;
+				}
 
-		   // 3. Permitidos: solo si no está excluido
-		   $allowed_product_ids = $coupon->get_product_ids();
-		   if ( ! empty( $allowed_product_ids ) && ! in_array( $product_id, $allowed_product_ids, true ) ) {
-			   $this->set_wc_filter_reason( "product {$product_id} is not in allowed products for coupon '{$discount_code}'" );
-			   return false;
-		   }
+				// 3. Permitidos: solo si no está excluido
+				$allowed_product_ids = $coupon->get_product_ids();
+				if ( ! empty( $allowed_product_ids ) && ! in_array( $product_id, $allowed_product_ids, true ) ) {
+					$this->set_wc_filter_reason( "product {$product_id} is not in allowed products for coupon '{$discount_code}'" );
+					return false;
+				}
 
-		   $allowed_category_ids = $coupon->get_product_categories();
-		   if ( ! empty( $allowed_category_ids ) && empty( array_intersect( $product_category_ids, $allowed_category_ids ) ) ) {
-			   $this->set_wc_filter_reason( "product {$product_id} category is not in allowed categories for coupon '{$discount_code}'" );
-			   return false;
-		   }
+				$allowed_category_ids = $coupon->get_product_categories();
+				if ( ! empty( $allowed_category_ids ) && empty( array_intersect( $product_category_ids, $allowed_category_ids ) ) ) {
+					$this->set_wc_filter_reason( "product {$product_id} category is not in allowed categories for coupon '{$discount_code}'" );
+					return false;
+				}
 
-		   // Si pasa todas las validaciones, mostrar el modal
-		   return true;
-	   } );
+				// Si pasa todas las validaciones, mostrar el modal
+				return true;
+			}
+		);
 	}
 
 	/**
@@ -1292,31 +1324,31 @@ class EWM_REST_API {
 		if ( empty( $user_agent ) ) {
 			return 'desktop';
 		}
-		
+
 		// Patrones para dispositivos móviles
 		$mobile_patterns = array(
 			'/Mobile|Android|iPhone|iPod|BlackBerry|Windows Phone/i',
 		);
-		
+
 		// Patrones para tablets
 		$tablet_patterns = array(
 			'/iPad|Android.*Tablet|Kindle|PlayBook|Nexus [0-9]/i',
 		);
-		
+
 		// Verificar tablets primero (más específico)
 		foreach ( $tablet_patterns as $pattern ) {
 			if ( preg_match( $pattern, $user_agent ) ) {
 				return 'tablet';
 			}
 		}
-		
+
 		// Verificar móviles
 		foreach ( $mobile_patterns as $pattern ) {
 			if ( preg_match( $pattern, $user_agent ) ) {
 				return 'mobile';
 			}
 		}
-		
+
 		return 'desktop';
 	}
 
@@ -1474,7 +1506,7 @@ class EWM_REST_API {
 			if ( isset( $exit_intent['enabled'] ) && ! is_bool( $exit_intent['enabled'] ) ) {
 				return false;
 			}
-			if ( isset( $exit_intent['min_seconds'] ) && (! is_int( $exit_intent['min_seconds'] ) || $exit_intent['min_seconds'] < 0 ) ) {
+			if ( isset( $exit_intent['min_seconds'] ) && ( ! is_int( $exit_intent['min_seconds'] ) || $exit_intent['min_seconds'] < 0 ) ) {
 				return false;
 			}
 		}
@@ -1540,7 +1572,6 @@ class EWM_REST_API {
 			}
 		}
 
-
 		if ( ! $has_permission ) {
 
 		}
@@ -1602,26 +1633,26 @@ class EWM_REST_API {
 				'border_radius'    => '8px',
 			),
 			'triggers'       => array(
-				'frequency_type'     => 'always',
-				'delay_seconds'      => 3,
-				'exit_intent'        => false,
-				'scroll_percentage'  => 50,
+				'frequency_type'    => 'always',
+				'delay_seconds'     => 3,
+				'exit_intent'       => false,
+				'scroll_percentage' => 50,
 			),
-		   'wc_integration'    => array(
-			   'enabled' => false,
-			   'discount_code' => '',
-			   'wc_promotion' => array(
-				   'title' => '',
-				   'description' => '',
-				   'cta_text' => '',
-				   'auto_apply' => false,
-				   'show_restrictions' => false,
-				   'timer_config' => array(
-					   'enabled' => false,
-					   'threshold_seconds' => 180
-				   )
-			   )
-		   ),
+			'wc_integration' => array(
+				'enabled'       => false,
+				'discount_code' => '',
+				'wc_promotion'  => array(
+					'title'             => '',
+					'description'       => '',
+					'cta_text'          => '',
+					'auto_apply'        => false,
+					'show_restrictions' => false,
+					'timer_config'      => array(
+						'enabled'           => false,
+						'threshold_seconds' => 180,
+					),
+				),
+			),
 			'display_rules'  => array(
 				'pages'      => array( 'all' ),
 				'user_roles' => array( 'all' ),
@@ -1677,41 +1708,43 @@ class EWM_REST_API {
 	public function debug_cart_status( $request ) {
 		// Asegurar que WooCommerce esté cargado
 		if ( ! $this->ensure_woocommerce_loaded() ) {
-			return rest_ensure_response( array(
-				'error' => 'WooCommerce not available',
-				'wc_class_exists' => class_exists( 'WooCommerce' ),
-				'wc_function_exists' => function_exists( 'WC' ),
-			) );
+			return rest_ensure_response(
+				array(
+					'error'              => 'WooCommerce not available',
+					'wc_class_exists'    => class_exists( 'WooCommerce' ),
+					'wc_function_exists' => function_exists( 'WC' ),
+				)
+			);
 		}
 
 		// Asegurar inicialización del carrito
 		$this->ensure_cart_session();
 
 		$debug_info = array(
-			'timestamp' => current_time( 'mysql' ),
+			'timestamp'          => current_time( 'mysql' ),
 			'woocommerce_status' => array(
-				'class_exists' => class_exists( 'WooCommerce' ),
+				'class_exists'    => class_exists( 'WooCommerce' ),
 				'function_exists' => function_exists( 'WC' ),
-				'wc_instance' => WC() ? 'available' : 'not available',
+				'wc_instance'     => WC() ? 'available' : 'not available',
 			),
-			'cart_status' => array(),
-			'session_status' => array(),
-			'applied_coupons' => array(),
+			'cart_status'        => array(),
+			'session_status'     => array(),
+			'applied_coupons'    => array(),
 		);
 
 		// Verificar estado del carrito
 		if ( function_exists( 'WC' ) && WC() ) {
 			$debug_info['cart_status'] = array(
-				'cart_exists' => WC()->cart ? 'yes' : 'no',
-				'cart_class' => WC()->cart ? get_class( WC()->cart ) : 'null',
-				'cart_empty' => WC()->cart ? ( WC()->cart->is_empty() ? 'yes' : 'no' ) : 'unknown',
+				'cart_exists'         => WC()->cart ? 'yes' : 'no',
+				'cart_class'          => WC()->cart ? get_class( WC()->cart ) : 'null',
+				'cart_empty'          => WC()->cart ? ( WC()->cart->is_empty() ? 'yes' : 'no' ) : 'unknown',
 				'cart_contents_count' => WC()->cart ? WC()->cart->get_cart_contents_count() : 0,
 			);
 
 			// Verificar sesión
 			$debug_info['session_status'] = array(
 				'session_exists' => WC()->session ? 'yes' : 'no',
-				'session_class' => WC()->session ? get_class( WC()->session ) : 'null',
+				'session_class'  => WC()->session ? get_class( WC()->session ) : 'null',
 			);
 
 			// Obtener cupones aplicados usando diferentes métodos
@@ -1727,7 +1760,7 @@ class EWM_REST_API {
 
 				// Método 2: get_applied_coupons
 				if ( method_exists( WC()->cart, 'get_applied_coupons' ) ) {
-					$applied_coupons = WC()->cart->get_applied_coupons();
+					$applied_coupons                                      = WC()->cart->get_applied_coupons();
 					$debug_info['applied_coupons']['get_applied_coupons'] = $applied_coupons;
 				} else {
 					$debug_info['applied_coupons']['get_applied_coupons'] = 'method not available';
@@ -1757,28 +1790,32 @@ class EWM_REST_API {
 		$coupon_code = sanitize_text_field( $request->get_param( 'coupon_code' ) );
 
 		if ( empty( $coupon_code ) ) {
-			return rest_ensure_response( array(
-				'error' => 'Coupon code is required',
-				'coupon_code' => $coupon_code,
-			) );
+			return rest_ensure_response(
+				array(
+					'error'       => 'Coupon code is required',
+					'coupon_code' => $coupon_code,
+				)
+			);
 		}
 
 		// Asegurar que WooCommerce esté cargado
 		if ( ! $this->ensure_woocommerce_loaded() ) {
-			return rest_ensure_response( array(
-				'error' => 'WooCommerce not available',
-				'coupon_code' => $coupon_code,
-				'is_applied' => false,
-			) );
+			return rest_ensure_response(
+				array(
+					'error'       => 'WooCommerce not available',
+					'coupon_code' => $coupon_code,
+					'is_applied'  => false,
+				)
+			);
 		}
 
 		// Asegurar inicialización del carrito
 		$this->ensure_cart_session();
 
 		$result = array(
-			'coupon_code' => $coupon_code,
-			'timestamp' => current_time( 'mysql' ),
-			'is_applied' => false,
+			'coupon_code'    => $coupon_code,
+			'timestamp'      => current_time( 'mysql' ),
+			'is_applied'     => false,
 			'methods_tested' => array(),
 		);
 
@@ -1794,18 +1831,18 @@ class EWM_REST_API {
 
 			// Método 2: get_applied_coupons
 			if ( method_exists( WC()->cart, 'get_applied_coupons' ) ) {
-				$applied_coupons = WC()->cart->get_applied_coupons();
+				$applied_coupons                                 = WC()->cart->get_applied_coupons();
 				$result['methods_tested']['get_applied_coupons'] = array(
-					'all_coupons' => $applied_coupons,
+					'all_coupons'     => $applied_coupons,
 					'contains_coupon' => in_array( strtolower( $coupon_code ), array_map( 'strtolower', $applied_coupons ), true ),
 				);
 			}
 
 			// Método 3: acceso directo
 			if ( property_exists( WC()->cart, 'applied_coupons' ) ) {
-				$applied_coupons = WC()->cart->applied_coupons;
+				$applied_coupons                           = WC()->cart->applied_coupons;
 				$result['methods_tested']['direct_access'] = array(
-					'all_coupons' => $applied_coupons,
+					'all_coupons'     => $applied_coupons,
 					'contains_coupon' => in_array( strtolower( $coupon_code ), array_map( 'strtolower', $applied_coupons ), true ),
 				);
 			}
@@ -1825,7 +1862,7 @@ class EWM_REST_API {
 
 		$response = array(
 			'timestamp' => current_time( 'mysql' ),
-			'message' => 'Cart information (READ-ONLY - no modifications made)',
+			'message'   => 'Cart information (READ-ONLY - no modifications made)',
 			'cart_info' => $cart_info,
 		);
 
@@ -1840,8 +1877,8 @@ class EWM_REST_API {
 	 */
 	public function try_cart_access_strategies( $request ) {
 		$strategies = array(
-			'timestamp' => current_time( 'mysql' ),
-			'message' => 'Testing different cart access strategies',
+			'timestamp'  => current_time( 'mysql' ),
+			'message'    => 'Testing different cart access strategies',
 			'strategies' => array(),
 		);
 
@@ -1869,29 +1906,29 @@ class EWM_REST_API {
 	public function test_coupon_detection( $request ) {
 		$result = array(
 			'timestamp' => current_time( 'mysql' ),
-			'message' => 'Testing coupon detection using session strategy',
+			'message'   => 'Testing coupon detection using session strategy',
 		);
 
 		// Obtener cupones aplicados usando nuestra nueva estrategia
-		$applied_coupons = $this->get_applied_coupons_from_session();
+		$applied_coupons           = $this->get_applied_coupons_from_session();
 		$result['applied_coupons'] = $applied_coupons;
-		$result['coupons_count'] = count( $applied_coupons );
+		$result['coupons_count']   = count( $applied_coupons );
 
 		// Probar verificación específica si hay cupones
 		if ( ! empty( $applied_coupons ) ) {
 			$result['coupon_tests'] = array();
 
 			foreach ( $applied_coupons as $coupon ) {
-				$result['coupon_tests'][$coupon] = array(
+				$result['coupon_tests'][ $coupon ] = array(
 					'coupon_code' => $coupon,
-					'is_applied' => $this->is_coupon_applied_to_cart( $coupon ),
+					'is_applied'  => $this->is_coupon_applied_to_cart( $coupon ),
 				);
 			}
 
 			// Probar con un cupón que NO está aplicado
 			$result['coupon_tests']['fake-coupon'] = array(
 				'coupon_code' => 'fake-coupon',
-				'is_applied' => $this->is_coupon_applied_to_cart( 'fake-coupon' ),
+				'is_applied'  => $this->is_coupon_applied_to_cart( 'fake-coupon' ),
 			);
 		}
 
@@ -1903,15 +1940,15 @@ class EWM_REST_API {
 	 */
 	private function try_store_api_access() {
 		$result = array(
-			'method' => 'WooCommerce Store API',
+			'method'    => 'WooCommerce Store API',
 			'available' => false,
-			'data' => array(),
+			'data'      => array(),
 		);
 
 		try {
 			// Verificar si la Store API está disponible
 			if ( class_exists( 'Automattic\WooCommerce\StoreApi\StoreApi' ) ) {
-				$result['available'] = true;
+				$result['available']               = true;
 				$result['data']['store_api_class'] = 'available';
 
 				// Intentar acceder al carrito a través de Store API
@@ -1932,50 +1969,49 @@ class EWM_REST_API {
 	 */
 	private function try_cookie_session_access() {
 		$result = array(
-			'method' => 'Cookie Session Access',
+			'method'    => 'Cookie Session Access',
 			'available' => false,
-			'data' => array(),
+			'data'      => array(),
 		);
 
 		try {
 			// Buscar cookies de WooCommerce
-			$wc_cookies = array();
-			$session_cookie_name = null;
+			$wc_cookies           = array();
+			$session_cookie_name  = null;
 			$session_cookie_value = null;
 
 			foreach ( $_COOKIE as $name => $value ) {
 				if ( strpos( $name, 'woocommerce' ) !== false || strpos( $name, 'wp_woocommerce' ) !== false ) {
-					$wc_cookies[$name] = array(
-						'length' => strlen( $value ),
+					$wc_cookies[ $name ] = array(
+						'length'  => strlen( $value ),
 						'preview' => substr( $value, 0, 20 ) . '...',
 					);
 
 					// Identificar cookie de sesión
 					if ( strpos( $name, 'session' ) !== false ) {
-						$session_cookie_name = $name;
+						$session_cookie_name  = $name;
 						$session_cookie_value = $value;
 					}
 				}
 			}
 
 			$result['data']['cookies_found'] = $wc_cookies;
-			$result['available'] = ! empty( $wc_cookies );
+			$result['available']             = ! empty( $wc_cookies );
 
 			// Decodificar cookie de sesión si existe
 			if ( $session_cookie_name && $session_cookie_value ) {
 				$result['data']['session_cookie'] = $session_cookie_name;
 
 				// Intentar decodificar la cookie de sesión
-				$decoded_session = $this->decode_wc_session_cookie( $session_cookie_value );
+				$decoded_session                   = $this->decode_wc_session_cookie( $session_cookie_value );
 				$result['data']['decoded_session'] = $decoded_session;
 
 				// Si tenemos un customer_id, intentar cargar datos de sesión desde DB
 				if ( ! empty( $decoded_session['customer_id'] ) ) {
-					$session_data = $this->get_session_data_from_db( $decoded_session['customer_id'] );
+					$session_data                      = $this->get_session_data_from_db( $decoded_session['customer_id'] );
 					$result['data']['session_from_db'] = $session_data;
 				}
 			}
-
 		} catch ( Exception $e ) {
 			$result['data']['error'] = $e->getMessage();
 		}
@@ -1989,7 +2025,7 @@ class EWM_REST_API {
 	private function decode_wc_session_cookie( $cookie_value ) {
 		$result = array(
 			'raw_cookie' => substr( $cookie_value, 0, 50 ) . '...',
-			'decoded' => false,
+			'decoded'    => false,
 		);
 
 		try {
@@ -1997,21 +2033,20 @@ class EWM_REST_API {
 			$cookie_elements = explode( '||', $cookie_value );
 
 			if ( count( $cookie_elements ) >= 4 ) {
-				$result['decoded'] = true;
-				$result['customer_id'] = $cookie_elements[0];
-				$result['session_expiry'] = $cookie_elements[1];
+				$result['decoded']          = true;
+				$result['customer_id']      = $cookie_elements[0];
+				$result['session_expiry']   = $cookie_elements[1];
 				$result['session_expiring'] = $cookie_elements[2];
-				$result['cookie_hash'] = $cookie_elements[3];
+				$result['cookie_hash']      = $cookie_elements[3];
 
 				// Convertir timestamps a fechas legibles
-				$result['expiry_date'] = gmdate( 'Y-m-d H:i:s', $cookie_elements[1] );
+				$result['expiry_date']   = gmdate( 'Y-m-d H:i:s', $cookie_elements[1] );
 				$result['expiring_date'] = gmdate( 'Y-m-d H:i:s', $cookie_elements[2] );
-				$result['is_expired'] = time() > $cookie_elements[1];
+				$result['is_expired']    = time() > $cookie_elements[1];
 			} else {
-				$result['error'] = 'Invalid cookie format';
+				$result['error']          = 'Invalid cookie format';
 				$result['elements_count'] = count( $cookie_elements );
 			}
-
 		} catch ( Exception $e ) {
 			$result['error'] = $e->getMessage();
 		}
@@ -2027,12 +2062,12 @@ class EWM_REST_API {
 
 		$result = array(
 			'customer_id' => $customer_id,
-			'found' => false,
+			'found'       => false,
 		);
 
 		try {
 			// Buscar sesión por customer_id con caché
-			$cache_key = 'ewm_wc_session_' . md5( $customer_id );
+			$cache_key    = 'ewm_wc_session_' . md5( $customer_id );
 			$session_data = wp_cache_get( $cache_key, 'ewm_wc_sessions' );
 
 			if ( false === $session_data ) {
@@ -2048,11 +2083,11 @@ class EWM_REST_API {
 			}
 
 			if ( $session_data ) {
-				$result['found'] = true;
-				$result['session_key'] = $session_data->session_key;
+				$result['found']          = true;
+				$result['session_key']    = $session_data->session_key;
 				$result['session_expiry'] = $session_data->session_expiry;
-				$result['expiry_date'] = gmdate( 'Y-m-d H:i:s', $session_data->session_expiry );
-				$result['is_expired'] = time() > $session_data->session_expiry;
+				$result['expiry_date']    = gmdate( 'Y-m-d H:i:s', $session_data->session_expiry );
+				$result['is_expired']     = time() > $session_data->session_expiry;
 
 				// Decodificar datos de sesión
 				$session_value = maybe_unserialize( $session_data->session_value );
@@ -2069,15 +2104,15 @@ class EWM_REST_API {
 							$applied_coupons = maybe_unserialize( $applied_coupons );
 						}
 
-						$result['session_data']['applied_coupons'] = $applied_coupons;
+						$result['session_data']['applied_coupons']       = $applied_coupons;
 						$result['session_data']['applied_coupons_count'] = is_array( $applied_coupons ) ? count( $applied_coupons ) : 0;
-						$result['found_coupons'] = true;
+						$result['found_coupons']                         = true;
 					}
 
 					// Buscar datos del carrito
 					if ( isset( $session_value['cart'] ) ) {
 						$result['session_data']['cart_items_count'] = is_array( $session_value['cart'] ) ? count( $session_value['cart'] ) : 0;
-						$result['found_cart'] = true;
+						$result['found_cart']                       = true;
 					}
 
 					// Agregar otras claves disponibles (sin datos sensibles)
@@ -2086,7 +2121,6 @@ class EWM_REST_API {
 					$result['session_decode_error'] = 'Could not unserialize session data';
 				}
 			}
-
 		} catch ( Exception $e ) {
 			$result['error'] = $e->getMessage();
 		}
@@ -2101,19 +2135,19 @@ class EWM_REST_API {
 		global $wpdb;
 
 		$result = array(
-			'method' => 'Database Session Access',
+			'method'    => 'Database Session Access',
 			'available' => false,
-			'data' => array(),
+			'data'      => array(),
 		);
 
 		try {
 			// Verificar si existe la tabla de sesiones de WooCommerce con caché
-			$table_name = $wpdb->prefix . 'woocommerce_sessions';
+			$table_name      = $wpdb->prefix . 'woocommerce_sessions';
 			$cache_key_table = 'ewm_wc_table_exists';
-			$table_exists = wp_cache_get( $cache_key_table, 'ewm_wc_sessions' );
+			$table_exists    = wp_cache_get( $cache_key_table, 'ewm_wc_sessions' );
 
 			if ( false === $table_exists ) {
-				$table_exists = $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $table_name ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Direct query needed to check table existence with caching
+				$table_exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table_name ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Direct query needed to check table existence with caching
 				// Cachear por 1 hora (las tablas no cambian frecuentemente)
 				wp_cache_set( $cache_key_table, $table_exists, 'ewm_wc_sessions', HOUR_IN_SECONDS );
 			}
@@ -2123,7 +2157,7 @@ class EWM_REST_API {
 			if ( $table_exists ) {
 				// Contar sesiones activas con caché
 				$cache_key_count = 'ewm_wc_session_count';
-				$session_count = wp_cache_get( $cache_key_count, 'ewm_wc_sessions' );
+				$session_count   = wp_cache_get( $cache_key_count, 'ewm_wc_sessions' );
 
 				if ( false === $session_count ) {
 					$session_count = $wpdb->get_var( "SELECT COUNT(*) FROM `{$wpdb->prefix}woocommerce_sessions`" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
@@ -2132,11 +2166,11 @@ class EWM_REST_API {
 				}
 
 				$result['data']['total_sessions'] = $session_count;
-				$result['available'] = true;
+				$result['available']              = true;
 
 				// Obtener información general sobre las sesiones activas con caché
 				$cache_key_active = 'ewm_wc_active_sessions';
-				$recent_sessions = wp_cache_get( $cache_key_active, 'ewm_wc_sessions' );
+				$recent_sessions  = wp_cache_get( $cache_key_active, 'ewm_wc_sessions' );
 
 				if ( false === $recent_sessions ) {
 					$recent_sessions = $wpdb->get_var( "SELECT COUNT(*) FROM `{$wpdb->prefix}woocommerce_sessions` WHERE session_expiry > UNIX_TIMESTAMP()" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
@@ -2146,7 +2180,6 @@ class EWM_REST_API {
 
 				$result['data']['active_sessions'] = $recent_sessions;
 			}
-
 		} catch ( Exception $e ) {
 			$result['data']['error'] = $e->getMessage();
 		}
@@ -2162,12 +2195,12 @@ class EWM_REST_API {
 
 		try {
 			// Buscar cookie de sesión de WooCommerce
-			$session_cookie_name = null;
+			$session_cookie_name  = null;
 			$session_cookie_value = null;
 
 			foreach ( $_COOKIE as $name => $value ) {
 				if ( strpos( $name, 'wp_woocommerce_session_' ) !== false ) {
-					$session_cookie_name = $name;
+					$session_cookie_name  = $name;
 					$session_cookie_value = $value;
 					break;
 				}
@@ -2183,7 +2216,7 @@ class EWM_REST_API {
 				return array(); // Cookie inválida
 			}
 
-			$customer_id = $cookie_elements[0];
+			$customer_id    = $cookie_elements[0];
 			$session_expiry = $cookie_elements[1];
 
 			// Verificar que no esté expirada
@@ -2194,7 +2227,7 @@ class EWM_REST_API {
 			// Obtener datos de sesión desde DB con caché
 			global $wpdb;
 
-			$cache_key = 'ewm_wc_session_value_' . md5( $customer_id );
+			$cache_key    = 'ewm_wc_session_value_' . md5( $customer_id );
 			$session_data = wp_cache_get( $cache_key, 'ewm_wc_sessions' );
 
 			if ( false === $session_data ) {
@@ -2229,7 +2262,6 @@ class EWM_REST_API {
 			if ( is_array( $applied_coupons_data ) ) {
 				$applied_coupons = $applied_coupons_data;
 			}
-
 		} catch ( Exception $e ) {
 			// Log error only if WP_DEBUG is enabled
 			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
@@ -2292,7 +2324,6 @@ class EWM_REST_API {
 					$applied_coupons = WC()->cart->applied_coupons;
 					return in_array( strtolower( $coupon_code ), array_map( 'strtolower', $applied_coupons ), true );
 				}
-
 			} catch ( Exception $e ) {
 				// Log error only if WP_DEBUG is enabled
 				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
@@ -2367,29 +2398,29 @@ class EWM_REST_API {
 	 */
 	private function get_cart_info_readonly() {
 		$info = array(
-			'wc_available' => false,
-			'cart_available' => false,
-			'session_available' => false,
-			'applied_coupons' => array(),
+			'wc_available'        => false,
+			'cart_available'      => false,
+			'session_available'   => false,
+			'applied_coupons'     => array(),
 			'cart_contents_count' => 0,
-			'debug_info' => array(),
-			'detailed_logging' => array(),
+			'debug_info'          => array(),
+			'detailed_logging'    => array(),
 		);
 
 		// Log del contexto actual
 		$info['detailed_logging']['context'] = array(
-			'is_admin' => is_admin(),
-			'is_ajax' => wp_doing_ajax(),
-			'is_rest' => defined( 'REST_REQUEST' ) && REST_REQUEST,
-			'current_user_id' => get_current_user_id(),
-			'wp_loaded_fired' => did_action( 'wp_loaded' ),
-			'init_fired' => did_action( 'init' ),
+			'is_admin'                 => is_admin(),
+			'is_ajax'                  => wp_doing_ajax(),
+			'is_rest'                  => defined( 'REST_REQUEST' ) && REST_REQUEST,
+			'current_user_id'          => get_current_user_id(),
+			'wp_loaded_fired'          => did_action( 'wp_loaded' ),
+			'init_fired'               => did_action( 'init' ),
 			'woocommerce_loaded_fired' => did_action( 'woocommerce_loaded' ),
 		);
 
 		// Verificar WooCommerce
 		if ( ! function_exists( 'WC' ) ) {
-			$info['debug_info'][] = 'WC() function not available';
+			$info['debug_info'][]                    = 'WC() function not available';
 			$info['detailed_logging']['wc_function'] = 'not available';
 			return $info;
 		}
@@ -2398,19 +2429,19 @@ class EWM_REST_API {
 
 		$wc = WC();
 		if ( ! $wc ) {
-			$info['debug_info'][] = 'WC() returned null';
+			$info['debug_info'][]                    = 'WC() returned null';
 			$info['detailed_logging']['wc_instance'] = 'null';
 			return $info;
 		}
 
-		$info['wc_available'] = true;
+		$info['wc_available']                    = true;
 		$info['detailed_logging']['wc_instance'] = 'available';
-		$info['detailed_logging']['wc_class'] = get_class( $wc );
+		$info['detailed_logging']['wc_class']    = get_class( $wc );
 
 		// Logging detallado de la sesión
 		$info['detailed_logging']['session'] = array(
 			'session_exists' => $wc->session ? 'yes' : 'no',
-			'session_class' => $wc->session ? get_class( $wc->session ) : 'null',
+			'session_class'  => $wc->session ? get_class( $wc->session ) : 'null',
 		);
 
 		// Verificar sesión SIN inicializarla
@@ -2421,16 +2452,16 @@ class EWM_REST_API {
 			try {
 				$session_data = array();
 				if ( method_exists( $wc->session, 'get' ) ) {
-					$cart_session = $wc->session->get( 'cart' );
+					$cart_session            = $wc->session->get( 'cart' );
 					$applied_coupons_session = $wc->session->get( 'applied_coupons' );
 
-					$session_data['cart_in_session'] = $cart_session ? 'yes' : 'no';
-					$session_data['coupons_in_session'] = $applied_coupons_session ? 'yes' : 'no';
+					$session_data['cart_in_session']              = $cart_session ? 'yes' : 'no';
+					$session_data['coupons_in_session']           = $applied_coupons_session ? 'yes' : 'no';
 					$session_data['applied_coupons_from_session'] = $applied_coupons_session ? $applied_coupons_session : array();
 
 					if ( $applied_coupons_session ) {
 						$info['applied_coupons'] = $applied_coupons_session;
-						$info['debug_info'][] = 'Found coupons in session data';
+						$info['debug_info'][]    = 'Found coupons in session data';
 					}
 				}
 				$info['detailed_logging']['session_data'] = $session_data;
@@ -2443,27 +2474,27 @@ class EWM_REST_API {
 
 		// Verificar carrito SIN inicializarlo
 		if ( ! $wc->cart ) {
-			$info['debug_info'][] = 'WC()->cart is null';
+			$info['debug_info'][]             = 'WC()->cart is null';
 			$info['detailed_logging']['cart'] = array(
 				'cart_exists' => 'no',
-				'cart_class' => 'null',
+				'cart_class'  => 'null',
 			);
 
 			// Intentar acceder a cookies de sesión directamente
 			$info['detailed_logging']['cookies'] = array();
 			foreach ( $_COOKIE as $name => $value ) {
 				if ( strpos( $name, 'woocommerce' ) !== false || strpos( $name, 'wp_woocommerce' ) !== false ) {
-					$info['detailed_logging']['cookies'][$name] = substr( $value, 0, 50 ) . '...'; // Solo primeros 50 chars por seguridad
+					$info['detailed_logging']['cookies'][ $name ] = substr( $value, 0, 50 ) . '...'; // Solo primeros 50 chars por seguridad
 				}
 			}
 
 			return $info;
 		}
 
-		$info['cart_available'] = true;
+		$info['cart_available']           = true;
 		$info['detailed_logging']['cart'] = array(
 			'cart_exists' => 'yes',
-			'cart_class' => get_class( $wc->cart ),
+			'cart_class'  => get_class( $wc->cart ),
 		);
 
 		// Obtener cupones aplicados SOLO si el carrito ya existe
@@ -2471,12 +2502,12 @@ class EWM_REST_API {
 			// Método 1: get_applied_coupons (más seguro)
 			if ( method_exists( $wc->cart, 'get_applied_coupons' ) ) {
 				$info['applied_coupons'] = $wc->cart->get_applied_coupons();
-				$info['debug_info'][] = 'Used get_applied_coupons() method';
+				$info['debug_info'][]    = 'Used get_applied_coupons() method';
 			}
 			// Método 2: acceso directo como fallback
 			elseif ( property_exists( $wc->cart, 'applied_coupons' ) ) {
 				$info['applied_coupons'] = $wc->cart->applied_coupons;
-				$info['debug_info'][] = 'Used direct access to applied_coupons property';
+				$info['debug_info'][]    = 'Used direct access to applied_coupons property';
 			} else {
 				$info['debug_info'][] = 'No method available to get applied coupons';
 			}
@@ -2485,7 +2516,6 @@ class EWM_REST_API {
 			if ( method_exists( $wc->cart, 'get_cart_contents_count' ) ) {
 				$info['cart_contents_count'] = $wc->cart->get_cart_contents_count();
 			}
-
 		} catch ( Exception $e ) {
 			$info['debug_info'][] = 'Exception: ' . $e->getMessage();
 		}
