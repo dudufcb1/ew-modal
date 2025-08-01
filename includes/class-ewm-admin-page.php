@@ -737,27 +737,27 @@ class EWM_Admin_Page {
 
 						<!-- Campos de Mensajes de Éxito -->
 						<div class="ewm-form-group ewm-success-messages">
-							<h3><?php esc_html_e( 'Mensajes de Éxito', 'ewm-modal-cta' ); ?></h3>
+							<h3><?php esc_html_e( 'Success Messages', 'ewm-modal-cta' ); ?></h3>
 							
 							<div class="ewm-form-group">
-								<label for="success-title"><?php esc_html_e( 'Título de Éxito', 'ewm-modal-cta' ); ?></label>
+								<label for="success-title"><?php esc_html_e( 'Success Title', 'ewm-modal-cta' ); ?></label>
 								<input type="text" id="success-title" name="success_title" class="ewm-form-control"
 									value="<?php echo esc_attr( $modal_data['steps']['success']['title'] ?? '' ); ?>"
-									placeholder="<?php esc_html_e( 'Ej: ¡Gracias por tu registro!', 'ewm-modal-cta' ); ?>">
-								<p class="description"><?php esc_html_e( 'Título que se mostrará cuando el formulario se envíe exitosamente', 'ewm-modal-cta' ); ?></p>
+									placeholder="<?php esc_html_e( 'E.g.: Thank you for your registration!', 'ewm-modal-cta' ); ?>">
+								<p class="description"><?php esc_html_e( 'Title shown when the form is submitted successfully', 'ewm-modal-cta' ); ?></p>
 							</div>
 
 							<div class="ewm-form-group">
-								<label for="success-message"><?php esc_html_e( 'Mensaje de Éxito', 'ewm-modal-cta' ); ?></label>
+								<label for="success-message"><?php esc_html_e( 'Success Message', 'ewm-modal-cta' ); ?></label>
 								<textarea id="success-message" name="success_message" class="ewm-form-control" rows="3"
-									placeholder="<?php esc_html_e( 'Ej: Te contactaremos pronto...', 'ewm-modal-cta' ); ?>"><?php echo esc_textarea( $modal_data['steps']['success']['message'] ?? '' ); ?></textarea>
-								<p class="description"><?php esc_html_e( 'Mensaje que se mostrará cuando el formulario se envíe exitosamente', 'ewm-modal-cta' ); ?></p>
+									placeholder="<?php esc_html_e( 'E.g.: We will contact you soon...', 'ewm-modal-cta' ); ?>"><?php echo esc_textarea( $modal_data['steps']['success']['message'] ?? '' ); ?></textarea>
+								<p class="description"><?php esc_html_e( 'Message shown when the form is submitted successfully', 'ewm-modal-cta' ); ?></p>
 							</div>
 						</div>
 
 						<div class="ewm-form-group ewm-mt-20">
 							<button type="button" class="ewm-btn secondary ewm-add-step">
-								<?php esc_html_e( '+ Agregar Paso', 'ewm-modal-cta' ); ?>
+								<?php esc_html_e( '+ Add Step', 'ewm-modal-cta' ); ?>
 							</button>
 						</div>
 					</div>
