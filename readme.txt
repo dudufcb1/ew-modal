@@ -9,7 +9,7 @@ Stable tag: 1.0.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Plugin profesional para crear modales interactivos de captura de leads con builder visual, integración WooCommerce e arquitectura modular.
+Professional plugin for creating interactive lead capture modals with visual builder, WooCommerce integration and modular architecture.
 
 == Description ==
 

@@ -1,6 +1,6 @@
 {
     "name": "ewm/modal-cta",
-    "description": "Plugin moderno para WordPress que permite crear modales interactivos de captura de leads",
+    "description": "Modern WordPress plugin that allows creating interactive lead capture modals",
     "type": "wordpress-plugin",
     "license": "GPL-2.0-or-later",
     "require": {

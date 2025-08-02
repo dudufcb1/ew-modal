@@ -61,13 +61,13 @@ $section_class = implode( ' ', $section_classes );
 	data-modal-id="<?php echo esc_attr( $modal_id ); ?>"
 	data-coupon-count="<?php echo count( $coupons ); ?>"
 	role="region" 
-	aria-label="<?php esc_attr_e( 'Cupones disponibles', 'ewm-modal-cta' ); ?>">
+	aria-label="<?php esc_attr_e( 'Available Coupons', 'ewm-modal-cta' ); ?>">
 	
 	<?php if ( $settings['show_header'] ) : ?>
 	<div class="ewm-coupon-header">
 		<h4 class="ewm-coupon-title">
 			<?php
-			$modal_title = apply_filters( 'ewm_coupon_modal_title', __( 'Cupones Disponibles', 'ewm-modal-cta' ), $modal_id );
+			$modal_title = apply_filters( 'ewm_coupon_modal_title', __( 'Available Coupons', 'ewm-modal-cta' ), $modal_id );
 			echo esc_html( $modal_title );
 			?>
 		</h4>
@@ -222,7 +222,7 @@ $section_class = implode( ' ', $section_classes );
 						<?php
 						$no_coupons_message = apply_filters(
 							'ewm_no_coupons_message',
-							__( 'No hay cupones disponibles en este momento', 'ewm-modal-cta' ),
+							__( 'No coupons available at this time', 'ewm-modal-cta' ),
 							$modal_id
 						);
 						echo esc_html( $no_coupons_message );

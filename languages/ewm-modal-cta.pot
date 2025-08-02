@@ -22,7 +22,7 @@ msgid "https://ewm.com/plugins/ewm-modal-cta"
 msgstr ""
 
 #. Description of the plugin
-msgid "Plugin profesional para crear modales interactivos de captura de leads con builder visual, integración WooCommerce e arquitectura modular."
+msgid "Professional plugin for creating interactive lead capture modals with visual builder, WooCommerce integration and modular architecture."
 msgstr ""
 
 #. Author of the plugin

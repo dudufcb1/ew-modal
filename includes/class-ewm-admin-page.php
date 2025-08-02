@@ -250,8 +250,8 @@ class EWM_Admin_Page {
 				'modal_id'              => isset( $_GET['modal_id'] ) ? intval( sanitize_text_field( wp_unslash( $_GET['modal_id'] ) ) ) : null, // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Admin page parameter for JavaScript, no state changes
 				'supported_field_types' => EWM_Meta_Fields::get_supported_field_types(),
 				'strings'               => array(
-					'saving' => __( 'Guardando...', 'ewm-modal-cta' ),
-					'saved'  => __( 'Guardado', 'ewm-modal-cta' ),
+					'saving' => __( 'Saving...', 'ewm-modal-cta' ),
+					'saved'  => __( 'Saved', 'ewm-modal-cta' ),
 					'error'  => __( 'Error saving', 'ewm-modal-cta' ),
 				),
 			)
@@ -629,14 +629,14 @@ class EWM_Admin_Page {
 
 						<div class="ewm-wc-integration-settings">
 							<div id="wc-integration-settings">
-								<h3><?php esc_html_e( 'Selección de Cupón', 'ewm-modal-cta' ); ?></h3>
+								<h3><?php esc_html_e( 'Coupon Selection', 'ewm-modal-cta' ); ?></h3>
 
 								<div class="ewm-form-group">
 									<label for="wc-coupon-select"><?php esc_html_e( 'Discount Coupon', 'ewm-modal-cta' ); ?></label>
 									<select id="wc-coupon-select" name="wc_coupon_code" class="ewm-form-control">
-										<option value=""><?php esc_html_e( 'Cargando cupones...', 'ewm-modal-cta' ); ?></option>
+										<option value=""><?php esc_html_e( 'Loading coupons...', 'ewm-modal-cta' ); ?></option>
 									</select>
-									<p class="description"><?php esc_html_e( 'Selecciona el cupón que se aplicará cuando el usuario interactúe con el modal', 'ewm-modal-cta' ); ?></p>
+									<p class="description"><?php esc_html_e( 'Select the coupon that will be applied when the user interacts with the modal', 'ewm-modal-cta' ); ?></p>
 								</div>
 
 								<!-- Panel de detalles del cupón -->
@@ -644,35 +644,35 @@ class EWM_Admin_Page {
 									<h4><?php esc_html_e( 'Coupon Details', 'ewm-modal-cta' ); ?></h4>
 									<div class="ewm-coupon-info-grid">
 										<div class="ewm-coupon-info-item">
-											<strong><?php esc_html_e( 'Código:', 'ewm-modal-cta' ); ?></strong>
+											<strong><?php esc_html_e( 'Code:', 'ewm-modal-cta' ); ?></strong>
 											<span id="coupon-detail-code">-</span>
 										</div>
 										<div class="ewm-coupon-info-item">
-											<strong><?php esc_html_e( 'Tipo de Descuento:', 'ewm-modal-cta' ); ?></strong>
+											<strong><?php esc_html_e( 'Discount Type:', 'ewm-modal-cta' ); ?></strong>
 											<span id="coupon-detail-type">-</span>
 										</div>
 										<div class="ewm-coupon-info-item">
-											<strong><?php esc_html_e( 'Cantidad:', 'ewm-modal-cta' ); ?></strong>
+											<strong><?php esc_html_e( 'Amount:', 'ewm-modal-cta' ); ?></strong>
 											<span id="coupon-detail-amount">-</span>
 										</div>
 										<div class="ewm-coupon-info-item">
-											<strong><?php esc_html_e( 'Descripción:', 'ewm-modal-cta' ); ?></strong>
+											<strong><?php esc_html_e( 'Description:', 'ewm-modal-cta' ); ?></strong>
 											<span id="coupon-detail-description">-</span>
 										</div>
 										<div class="ewm-coupon-info-item">
-											<strong><?php esc_html_e( 'Monto Mínimo:', 'ewm-modal-cta' ); ?></strong>
+											<strong><?php esc_html_e( 'Minimum Amount:', 'ewm-modal-cta' ); ?></strong>
 											<span id="coupon-detail-minimum">-</span>
 										</div>
 										<div class="ewm-coupon-info-item">
-											<strong><?php esc_html_e( 'Fecha de Expiración:', 'ewm-modal-cta' ); ?></strong>
+											<strong><?php esc_html_e( 'Expiration Date:', 'ewm-modal-cta' ); ?></strong>
 											<span id="coupon-detail-expires">-</span>
 										</div>
 										<div class="ewm-coupon-info-item">
-											<strong><?php esc_html_e( 'Límite de Uso:', 'ewm-modal-cta' ); ?></strong>
+											<strong><?php esc_html_e( 'Usage Limit:', 'ewm-modal-cta' ); ?></strong>
 											<span id="coupon-detail-usage-limit">-</span>
 										</div>
 										<div class="ewm-coupon-info-item">
-											<strong><?php esc_html_e( 'Usos Actuales:', 'ewm-modal-cta' ); ?></strong>
+											<strong><?php esc_html_e( 'Current Uses:', 'ewm-modal-cta' ); ?></strong>
 											<span id="coupon-detail-usage-count">-</span>
 										</div>
 									</div>
@@ -684,19 +684,19 @@ class EWM_Admin_Page {
 									</div>
 								</div>
 
-								<h3><?php esc_html_e( 'Configuración de Promoción', 'ewm-modal-cta' ); ?></h3>
+								<h3><?php esc_html_e( 'Promotion Configuration', 'ewm-modal-cta' ); ?></h3>
 
 								<div class="ewm-form-group">
-									<label for="wc-promotion-title"><?php esc_html_e( 'Título de la Promoción', 'ewm-modal-cta' ); ?></label>
+									<label for="wc-promotion-title"><?php esc_html_e( 'Promotion Title', 'ewm-modal-cta' ); ?></label>
 									<input type="text" id="wc-promotion-title" name="wc_promotion_title" class="ewm-form-control"
 										value="<?php echo esc_attr( $modal_data['wc_integration']['wc_promotion']['title'] ?? '' ); ?>"
-										placeholder="<?php esc_html_e( '¡Oferta Especial!', 'ewm-modal-cta' ); ?>">
+										placeholder="<?php esc_html_e( 'E.g.: Special Offer!', 'ewm-modal-cta' ); ?>">
 								</div>
 
 								<div class="ewm-form-group">
-									<label for="wc-promotion-description"><?php esc_html_e( 'Descripción de la Promoción', 'ewm-modal-cta' ); ?></label>
+									<label for="wc-promotion-description"><?php esc_html_e( 'Promotion Description', 'ewm-modal-cta' ); ?></label>
 									<textarea id="wc-promotion-description" name="wc_promotion_description" class="ewm-form-control" rows="3"
-										placeholder="<?php esc_html_e( 'Obtén un descuento especial en tu compra...', 'ewm-modal-cta' ); ?>"><?php echo esc_textarea( $modal_data['wc_integration']['wc_promotion']['description'] ?? '' ); ?></textarea>
+										placeholder="<?php esc_html_e( 'Get a special discount on your purchase...', 'ewm-modal-cta' ); ?>"><?php echo esc_textarea( $modal_data['wc_integration']['wc_promotion']['description'] ?? '' ); ?></textarea>
 								</div>
 
 								<div class="ewm-form-group">
@@ -712,7 +712,7 @@ class EWM_Admin_Page {
 									<div class="ewm-checkbox">
 										<input type="checkbox" id="wc-auto-apply" name="wc_auto_apply" value="1"
 											<?php checked( $modal_data['wc_integration']['wc_promotion']['auto_apply'] ?? false ); ?>>
-										<label for="wc-auto-apply"><?php esc_html_e( 'Aplicar Cupón Automáticamente', 'ewm-modal-cta' ); ?></label>
+										<label for="wc-auto-apply"><?php esc_html_e( 'Apply Coupon Automatically', 'ewm-modal-cta' ); ?></label>
 									</div>
 									<p class="description"><?php esc_html_e( 'The coupon will be applied automatically to cart when user clicks', 'ewm-modal-cta' ); ?></p>
 								</div>
@@ -784,23 +784,23 @@ class EWM_Admin_Page {
 
 					<!-- Pestaña Diseño -->
 					<div id="diseno" class="ewm-tab-pane">
-						<h2><?php esc_html_e( 'Configuración de Diseño', 'ewm-modal-cta' ); ?></h2>
+						<h2><?php esc_html_e( 'Design Configuration', 'ewm-modal-cta' ); ?></h2>
 
 						<div class="ewm-size-controls">
 							<div class="ewm-form-group">
 								<label for="modal-size"><?php esc_html_e( 'Modal Size', 'ewm-modal-cta' ); ?></label>
 								<select id="modal-size" name="size" class="ewm-form-control">
 									<option value="small" <?php selected( $modal_data['design']['modal_size'] ?? 'medium', 'small' ); ?>>
-										<?php esc_html_e( 'Pequeño (400px)', 'ewm-modal-cta' ); ?>
+										<?php esc_html_e( 'Small (400px)', 'ewm-modal-cta' ); ?>
 									</option>
 									<option value="medium" <?php selected( $modal_data['design']['modal_size'] ?? 'medium', 'medium' ); ?>>
-										<?php esc_html_e( 'Mediano (600px)', 'ewm-modal-cta' ); ?>
+										<?php esc_html_e( 'Medium (600px)', 'ewm-modal-cta' ); ?>
 									</option>
 									<option value="large" <?php selected( $modal_data['design']['modal_size'] ?? 'medium', 'large' ); ?>>
-										<?php esc_html_e( 'Grande (800px)', 'ewm-modal-cta' ); ?>
+										<?php esc_html_e( 'Large (800px)', 'ewm-modal-cta' ); ?>
 									</option>
 									<option value="fullscreen" <?php selected( $modal_data['design']['modal_size'] ?? 'medium', 'fullscreen' ); ?>>
-										<?php esc_html_e( 'Pantalla Completa', 'ewm-modal-cta' ); ?>
+										<?php esc_html_e( 'Full Screen', 'ewm-modal-cta' ); ?>
 									</option>
 								</select>
 							</div>
@@ -821,11 +821,11 @@ class EWM_Admin_Page {
 							</div>
 						</div>
 
-						<h3><?php esc_html_e( 'Colores', 'ewm-modal-cta' ); ?></h3>
+						<h3><?php esc_html_e( 'Colors', 'ewm-modal-cta' ); ?></h3>
 
 						<div class="ewm-size-controls">
 							<div class="ewm-form-group">
-								<label for="primary-color"><?php esc_html_e( 'Color Primario', 'ewm-modal-cta' ); ?></label>
+								<label for="primary-color"><?php esc_html_e( 'Primary Color', 'ewm-modal-cta' ); ?></label>
 								<div class="ewm-color-picker">
 									<input type="text" id="primary-color" name="primary_color" class="ewm-form-control small"
 										value="<?php echo esc_attr( $modal_data['design']['colors']['primary'] ?? '#ff6b35' ); ?>">
@@ -834,7 +834,7 @@ class EWM_Admin_Page {
 							</div>
 
 							<div class="ewm-form-group">
-								<label for="secondary-color"><?php esc_html_e( 'Color Secundario', 'ewm-modal-cta' ); ?></label>
+								<label for="secondary-color"><?php esc_html_e( 'Secondary Color', 'ewm-modal-cta' ); ?></label>
 								<div class="ewm-color-picker">
 									<input type="text" id="secondary-color" name="secondary_color" class="ewm-form-control small"
 										value="<?php echo esc_attr( $modal_data['design']['colors']['secondary'] ?? '#333333' ); ?>">
@@ -843,7 +843,7 @@ class EWM_Admin_Page {
 							</div>
 
 							<div class="ewm-form-group">
-								<label for="background-color"><?php esc_html_e( 'Color de Fondo', 'ewm-modal-cta' ); ?></label>
+								<label for="background-color"><?php esc_html_e( 'Background Color', 'ewm-modal-cta' ); ?></label>
 								<div class="ewm-color-picker">
 									<input type="text" id="background-color" name="background_color" class="ewm-form-control small"
 										value="<?php echo esc_attr( $modal_data['design']['colors']['background'] ?? '#ffffff' ); ?>">
@@ -865,11 +865,11 @@ class EWM_Admin_Page {
 							</div>
 							<p class="description"><?php esc_html_e( 'Show modal when user tries to leave the page', 'ewm-modal-cta' ); ?></p>
 						<div class="ewm-form-group">
-							<label for="exit-intent-min-seconds" class="ewm-label">Tiempo mínimo antes de mostrar (segundos):</label>
+							<label for="exit-intent-min-seconds" class="ewm-label"><?php esc_html_e( 'Minimum time before showing (seconds):', 'ewm-modal-cta' ); ?></label>
 							<input type="number" id="exit-intent-min-seconds" name="exit_intent_min_seconds" class="ewm-form-control small" min="0" step="1"
 								value="<?php echo esc_attr( $modal_data['triggers']['exit_intent']['min_seconds'] ?? 10 ); ?>"
 								placeholder="10">
-							<p class="description">No mostrar el modal de exit intent si el usuario lleva menos de X segundos en la página.</p>
+							<p class="description"><?php esc_html_e( 'Do not show the exit intent modal if the user has been on the page for less than X seconds.', 'ewm-modal-cta' ); ?></p>
 						</div>
 						</div>
 
@@ -877,33 +877,33 @@ class EWM_Admin_Page {
 							<div class="ewm-checkbox">
 								<input type="checkbox" id="enable-time-delay" name="time_delay_enabled" value="1"
 									<?php checked( $modal_data['triggers']['time_delay']['enabled'] ?? false ); ?>>
-								<label for="enable-time-delay"><?php esc_html_e( 'Retraso por Tiempo', 'ewm-modal-cta' ); ?></label>
+								<label for="enable-time-delay"><?php esc_html_e( 'Time Delay', 'ewm-modal-cta' ); ?></label>
 							</div>
 							<input type="number" id="time-delay" name="time_delay" class="ewm-form-control small" min="0" step="1"
 								value="<?php echo esc_attr( $modal_data['triggers']['time_delay']['delay'] ? intval( $modal_data['triggers']['time_delay']['delay'] ) / 1000 : 5 ); ?>"
 								placeholder="5">
-							<p class="description"><?php esc_html_e( 'Tiempo en segundos antes de mostrar el modal (ej: 5 = 5 segundos)', 'ewm-modal-cta' ); ?></p>
+							<p class="description"><?php esc_html_e( 'Time in seconds before showing the modal (e.g.: 5 = 5 seconds)', 'ewm-modal-cta' ); ?></p>
 						</div>
 
 						<div class="ewm-form-group">
 							<div class="ewm-checkbox">
 								<input type="checkbox" id="enable-scroll-trigger" name="scroll_trigger_enabled" value="1"
 									<?php checked( $modal_data['triggers']['scroll_percentage']['enabled'] ?? false ); ?>>
-								<label for="enable-scroll-trigger"><?php esc_html_e( 'Trigger por Scroll', 'ewm-modal-cta' ); ?></label>
+								<label for="enable-scroll-trigger"><?php esc_html_e( 'Scroll Trigger', 'ewm-modal-cta' ); ?></label>
 							</div>
 							<input type="number" id="scroll-percentage" name="scroll_percentage" class="ewm-form-control small" min="10" max="100" step="10"
 								value="<?php echo esc_attr( $modal_data['triggers']['scroll_percentage']['percentage'] ?? 50 ); ?>"
 								placeholder="50">
-							<p class="description"><?php esc_html_e( 'Porcentaje de scroll (10-100)', 'ewm-modal-cta' ); ?></p>
+							<p class="description"><?php esc_html_e( 'Scroll percentage (10-100)', 'ewm-modal-cta' ); ?></p>
 						</div>
 
 						<div class="ewm-form-group">
 							<div class="ewm-checkbox">
 								<input type="checkbox" id="enable-manual-trigger" name="manual_trigger_enabled" value="1"
 									<?php checked( $modal_data['triggers']['manual']['enabled'] ?? true ); ?>>
-								<label for="enable-manual-trigger"><?php esc_html_e( 'Trigger Manual', 'ewm-modal-cta' ); ?></label>
+								<label for="enable-manual-trigger"><?php esc_html_e( 'Manual Trigger', 'ewm-modal-cta' ); ?></label>
 							</div>
-							<p class="description"><?php esc_html_e( 'Permite activar el modal mediante botones o enlaces', 'ewm-modal-cta' ); ?></p>
+							<p class="description"><?php esc_html_e( 'Allows activating the modal through buttons or links', 'ewm-modal-cta' ); ?></p>
 						</div>
 
 						<div class="ewm-form-group">
@@ -916,7 +916,7 @@ class EWM_Admin_Page {
 									<?php esc_html_e( 'Always', 'ewm-modal-cta' ); ?>
 								</option>
 								<option value="session" <?php selected( $frequency_type, 'session' ); ?>>
-									<?php esc_html_e( 'Una vez por sesión (30 minutos)', 'ewm-modal-cta' ); ?>
+									<?php esc_html_e( 'Once per session (30 minutes)', 'ewm-modal-cta' ); ?>
 								</option>
 								<option value="daily" <?php selected( $frequency_type, 'daily' ); ?>>
 									<?php esc_html_e( 'Once per day', 'ewm-modal-cta' ); ?>
@@ -934,19 +934,19 @@ class EWM_Admin_Page {
 						<h2><?php esc_html_e( 'Advanced Configuration', 'ewm-modal-cta' ); ?></h2>
 
 						<div class="ewm-form-group">
-							<label for="custom-css"><?php esc_html_e( 'CSS Personalizado', 'ewm-modal-cta' ); ?></label>
+							<label for="custom-css"><?php esc_html_e( 'Custom CSS', 'ewm-modal-cta' ); ?></label>
 							<textarea id="custom-css" name="custom_css" class="ewm-form-control large" rows="10"
-								placeholder="/* CSS personalizado aquí */"><?php echo esc_textarea( isset( $modal_data['custom_css'] ) ? $modal_data['custom_css'] : '' ); ?></textarea>
+								placeholder="/* <?php esc_attr_e( 'Custom CSS here', 'ewm-modal-cta' ); ?> */"><?php echo esc_textarea( isset( $modal_data['custom_css'] ) ? $modal_data['custom_css'] : '' ); ?></textarea>
 							<p class="description"><?php esc_html_e( 'Add custom CSS that will be applied only to this modal', 'ewm-modal-cta' ); ?></p>
 						</div>
 					</div>
 
 					<!-- Pestaña Vista Previa -->
 					<div id="preview" class="ewm-tab-pane">
-						<h2><?php esc_html_e( 'Vista Previa del Modal', 'ewm-modal-cta' ); ?></h2>
+						<h2><?php esc_html_e( 'Modal Preview', 'ewm-modal-cta' ); ?></h2>
 
 						<div class="ewm-preview-container">
-							<p class="ewm-preview-placeholder"><?php esc_html_e( 'La vista previa aparecerá aquí cuando actualices la configuración...', 'ewm-modal-cta' ); ?></p>
+							<p class="ewm-preview-placeholder"><?php esc_html_e( 'Preview will appear here when you update the configuration...', 'ewm-modal-cta' ); ?></p>
 						</div>
 
 						<div class="ewm-form-group ewm-mt-20">
@@ -960,12 +960,12 @@ class EWM_Admin_Page {
 			<!-- Shortcode generado -->
 			<?php if ( $modal_id ) : ?>
 				<div class="ewm-shortcode-output">
-					<h3><?php esc_html_e( 'Shortcode Generado', 'ewm-modal-cta' ); ?></h3>
+					<h3><?php esc_html_e( 'Generated Shortcode', 'ewm-modal-cta' ); ?></h3>
 					<code>[ew_modal id="<?php echo esc_attr( $modal_id ); ?>"]</code>
 					<button type="button" class="ewm-btn small ewm-copy-shortcode">
-						<?php esc_html_e( 'Copiar', 'ewm-modal-cta' ); ?>
+						<?php esc_html_e( 'Copy', 'ewm-modal-cta' ); ?>
 					</button>
-					<p class="description"><?php esc_html_e( 'Copia este shortcode para usar el modal en cualquier lugar', 'ewm-modal-cta' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Copy this shortcode to use the modal anywhere', 'ewm-modal-cta' ); ?></p>
 				</div>
 			<?php endif; ?>
 
@@ -996,7 +996,7 @@ class EWM_Admin_Page {
 	 */
 	public function render_settings_page() {
 		if ( ! EWM_Capabilities::current_user_can_manage_settings() ) {
-			wp_die( esc_html__( 'No tienes permisos para acceder a esta página.', 'ewm-modal-cta' ) );
+			wp_die( esc_html__( 'You do not have permission to access this page.', 'ewm-modal-cta' ) );
 		}
 
 		$debug_frequency_enabled = get_option( 'ewm_debug_frequency_enabled', '0' );
@@ -1030,7 +1030,7 @@ class EWM_Admin_Page {
 	 */
 	public function render_analytics_page() {
 		if ( ! EWM_Capabilities::current_user_can_view_analytics() ) {
-			wp_die( esc_html__( 'No tienes permisos para acceder a esta página.', 'ewm-modal-cta' ) );
+			wp_die( esc_html__( 'You do not have permission to access this page.', 'ewm-modal-cta' ) );
 		}
 
 		?>
@@ -1048,14 +1048,14 @@ class EWM_Admin_Page {
 		check_ajax_referer( 'ewm_admin_nonce', 'nonce' );
 
 		if ( ! EWM_Capabilities::current_user_can_manage_modals() ) {
-			wp_send_json_error( __( 'No tienes permisos para realizar esta acción.', 'ewm-modal-cta' ) );
+			wp_send_json_error( __( 'You do not have permission to perform this action.', 'ewm-modal-cta' ) );
 		}
 
 		$modal_id   = intval( $_POST['modal_id'] ?? 0 );
 		$modal_data = json_decode( sanitize_textarea_field( wp_unslash( $_POST['modal_data'] ?? '{}' ) ), true );
 
 		if ( json_last_error() !== JSON_ERROR_NONE ) {
-			wp_send_json_error( __( 'Datos inválidos.', 'ewm-modal-cta' ) );
+			wp_send_json_error( __( 'Invalid data.', 'ewm-modal-cta' ) );
 		}
 
 		// LOG TEMPORAL: Datos recibidos del frontend al guardar (modal-enabled y enable-manual-trigger)
@@ -1093,7 +1093,7 @@ class EWM_Admin_Page {
 		check_admin_referer( 'ewm_save_settings', 'ewm_settings_nonce' );
 
 		if ( ! EWM_Capabilities::current_user_can_manage_settings() ) {
-			wp_die( esc_html__( 'No tienes permisos para realizar esta acción.', 'ewm-modal-cta' ) );
+			wp_die( esc_html__( 'You do not have permission to perform this action.', 'ewm-modal-cta' ) );
 		}
 
 		$debug_frequency_enabled = isset( $_POST['ewm_debug_frequency_enabled'] ) ? '1' : '0';
@@ -1111,7 +1111,7 @@ class EWM_Admin_Page {
 		check_ajax_referer( 'ewm_admin_nonce', 'nonce' );
 
 		if ( ! EWM_Capabilities::current_user_can_manage_modals() ) {
-			wp_send_json_error( __( 'No tienes permisos para realizar esta acción.', 'ewm-modal-cta' ) );
+			wp_send_json_error( __( 'You do not have permission to perform this action.', 'ewm-modal-cta' ) );
 		}
 
 		$modal_id = intval( $_POST['modal_id'] ?? 0 );
@@ -1158,7 +1158,7 @@ class EWM_Admin_Page {
 			wp_send_json_success( $modal_data );
 		} catch ( Exception $e ) {
 
-			wp_send_json_error( __( 'Error al cargar los datos del modal.', 'ewm-modal-cta' ) );
+			wp_send_json_error( __( 'Error loading modal data.', 'ewm-modal-cta' ) );
 		}
 	}
 	/**
@@ -1168,13 +1168,13 @@ class EWM_Admin_Page {
 		check_ajax_referer( 'ewm_admin_nonce', 'nonce' );
 
 		if ( ! EWM_Capabilities::current_user_can_manage_modals() ) {
-			wp_send_json_error( __( 'No tienes permisos para realizar esta acción.', 'ewm-modal-cta' ) );
+			wp_send_json_error( __( 'You do not have permission to perform this action.', 'ewm-modal-cta' ) );
 		}
 
 		$modal_data = json_decode( sanitize_textarea_field( wp_unslash( $_POST['modal_data'] ?? '{}' ) ), true );
 
 		if ( json_last_error() !== JSON_ERROR_NONE ) {
-			wp_send_json_error( __( 'Datos inválidos.', 'ewm-modal-cta' ) );
+			wp_send_json_error( __( 'Invalid data.', 'ewm-modal-cta' ) );
 		}
 
 		// Generar HTML de vista previa
@@ -1328,8 +1328,8 @@ class EWM_Admin_Page {
 		// Si no hay pasos, mostrar mensaje
 		if ( empty( $steps ) ) {
 			return '<div class="ewm-preview-empty">
-				<p><strong>No hay pasos configurados</strong></p>
-				<p>Agrega pasos en la pestaña "Pasos" para ver el preview del modal.</p>
+				<p><strong>' . esc_html__( 'No steps configured', 'ewm-modal-cta' ) . '</strong></p>
+				<p>' . esc_html__( 'Add steps in the "Steps" tab to see the modal preview.', 'ewm-modal-cta' ) . '</p>
 			</div>';
 		}
 
@@ -1486,7 +1486,7 @@ class EWM_Admin_Page {
 
 		<div class="ewm-admin-preview">
 			<div class="ewm-preview-info">
-				<strong>Vista Previa del Modal</strong> - Mostrando el primer paso de <?php echo count( $steps ); ?> pasos configurados
+				<strong><?php esc_html_e( 'Modal Preview', 'ewm-modal-cta' ); ?></strong> - <?php printf( esc_html__( 'Showing the first step of %d configured steps', 'ewm-modal-cta' ), count( $steps ) ); ?>
 			</div>
 
 			<div class="ewm-preview-header">

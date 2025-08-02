@@ -471,7 +471,7 @@ class EWM_WooCommerce {
 		$variation_id = intval( $_POST['variation_id'] ?? 0 );
 
 		if ( ! $product_id ) {
-			wp_send_json_error( __( 'ID de producto requerido.', 'ewm-modal-cta' ) );
+			wp_send_json_error( __( 'Product ID required.', 'ewm-modal-cta' ) );
 		}
 
 		$result = WC()->cart->add_to_cart( $product_id, $quantity, $variation_id );

@@ -251,7 +251,7 @@
 
             // Mostrar estado de carga
             const originalText = buttonElement.textContent;
-            buttonElement.textContent = 'Aplicando...';
+            buttonElement.textContent = 'Applying...';
             buttonElement.disabled = true;
 
             try {
@@ -270,7 +270,7 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    buttonElement.textContent = '✓ Aplicado';
+                    buttonElement.textContent = '✓ Applied';
                     buttonElement.classList.add('ewm-coupon-applied');
                     
                     // Mostrar mensaje de éxito
@@ -304,7 +304,7 @@
                 await navigator.clipboard.writeText(couponCode);
                 
                 const originalText = buttonElement.textContent;
-                buttonElement.textContent = '✓ Copiado';
+                buttonElement.textContent = '✓ Copied';
                 
                 setTimeout(() => {
                     buttonElement.textContent = originalText;

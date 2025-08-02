@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       EWM Modal CTA
  * Plugin URI:        https://ewm.com/plugins/ewm-modal-cta
- * Description:       Plugin profesional para crear modales interactivos de captura de leads con builder visual, integración WooCommerce e arquitectura modular.
+ * Description:       Professional plugin for creating interactive lead capture modals with visual builder, WooCommerce integration and modular architecture.
  * Version:           1.0.0
  * Requires at least: 5.8
  * Requires PHP:      7.4

@@ -515,8 +515,8 @@ class EWM_Render_Core {
 		if ( empty( $fields ) ) {
 			// TEMPORAL: Mostrar mensaje cuando no hay campos configurados
 			return '<div class="ewm-no-fields-message" style="padding: 20px; text-align: center; color: #666; border: 1px dashed #ccc; margin: 10px 0;">
-						<p><strong>Este paso no tiene campos configurados.</strong></p>
-						<p><small>Agrega campos en el Modal Builder para mostrar contenido del formulario.</small></p>
+						<p><strong>' . esc_html__( 'This step has no configured fields.', 'ewm-modal-cta' ) . '</strong></p>
+						<p><small>' . esc_html__( 'Add fields in the Modal Builder to display form content.', 'ewm-modal-cta' ) . '</small></p>
 					</div>';
 		}
 
@@ -729,14 +729,17 @@ class EWM_Render_Core {
 
 		// Obtener información del cupón
 		$discount_code         = $wc_config['discount_code'] ?? '';
-		$promotion_title       = $wc_promotion['title'] ?? 'Oferta Especial';
-		$promotion_description = $wc_promotion['description'] ?? 'Aprovecha esta oferta limitada';
-		$cta_text              = $wc_promotion['cta_text'] ?? 'Aplicar Cupón';
+		$promotion_title       = $wc_promotion['title'] ?? __( 'Special Offer', 'ewm-modal-cta' );
+		$promotion_description = $wc_promotion['description'] ?? __( 'Take advantage of this limited offer', 'ewm-modal-cta' );
+		$cta_text              = $wc_promotion['cta_text'] ?? __( 'Apply Coupon', 'ewm-modal-cta' );
 
 		// Configuración del timer
 		$timer_config    = $wc_promotion['timer_config'] ?? array();
 		$timer_enabled   = $timer_config['enabled'] ?? false;
 		$timer_threshold = $timer_config['threshold_seconds'] ?? 180;
+
+		// Configuración de auto-aplicar
+		$auto_apply_enabled = $wc_promotion['auto_apply'] ?? false;
 
 		$html = '<div class="ewm-woocommerce-content">';
 
@@ -757,10 +760,10 @@ class EWM_Render_Core {
 		// Información del cupón
 		if ( ! empty( $discount_code ) ) {
 			$html .= '<div class="ewm-wc-coupon-section">';
-			$html .= '<div class="ewm-wc-coupon-label">Código de descuento:</div>';
+			$html .= '<div class="ewm-wc-coupon-label">' . esc_html__( 'Discount code:', 'ewm-modal-cta' ) . '</div>';
 			$html .= '<div class="ewm-wc-coupon-code">';
 			$html .= '<span class="ewm-coupon-text">' . esc_html( $discount_code ) . '</span>';
-			$html .= '<button class="ewm-copy-coupon" data-coupon="' . esc_attr( $discount_code ) . '">Copiar</button>';
+			$html .= '<button class="ewm-copy-coupon" data-coupon="' . esc_attr( $discount_code ) . '">' . esc_html__( 'Copy', 'ewm-modal-cta' ) . '</button>';
 			$html .= '</div>';
 			$html .= '</div>';
 		}
@@ -768,19 +771,21 @@ class EWM_Render_Core {
 		// Timer si está habilitado
 		if ( $timer_enabled ) {
 			$html .= '<div class="ewm-wc-timer-section">';
-			$html .= '<div class="ewm-wc-timer-label">Oferta válida por:</div>';
+			$html .= '<div class="ewm-wc-timer-label">' . esc_html__( 'Offer valid for:', 'ewm-modal-cta' ) . '</div>';
 			$html .= '<div class="ewm-wc-timer" data-threshold="' . esc_attr( $timer_threshold ) . '">';
 			$html .= '<span class="ewm-timer-minutes">00</span>:<span class="ewm-timer-seconds">00</span>';
 			$html .= '</div>';
 			$html .= '</div>';
 		}
 
-		// CTA Button
-		$html .= '<div class="ewm-wc-cta-section">';
-		$html .= '<button class="ewm-wc-cta-button" data-action="apply-coupon" data-coupon="' . esc_attr( $discount_code ) . '">';
-		$html .= esc_html( $cta_text );
-		$html .= '</button>';
-		$html .= '</div>';
+		// CTA Button - Solo mostrar si auto_apply está habilitado y hay texto CTA
+		if ( $auto_apply_enabled && ! empty( $cta_text ) && ! empty( $discount_code ) ) {
+			$html .= '<div class="ewm-wc-cta-section">';
+			$html .= '<button class="ewm-wc-cta-button" data-action="apply-coupon" data-coupon="' . esc_attr( $discount_code ) . '">';
+			$html .= esc_html( $cta_text );
+			$html .= '</button>';
+			$html .= '</div>';
+		}
 
 		$html .= '</div>';
 
