@@ -626,8 +626,46 @@
                 console.log(`EWM Modal Frontend: Advanced to step ${nextStepNumber}`);
             } else {
                 console.log('EWM Modal Frontend: No next step found, submitting form');
-                // Si no hay siguiente paso, enviar el formulario
-                this.submitForm();
+                // Si no hay siguiente paso, enviar el formulario directamente (evitar bucle)
+                this.submitFormDirectly();
+            }
+        }
+
+        /**
+         * Enviar formulario directamente sin verificación de pasos (evita bucles)
+         */
+        async submitFormDirectly() {
+            console.log('EWM Modal Frontend: Direct form submission initiated');
+
+            try {
+                // Recopilar datos del formulario
+                const formData = this.collectFormData();
+                console.log('EWM Modal Frontend: Form data collected:', formData);
+
+                // Validar datos básicos
+                if (!formData || Object.keys(formData).length === 0) {
+                    throw new Error('No se pudieron recopilar los datos del formulario');
+                }
+
+                // Enviar al backend
+                console.log('EWM Modal Frontend: Attempting to submit form data...');
+                const response = await this.submitFormData(formData);
+                console.log('EWM Modal Frontend: Form submitted successfully:', response);
+
+                // Marcar como enviado exitosamente
+                this.markAsSuccessfullySubmitted();
+
+                // Mostrar paso de éxito
+                this.showSuccessStep();
+
+                // Auto-cerrar después de 3 segundos
+                setTimeout(() => {
+                    this.hide();
+                }, 3000);
+
+            } catch (error) {
+                console.error('EWM Modal Frontend: Form submission error:', error);
+                this.showErrorMessage(error.message || 'Error submitting form');
             }
         }
 
