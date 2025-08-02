@@ -424,8 +424,111 @@ class EWM_General_Auto_Injection {
 			'is_auto_inject' => true, // IMPORTANTE: Marcar como auto-inyectado
 		);
 
-		// Renderizar usando el motor universal
-		echo ewm_render_modal_core( $modal_id, $render_config );
+		// Renderizar usando el motor universal y escapar de forma compatible con formularios
+		$ewm_modal_html = ewm_render_modal_core( $modal_id, $render_config );
+
+		// Permitimos HTML de formulario seguro (form, input, select, textarea, button, etc.)
+		$allowed_html = array(
+			'div'     => array(
+				'class' => true,
+				'id'    => true,
+				'style' => true,
+				'data-*'=> true,
+				'role'  => true,
+			),
+			'span'    => array(
+				'class' => true,
+				'id'    => true,
+				'style' => true,
+				'data-*'=> true,
+				'role'  => true,
+			),
+			'form'    => array(
+				'action' => true,
+				'method' => true,
+				'class'  => true,
+				'id'     => true,
+				'style'  => true,
+				'data-*' => true,
+				'novalidate' => true,
+			),
+			'input'   => array(
+				'type'        => true,
+				'name'        => true,
+				'value'       => true,
+				'placeholder' => true,
+				'required'    => true,
+				'checked'     => true,
+				'min'         => true,
+				'max'         => true,
+				'step'        => true,
+				'pattern'     => true,
+				'id'          => true,
+				'class'       => true,
+				'data-*'      => true,
+				'autocomplete'=> true,
+			),
+			'select'  => array(
+				'name'   => true,
+				'id'     => true,
+				'class'  => true,
+				'data-*' => true,
+				'multiple' => true,
+				'required' => true,
+			),
+			'option'  => array(
+				'value'    => true,
+				'selected' => true,
+			),
+			'textarea'=> array(
+				'name'        => true,
+				'id'          => true,
+				'class'       => true,
+				'rows'        => true,
+				'cols'        => true,
+				'placeholder' => true,
+				'required'    => true,
+				'data-*'      => true,
+			),
+			'button'  => array(
+				'type'   => true,
+				'class'  => true,
+				'id'     => true,
+				'data-*' => true,
+			),
+			'label'   => array(
+				'for'    => true,
+				'class'  => true,
+				'id'     => true,
+			),
+			'p'       => array(
+				'class' => true,
+				'id'    => true,
+				'style' => true,
+			),
+			'h1' => array( 'class' => true, 'id' => true ),
+			'h2' => array( 'class' => true, 'id' => true ),
+			'h3' => array( 'class' => true, 'id' => true ),
+			'h4' => array( 'class' => true, 'id' => true ),
+			'ul' => array( 'class' => true, 'id' => true ),
+			'ol' => array( 'class' => true, 'id' => true ),
+			'li' => array( 'class' => true, 'id' => true ),
+			'a'  => array(
+				'href'   => true,
+				'class'  => true,
+				'id'     => true,
+				'target' => true,
+				'rel'    => true,
+				'data-*' => true,
+			),
+			'script' => array(
+				'type' => true,
+			),
+			'style' => array(),
+		);
+
+		// Importante: usamos wp_kses con una safelist apropiada para no romper formularios
+		echo wp_kses( $ewm_modal_html, $allowed_html ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Contenido filtrado con wp_kses y safelist de etiquetas/atributos permitidos
 	}
 
 	/**

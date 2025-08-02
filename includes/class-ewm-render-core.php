@@ -154,13 +154,10 @@ class EWM_Render_Core {
 
 		// Verificar charset de la conexión
 		$charset = $wpdb->charset;
-		if ($charset !== 'utf8' && $charset !== 'utf8mb4') {
-			// Solo emitir warning si WP_DEBUG está activado
-			if (defined('WP_DEBUG') && WP_DEBUG) {
-				trigger_error(
-					sprintf('Warning: La conexión de WordPress no está usando UTF-8 (charset actual: %s)', $charset),
-					E_USER_WARNING
-				);
+		if ( $charset !== 'utf8' && $charset !== 'utf8mb4' ) {
+			// Registrar solo en modo debug sin usar trigger_error en producción.
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( sprintf( 'EWM Modal CTA: La conexión de WordPress no está usando UTF-8 (charset actual: %s)', $charset ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 			}
 		}
 
