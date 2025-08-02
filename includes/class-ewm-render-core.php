@@ -326,7 +326,12 @@ class EWM_Render_Core {
 					
 					<!-- Contenido del modal -->
 					<div class="ewm-modal-body">
-						<?php echo $this->generate_modal_content( $modal_id, $config ); ?>
+						<?php
+						// Seguridad: El contenido generado por generate_modal_content y sus sub-métodos escapa cada variable dinámica según contexto.
+						// No usar esc_html ni wp_kses_post aquí porque se renderizan formularios HTML completos.
+						// Si se agregan nuevas fuentes de datos dinámicos, deben escaparse en el método correspondiente.
+						echo $this->generate_modal_content( $modal_id, $config );
+						?>
 					</div>
 					
 				</div>
