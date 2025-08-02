@@ -335,6 +335,32 @@
 
                         return; // Detener el envío
                     }
+
+                    // VERIFICAR SI ESTAMOS EN EL ÚLTIMO PASO
+                    const currentStepNumber = parseInt(currentStep.dataset.step);
+                    const allSteps = form.querySelectorAll('.ewm-form-step');
+                    const totalSteps = allSteps.length;
+
+                    console.log(`EWM Modal Frontend: Current step: ${currentStepNumber}, Total steps: ${totalSteps}`);
+
+                    // Si NO estamos en el último paso, avanzar en lugar de enviar
+                    if (currentStepNumber < totalSteps) {
+                        console.log('EWM Modal Frontend: Not on last step, advancing to next step instead of submitting');
+
+                        // Rehabilitar botón
+                        if (submitButton) {
+                            submitButton.disabled = false;
+                            if (submitButton.textContent === 'Enviando...') {
+                                submitButton.textContent = 'Enviar';
+                            }
+                        }
+
+                        // Avanzar al siguiente paso
+                        this.nextStep();
+                        return; // No enviar el formulario
+                    }
+
+                    console.log('EWM Modal Frontend: On last step, proceeding with form submission');
                 }
             }
 
@@ -416,7 +442,7 @@
                     if (!name) return;
 
                     let value = '';
-                    
+
                     if (field.type === 'checkbox') {
                         if (field.name.endsWith('[]')) {
                             // Multiple checkboxes
@@ -442,7 +468,9 @@
 
                     if (value !== '' && !field.name.endsWith('[]')) {
                         stepFields[name] = value;
-                        formData[name] = value; // Also add to flat structure
+                        // Add field with step context for proper mapping
+                        const stepFieldKey = `step${stepId}_${name}`;
+                        formData[stepFieldKey] = value;
                     }
                 });
 

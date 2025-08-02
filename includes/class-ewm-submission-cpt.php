@@ -368,6 +368,7 @@ class EWM_Submission_CPT {
 
 	/**
 	 * Obtener mapeo de field_id a label desde la configuración del modal
+	 * Maneja campos con IDs duplicados en diferentes pasos
 	 */
 	private function get_field_mapping( $modal_id ) {
 		if ( ! $modal_id ) {
@@ -380,13 +381,19 @@ class EWM_Submission_CPT {
 
 		if ( ! empty( $modal_config['steps'] ) ) {
 			foreach ( $modal_config['steps'] as $step ) {
+				$step_id = $step['id'] ?? '';
 				if ( ! empty( $step['fields'] ) ) {
 					foreach ( $step['fields'] as $field ) {
 						$field_id    = $field['id'] ?? '';
 						$field_label = $field['label'] ?? '';
 
 						if ( $field_id && $field_label ) {
+							// Mapeo simple (se sobrescribe si hay duplicados)
 							$field_mapping[ $field_id ] = $field_label;
+
+							// Mapeo con contexto de paso para resolver duplicados
+							$step_field_key = "step{$step_id}_{$field_id}";
+							$field_mapping[ $step_field_key ] = $field_label;
 						}
 					}
 				}
