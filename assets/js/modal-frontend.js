@@ -296,22 +296,36 @@
             const submitButton = e.target.closest('.ewm-btn-submit') || e.target;
             const form = this.modal.querySelector('.ewm-multi-step-form');
 
-            // VALIDACIÓN HTML5 NATIVA ANTES DEL ENVÍO
-            if (form && !form.checkValidity()) {
-                console.log('EWM Modal Frontend: Form validation failed (HTML5)');
+            // VALIDACIÓN HTML5 NATIVA SOLO DEL PASO ACTUAL
+            const currentStep = form ? form.querySelector('.ewm-form-step.active') : null;
+            if (currentStep) {
+                const currentStepFields = currentStep.querySelectorAll('input, textarea, select');
+                let hasInvalidFields = false;
 
-                // Mostrar errores nativos del navegador
-                form.reportValidity();
-
-                // Rehabilitar botón si estaba deshabilitado
-                if (submitButton) {
-                    submitButton.disabled = false;
-                    if (submitButton.textContent === 'Enviando...') {
-                        submitButton.textContent = 'Enviar';
+                // Validar solo campos del paso actual
+                currentStepFields.forEach(field => {
+                    if (!field.checkValidity()) {
+                        hasInvalidFields = true;
+                        // Mostrar error en el primer campo inválido
+                        if (!hasInvalidFields || field === currentStepFields[0]) {
+                            field.reportValidity();
+                        }
                     }
-                }
+                });
 
-                return; // Detener el envío
+                if (hasInvalidFields) {
+                    console.log('EWM Modal Frontend: Current step validation failed (HTML5)');
+
+                    // Rehabilitar botón si estaba deshabilitado
+                    if (submitButton) {
+                        submitButton.disabled = false;
+                        if (submitButton.textContent === 'Enviando...') {
+                            submitButton.textContent = 'Enviar';
+                        }
+                    }
+
+                    return; // Detener el envío
+                }
             }
 
             // VALIDACIÓN ADICIONAL DE JAVASCRIPT
