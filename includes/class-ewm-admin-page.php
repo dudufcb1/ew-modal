@@ -1486,7 +1486,9 @@ class EWM_Admin_Page {
 
 		<div class="ewm-admin-preview">
 			<div class="ewm-preview-info">
-				<strong><?php esc_html_e( 'Modal Preview', 'ewm-modal-cta' ); ?></strong> - <?php printf( esc_html__( 'Showing the first step of %d configured steps', 'ewm-modal-cta' ), count( $steps ) ); ?>
+				<strong><?php esc_html_e( 'Modal Preview', 'ewm-modal-cta' ); ?></strong> - <?php
+				/* translators: %d: number of configured steps */
+				printf( esc_html__( 'Showing the first step of %d configured steps', 'ewm-modal-cta' ), count( $steps ) ); ?>
 			</div>
 
 			<div class="ewm-preview-header">

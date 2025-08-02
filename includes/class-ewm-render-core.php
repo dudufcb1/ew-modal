@@ -330,7 +330,7 @@ class EWM_Render_Core {
 						// Seguridad: El contenido generado por generate_modal_content y sus sub-métodos escapa cada variable dinámica según contexto.
 						// No usar esc_html ni wp_kses_post aquí porque se renderizan formularios HTML completos.
 						// Si se agregan nuevas fuentes de datos dinámicos, deben escaparse en el método correspondiente.
-						echo $this->generate_modal_content( $modal_id, $config );
+						echo $this->generate_modal_content( $modal_id, $config ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Content is escaped in generate_modal_content method
 						?>
 					</div>
 					
@@ -423,7 +423,7 @@ class EWM_Render_Core {
 					<?php endif; ?>
 
 					<div class="ewm-step-fields">
-						<?php echo $this->generate_form_fields( $step['fields'] ?? array() ); ?>
+						<?php echo $this->generate_form_fields( $step['fields'] ?? array() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Content is escaped in generate_form_fields method ?>
 					</div>
 
 					<?php if ( ! empty( $step['description'] ) ) : ?>
@@ -470,7 +470,7 @@ class EWM_Render_Core {
 					<?php endif; ?>
 					
 					<div class="ewm-step-fields">
-						<?php echo $this->generate_form_fields( $final_step['fields'] ?? array() ); ?>
+						<?php echo $this->generate_form_fields( $final_step['fields'] ?? array() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Content is escaped in generate_form_fields method ?>
 					</div>
 					
 					<div class="ewm-step-navigation">
@@ -553,7 +553,7 @@ class EWM_Render_Core {
 					</label>
 				<?php endif; ?>
 
-				<?php echo $this->generate_field_input( $field ); ?>
+				<?php echo $this->generate_field_input( $field ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Content is escaped in generate_field_input method ?>
 				
 			</div>
 			<?php
