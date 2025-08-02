@@ -5,7 +5,7 @@
 (function($) {
     'use strict';
 
-    console.log('🔥 MODAL-ADMIN.JS LOADED WITH FIXES! 🔥');
+    // console.log('🔥 MODAL-ADMIN.JS LOADED WITH FIXES! 🔥');
 
     const EWMModalAdmin = {
         // Variables globales
@@ -16,7 +16,7 @@
          * Inicializar el admin
          */
         init: async function() {
-            console.log('EWM Modal Admin: Initializing...');
+            // console.log('EWM Modal Admin: Initializing...');
 
             // Verificar que tenemos las variables necesarias
             if (typeof ewm_admin_vars === 'undefined') {
@@ -39,7 +39,7 @@
                 this.initWCIntegration();
             }
 
-            console.log('EWM Modal Admin: Initialized successfully');
+            // console.log('EWM Modal Admin: Initialized successfully');
         },
 
         /**
@@ -91,7 +91,7 @@
                 $(this).addClass('active');
                 $(targetTab).addClass('active');
 
-                console.log('EWM Modal Admin: Tab switched to', targetTab);
+                // console.log('EWM Modal Admin: Tab switched to', targetTab);
             });
         },
 
@@ -119,7 +119,7 @@
                     handle: '.ewm-step-handle',
                     placeholder: 'ewm-step-placeholder',
                     update: function() {
-                        console.log('EWM Modal Admin: Steps reordered');
+                        // console.log('EWM Modal Admin: Steps reordered');
                     }
                 });
             }
@@ -149,13 +149,13 @@
 
                 if (response.success) {
                     // 🔍 LOG ANTES: Datos cargados desde el backend
-                    console.log('🔍 PAYLOAD LOG - ANTES (Datos cargados desde backend):', JSON.stringify(response.data, null, 2));
-                    console.log('🔍 PAYLOAD LOG - ANTES (Timestamp):', new Date().toISOString());
+                    // console.log('🔍 PAYLOAD LOG - ANTES (Datos cargados desde backend):', JSON.stringify(response.data, null, 2));
+                    // console.log('🔍 PAYLOAD LOG - ANTES (Timestamp):', new Date().toISOString());
 
                     // Detectar si es un modal WooCommerce y preparar la UI
                     const hasWCIntegration = response.data.wc_integration && response.data.wc_integration.enabled;
                     if (hasWCIntegration) {
-                        console.log('EWM Modal Admin: WooCommerce modal detected, preparing UI...');
+                        // console.log('EWM Modal Admin: WooCommerce modal detected, preparing UI...');
                         await this.prepareWCModalUI();
                     }
 
@@ -164,7 +164,7 @@
                     // Disparar evento para que el builder v2 pueda cargar los steps
                     $(document).trigger('ewm-modal-data-loaded', [response.data]);
 
-                    console.log('EWM Modal Admin: Modal data loaded successfully');
+                    // console.log('EWM Modal Admin: Modal data loaded successfully');
                 } else {
                     this.showError('Error loading modal: ' + response.data);
                 }
@@ -181,28 +181,28 @@
          * Preparar UI para modales WooCommerce
          */
         prepareWCModalUI: async function() {
-            console.log('EWM Modal Admin: Preparing WooCommerce modal UI...');
+            // console.log('EWM Modal Admin: Preparing WooCommerce modal UI...');
 
             // DEBUGGING: Inspeccionar el HTML del tab WooCommerce
             const $wcTab = $('#woocommerce-tab');
             const $wcPane = $('#woocommerce');
             
-            console.log('🔍 WC TAB DEBUG - Tab element:', $wcTab.length, $wcTab[0]);
-            console.log('🔍 WC TAB DEBUG - Pane element:', $wcPane.length, $wcPane[0]);
-            console.log('🔍 WC TAB DEBUG - Pane HTML:', $wcPane.html());
-            console.log('🔍 WC TAB DEBUG - Pane text length:', $wcPane.text().length);
-            console.log('🔍 WC TAB DEBUG - WC integration enabled checkbox:', $('#wc-integration-enabled').length);
-            console.log('🔍 WC TAB DEBUG - WC coupon select:', $('#wc-coupon-select').length);
+            // console.log('🔍 WC TAB DEBUG - Tab element:', $wcTab.length, $wcTab[0]);
+            // console.log('🔍 WC TAB DEBUG - Pane element:', $wcPane.length, $wcPane[0]);
+            // console.log('🔍 WC TAB DEBUG - Pane HTML:', $wcPane.html());
+            // console.log('🔍 WC TAB DEBUG - Pane text length:', $wcPane.text().length);
+            // console.log('🔍 WC TAB DEBUG - WC integration enabled checkbox:', $('#wc-integration-enabled').length);
+            // console.log('🔍 WC TAB DEBUG - WC coupon select:', $('#wc-coupon-select').length);
             
             const $nonWcTabs = $('.non-wc-tab');
 
             // Mostrar tab WooCommerce
             $wcTab.show();
-            console.log('🔍 WC TAB DEBUG - Tab shown, visible:', $wcTab.is(':visible'));
+            // console.log('🔍 WC TAB DEBUG - Tab shown, visible:', $wcTab.is(':visible'));
 
             // Ocultar tabs no esenciales para WooCommerce (mantener General y WooCommerce)
             $nonWcTabs.hide();
-            console.log('🔍 WC TAB DEBUG - Non-WC tabs hidden, count:', $nonWcTabs.length);
+            // console.log('🔍 WC TAB DEBUG - Non-WC tabs hidden, count:', $nonWcTabs.length);
 
             // Activar tab General por defecto (para que el usuario vea algo inmediatamente)
             $('.ewm-tabs-nav a').removeClass('active');
@@ -210,23 +210,23 @@
             $('.ewm-tabs-nav a[href="#general"]').addClass('active');
             $('#general').addClass('active');
             
-            console.log('🔍 WC TAB DEBUG - General tab activated');
+            // console.log('🔍 WC TAB DEBUG - General tab activated');
 
             // DEBUGGING: Inspeccionar después de activar
-            console.log('🔍 WC TAB DEBUG - After activation:');
-            console.log('  - WC pane HTML length:', $wcPane.html().length);
-            console.log('  - Active tabs:', $('.ewm-tabs-nav a.active').map((i, el) => $(el).attr('href')).get());
-            console.log('  - Active panes:', $('.ewm-tab-pane.active').map((i, el) => el.id).get());
+            // console.log('🔍 WC TAB DEBUG - After activation:');
+            // console.log('  - WC pane HTML length:', $wcPane.html().length);
+            // console.log('  - Active tabs:', $('.ewm-tabs-nav a.active').map((i, el) => $(el).attr('href')).get());
+            // console.log('  - Active panes:', $('.ewm-tab-pane.active').map((i, el) => el.id).get());
 
             // DEBUGGING: Agregar listener para el click en tab WooCommerce
             $wcTab.off('click.debug').on('click.debug', function() {
-                console.log('🔍 WC TAB DEBUG - Tab clicked!');
+                // console.log('🔍 WC TAB DEBUG - Tab clicked!');
                 setTimeout(() => {
-                    console.log('🔍 WC TAB DEBUG - After tab switch:');
-                    console.log('  - WC pane visible:', $('#woocommerce').is(':visible'));
-                    console.log('  - WC pane display style:', $('#woocommerce').css('display'));
-                    console.log('  - WC form elements count:', $('#woocommerce input, #woocommerce select, #woocommerce textarea').length);
-                    console.log('  - First few form elements:', $('#woocommerce input, #woocommerce select, #woocommerce textarea').slice(0, 3).map((i, el) => el.id || el.name).get());
+                    // console.log('🔍 WC TAB DEBUG - After tab switch:');
+                    // console.log('  - WC pane visible:', $('#woocommerce').is(':visible'));
+                    // console.log('  - WC pane display style:', $('#woocommerce').css('display'));
+                    // console.log('  - WC form elements count:', $('#woocommerce input, #woocommerce select, #woocommerce textarea').length);
+                    // console.log('  - First few form elements:', $('#woocommerce input, #woocommerce select, #woocommerce textarea').slice(0, 3).map((i, el) => el.id || el.name).get());
                 }, 50);
             });
 
@@ -234,7 +234,7 @@
             await this.ensureWCIntegrationReady();
 
             // Precargar cupones de WooCommerce 
-            console.log('EWM Modal Admin: Preloading WooCommerce coupons...');
+            // console.log('EWM Modal Admin: Preloading WooCommerce coupons...');
             this.showLoading('Preparing WooCommerce coupons...');
 
             try {
@@ -245,52 +245,52 @@
                         window.EWMWCBuilderIntegration.loadCoupons(resolve);
                     });
                 }
-                console.log('EWM Modal Admin: WooCommerce coupons preloaded successfully');
+                // console.log('EWM Modal Admin: WooCommerce coupons preloaded successfully');
                 
                 // DEBUGGING: Inspeccionar después de cargar cupones
-                console.log('🔍 WC TAB DEBUG - After loading coupons:');
-                console.log('  - Coupon select options:', $('#wc-coupon-select option').length);
-                console.log('  - Coupon select HTML:', $('#wc-coupon-select')[0]?.outerHTML);
-                console.log('  - WC settings visible:', $('#wc-integration-settings').is(':visible'));
+                // console.log('🔍 WC TAB DEBUG - After loading coupons:');
+                // console.log('  - Coupon select options:', $('#wc-coupon-select option').length);
+                // console.log('  - Coupon select HTML:', $('#wc-coupon-select')[0]?.outerHTML);
+                // console.log('  - WC settings visible:', $('#wc-integration-settings').is(':visible'));
                 
             } catch (error) {
                 console.error('EWM Modal Admin: Error preloading WooCommerce coupons:', error);
             }
 
             this.hideLoading();
-            console.log('EWM Modal Admin: WooCommerce modal UI prepared');
+            // console.log('EWM Modal Admin: WooCommerce modal UI prepared');
             
             // DEBUGGING FINAL: Estado completo del tab
-            console.log('🔍 WC TAB DEBUG - FINAL STATE:');
-            console.log('  - WC pane HTML:', $wcPane.html());
-            console.log('  - WC pane visible:', $wcPane.is(':visible'));
-            console.log('  - All form elements in WC pane:', $wcPane.find('input, select, textarea').length);
+            // console.log('🔍 WC TAB DEBUG - FINAL STATE:');
+            // console.log('  - WC pane HTML:', $wcPane.html());
+            // console.log('  - WC pane visible:', $wcPane.is(':visible'));
+            // console.log('  - All form elements in WC pane:', $wcPane.find('input, select, textarea').length);
         },
 
         /**
          * Garantizar que EWMWCBuilderIntegration esté listo antes de usarlo
          */
         ensureWCIntegrationReady: async function() {
-            console.log('EWM Modal Admin: Ensuring WC Integration is ready...');
+            // console.log('EWM Modal Admin: Ensuring WC Integration is ready...');
 
             // Si ya existe, verificar que tenga los métodos necesarios
             if (window.EWMWCBuilderIntegration && 
                 typeof window.EWMWCBuilderIntegration.loadCoupons === 'function') {
-                console.log('EWM Modal Admin: WC Integration already ready');
+                // console.log('EWM Modal Admin: WC Integration already ready');
                 return;
             }
 
             // Si no existe, intentar acceder a la clase y crear una instancia
             if (!window.EWMWCBuilderIntegration) {
-                console.log('EWM Modal Admin: WC Integration not found, attempting to initialize...');
+                // console.log('EWM Modal Admin: WC Integration not found, attempting to initialize...');
                 
                 // Buscar la clase en el scope global o en el window
                 if (typeof EWMWCBuilderIntegration !== 'undefined') {
-                    console.log('EWM Modal Admin: Creating WC Integration instance manually...');
+                    // console.log('EWM Modal Admin: Creating WC Integration instance manually...');
                     window.EWMWCBuilderIntegration = new EWMWCBuilderIntegration();
                 } else {
                     // Si la clase no está disponible, esperar un poco más
-                    console.log('EWM Modal Admin: EWMWCBuilderIntegration class not found, waiting...');
+                    // console.log('EWM Modal Admin: EWMWCBuilderIntegration class not found, waiting...');
                 }
             }
 
@@ -306,11 +306,11 @@
                 
                 // Intentar crear instancia en cada intento si la clase está disponible
                 if (!window.EWMWCBuilderIntegration && typeof EWMWCBuilderIntegration !== 'undefined') {
-                    console.log('EWM Modal Admin: Attempting to create instance, attempt', attempts);
+                    // console.log('EWM Modal Admin: Attempting to create instance, attempt', attempts);
                     try {
                         window.EWMWCBuilderIntegration = new EWMWCBuilderIntegration();
                     } catch (error) {
-                        console.log('EWM Modal Admin: Failed to create instance:', error.message);
+                        // console.log('EWM Modal Admin: Failed to create instance:', error.message);
                     }
                 }
             }
@@ -319,14 +319,14 @@
                 throw new Error('WC Integration failed to initialize within timeout');
             }
 
-            console.log('EWM Modal Admin: WC Integration ready after', attempts * 100, 'ms');
+            // console.log('EWM Modal Admin: WC Integration ready after', attempts * 100, 'ms');
         },
 
         /**
          * Seleccionar cupón de forma robusta con retry inteligente
          */
         setCouponWithRetry: async function(couponCode) {
-            console.log('EWM Modal Admin: Setting coupon with retry:', couponCode);
+            // console.log('EWM Modal Admin: Setting coupon with retry:', couponCode);
 
             const $select = $('#wc-coupon-select');
             let attempts = 0;
@@ -341,7 +341,7 @@
                     const hasRealOptions = optionCount > 1;
                     
                     if (!hasRealOptions && attempts < maxAttempts) {
-                        console.log(`EWM Modal Admin: Select not populated yet (${optionCount} options), attempt ${attempts}/${maxAttempts}`);
+                        // console.log(`EWM Modal Admin: Select not populated yet (${optionCount} options), attempt ${attempts}/${maxAttempts}`);
                         setTimeout(attemptSetCoupon, 100);
                         return;
                     }
@@ -355,14 +355,14 @@
                         // Trigger change event para que la integración WC procese la selección
                         $select.trigger('change');
                         
-                        console.log('EWM Modal Admin: Coupon selected successfully:', couponCode);
+                        // console.log('EWM Modal Admin: Coupon selected successfully:', couponCode);
                         resolve(true);
                     } else if (attempts < maxAttempts) {
-                        console.log(`EWM Modal Admin: Coupon option "${couponCode}" not found, attempt ${attempts}/${maxAttempts}`);
+                        // console.log(`EWM Modal Admin: Coupon option "${couponCode}" not found, attempt ${attempts}/${maxAttempts}`);
                         setTimeout(attemptSetCoupon, 100);
                     } else {
-                        console.warn('EWM Modal Admin: Failed to set coupon after maximum attempts:', couponCode);
-                        console.warn('EWM Modal Admin: Available options:', $select.find('option').map((i, opt) => opt.value).get());
+                        // console.warn('EWM Modal Admin: Failed to set coupon after maximum attempts:', couponCode);
+                        // console.warn('EWM Modal Admin: Available options:', $select.find('option').map((i, opt) => opt.value).get());
                         resolve(false); // No rechazar, solo indicar que falló
                     }
                 };
@@ -387,14 +387,14 @@
             const formData = this.collectFormData();
 
             // LOGGING: Payload generado antes de enviar
-            console.log('[EWM LOG] [GUARDAR] Payload generado:', JSON.stringify(formData, null, 2));
+            // console.log('[EWM LOG] [GUARDAR] Payload generado:', JSON.stringify(formData, null, 2));
 
             // LOGGING: Stack trace JS en el momento de guardar
             try {
-                throw new Error('[EWM LOG] [GUARDAR] Stack trace al guardar modal');
+                // throw new Error('[EWM LOG] [GUARDAR] Stack trace al guardar modal');
             } catch (err) {
                 if (err.stack) {
-                    console.log(err.stack);
+                    // console.log(err.stack);
                 }
             }
 
@@ -409,11 +409,11 @@
                 },
                 beforeSend: function() {
                     // LOGGING: Payload enviado
-                    console.log('[EWM LOG] [GUARDAR] Payload enviado:', JSON.stringify(formData, null, 2));
+                    // console.log('[EWM LOG] [GUARDAR] Payload enviado:', JSON.stringify(formData, null, 2));
                 },
                 success: function(response) {
                     // LOGGING: Respuesta del backend al guardar
-                    console.log('[EWM LOG] [GUARDAR] Respuesta backend:', JSON.stringify(response, null, 2));
+                    // console.log('[EWM LOG] [GUARDAR] Respuesta backend:', JSON.stringify(response, null, 2));
 
                     if (response.success) {
                         EWMModalAdmin.showSuccess('Modal saved successfully');
@@ -472,7 +472,7 @@
                         // Cambiar al tab de preview
                         $('.ewm-tabs-nav a[href="#preview"]').trigger('click');
 
-                        console.log('EWM Modal Admin: Preview generated successfully');
+                        // console.log('EWM Modal Admin: Preview generated successfully');
                     } else {
                         EWMModalAdmin.showError('Error generating preview: ' + response.data);
                     }
@@ -577,13 +577,13 @@
             }
 
             // 🔍 LOG ESPECÍFICO: Campo de frecuencia (NUEVA ESTRUCTURA)
-            console.log('🔍 FREQUENCY LOG - Campo frecuencia actual (NUEVA ESTRUCTURA):', {
-                type: frequencyType,
-                limit: frequencyLimit,
-                element_exists: $('#display-frequency').length > 0,
-                all_options: $('#display-frequency option').map(function() { return $(this).val(); }).get(),
-                timestamp: new Date().toISOString()
-            });
+            // console.log('🔍 FREQUENCY LOG - Campo frecuencia actual (NUEVA ESTRUCTURA):', {
+            //     type: frequencyType,
+            //     limit: frequencyLimit,
+            //     element_exists: $('#display-frequency').length > 0,
+            //     all_options: $('#display-frequency option').map(function() { return $(this).val(); }).get(),
+            //     timestamp: new Date().toISOString()
+            // });
 
             return {
                 exit_intent: {
@@ -664,9 +664,9 @@
             if (!data) return;
         
             // LOG TEMPORAL: Interpretación JS de los datos recibidos (modal-enabled y enable-manual-trigger)
-            console.log('[EWM TEST LOG] Interpretación JS: data.display_rules.enabled =', data.display_rules?.enabled);
-            console.log('[EWM TEST LOG] Interpretación JS: data.triggers.manual.enabled =', data.triggers?.manual?.enabled);
-            console.log('[EWM TEST LOG] Interpretación JS: data =', JSON.stringify(data, null, 2));
+            // console.log('[EWM TEST LOG] Interpretación JS: data.display_rules.enabled =', data.display_rules?.enabled);
+            // console.log('[EWM TEST LOG] Interpretación JS: data.triggers.manual.enabled =', data.triggers?.manual?.enabled);
+            // console.log('[EWM TEST LOG] Interpretación JS: data =', JSON.stringify(data, null, 2));
         
             // Datos generales
             $('#modal-title').val(data.title || '');
@@ -741,39 +741,39 @@
                     });
                 }
         
-                console.log('🔍 FREQUENCY LOG - Poblando frecuencia (NUEVA ESTRUCTURA):', {
-                    frequency_object_from_backend: data.triggers.frequency,
-                    type_from_backend: frequencyFromData,
-                    limit_from_backend: frequencyLimit,
-                    element_before_set: $('#display-frequency').val(),
-                    timestamp: new Date().toISOString()
-                });
+                // console.log('🔍 FREQUENCY LOG - Poblando frecuencia (NUEVA ESTRUCTURA):', {
+                //     frequency_object_from_backend: data.triggers.frequency,
+                //     type_from_backend: frequencyFromData,
+                //     limit_from_backend: frequencyLimit,
+                //     element_before_set: $('#display-frequency').val(),
+                //     timestamp: new Date().toISOString()
+                // });
         
                 $('#display-frequency').val(frequencyFromData);
         
                 // Verificar si se estableció correctamente
-                console.log('🔍 FREQUENCY LOG - Después de establecer (NUEVA ESTRUCTURA):', {
-                    element_after_set: $('#display-frequency').val(),
-                    matches_expected: $('#display-frequency').val() === frequencyFromData,
-                    full_structure_available: !!data.triggers.frequency
-                });
+                // console.log('🔍 FREQUENCY LOG - Después de establecer (NUEVA ESTRUCTURA):', {
+                //     element_after_set: $('#display-frequency').val(),
+                //     matches_expected: $('#display-frequency').val() === frequencyFromData,
+                //     full_structure_available: !!data.triggers.frequency
+                // });
             }
         
             if (data.wc_integration) {
-                console.log('🔍 WC POPULATE DEBUG - Starting WC integration processing...');
-                console.log('🔍 WC POPULATE DEBUG - WC integration data:', data.wc_integration);
-                console.log('🔍 WC POPULATE DEBUG - WC tab exists:', $('#woocommerce').length);
-                console.log('🔍 WC POPULATE DEBUG - WC tab HTML before populate:', $('#woocommerce').html().substring(0, 200) + '...');
+                // console.log('🔍 WC POPULATE DEBUG - Starting WC integration processing...');
+                // console.log('🔍 WC POPULATE DEBUG - WC integration data:', data.wc_integration);
+                // console.log('🔍 WC POPULATE DEBUG - WC tab exists:', $('#woocommerce').length);
+                // console.log('🔍 WC POPULATE DEBUG - WC tab HTML before populate:', $('#woocommerce').html().substring(0, 200) + '...');
 
                 // Marcar checkbox de integración WooCommerce
                 $('#wc-integration-enabled').prop('checked', data.wc_integration.enabled || false);
                 $('#enable-woocommerce').prop('checked', data.wc_integration.enabled || false);
 
-                console.log('🔍 WC POPULATE DEBUG - Checkboxes set:', {
-                    'wc-integration-enabled': $('#wc-integration-enabled').is(':checked'),
-                    'enable-woocommerce': $('#enable-woocommerce').is(':checked'),
-                    'wc-integration-enabled-exists': $('#wc-integration-enabled').length
-                });
+                // console.log('🔍 WC POPULATE DEBUG - Checkboxes set:', {
+                //     'wc-integration-enabled': $('#wc-integration-enabled').is(':checked'),
+                //     'enable-woocommerce': $('#enable-woocommerce').is(':checked'),
+                //     'wc-integration-enabled-exists': $('#wc-integration-enabled').length
+                // });
 
                 if (data.wc_integration.enabled) {
                     // FORZAR la visualización de configuraciones WooCommerce
@@ -782,26 +782,26 @@
                     // TAMBIÉN forzar trigger del evento change para activar la lógica JS de WC
                     $('#wc-integration-enabled').trigger('change');
                     
-                    console.log('🔍 WC POPULATE DEBUG - WC settings FORCED visible:', $('#wc-integration-settings').is(':visible'));
+                    // console.log('🔍 WC POPULATE DEBUG - WC settings FORCED visible:', $('#wc-integration-settings').is(':visible'));
 
                     // Los cupones ya deberían estar cargados por prepareWCModalUI
                     // Solo necesitamos seleccionar el cupón guardado
                     if (data.wc_integration.discount_code !== undefined) {
-                        console.log('🔍 WC POPULATE DEBUG - Setting saved coupon:', data.wc_integration.discount_code);
-                        console.log('🔍 WC POPULATE DEBUG - Coupon select before set:', $('#wc-coupon-select').length, $('#wc-coupon-select option').length);
+                        // console.log('🔍 WC POPULATE DEBUG - Setting saved coupon:', data.wc_integration.discount_code);
+                        // console.log('🔍 WC POPULATE DEBUG - Coupon select before set:', $('#wc-coupon-select').length, $('#wc-coupon-select option').length);
 
                         // Usar método robusto para seleccionar el cupón
                         await this.setCouponWithRetry(data.wc_integration.discount_code);
                         
-                        console.log('🔍 WC POPULATE DEBUG - Coupon select after set:', $('#wc-coupon-select').val());
+                        // console.log('🔍 WC POPULATE DEBUG - Coupon select after set:', $('#wc-coupon-select').val());
                     }
                 } else {
-                    console.log('🔍 WC POPULATE DEBUG - WC integration not enabled');
+                    // console.log('🔍 WC POPULATE DEBUG - WC integration not enabled');
                 }
                 
                 // Promoción
                 if (data.wc_integration.wc_promotion) {
-                    console.log('🔍 WC POPULATE DEBUG - Processing promotion data:', data.wc_integration.wc_promotion);
+                    // console.log('🔍 WC POPULATE DEBUG - Processing promotion data:', data.wc_integration.wc_promotion);
                     
                     $('#wc-promotion-title').val(data.wc_integration.wc_promotion.title || '');
                     $('#wc-promotion-description').val(data.wc_integration.wc_promotion.description || '');
@@ -815,16 +815,16 @@
                         $('#wc-timer-threshold').val(data.wc_integration.wc_promotion.timer_config.threshold_seconds || 180);
                     }
                     
-                    console.log('🔍 WC POPULATE DEBUG - Promotion fields populated');
+                    // console.log('🔍 WC POPULATE DEBUG - Promotion fields populated');
                 } else {
-                    console.log('🔍 WC POPULATE DEBUG - No promotion data found');
+                    // console.log('🔍 WC POPULATE DEBUG - No promotion data found');
                 }
                 
-                console.log('🔍 WC POPULATE DEBUG - WC tab HTML after populate:', $('#woocommerce').html().substring(0, 200) + '...');
-                console.log('🔍 WC POPULATE DEBUG - All WC form elements:', $('#woocommerce input, #woocommerce select, #woocommerce textarea').length);
-                console.log('🔍 WC POPULATE DEBUG - Final wc-integration-settings visible:', $('#wc-integration-settings').is(':visible'));
+                // console.log('🔍 WC POPULATE DEBUG - WC tab HTML after populate:', $('#woocommerce').html().substring(0, 200) + '...');
+                // console.log('🔍 WC POPULATE DEBUG - All WC form elements:', $('#woocommerce input, #woocommerce select, #woocommerce textarea').length);
+                // console.log('🔍 WC POPULATE DEBUG - Final wc-integration-settings visible:', $('#wc-integration-settings').is(':visible'));
             } else {
-                console.log('🔍 WC POPULATE DEBUG - No WC integration data found in response');
+                // console.log('🔍 WC POPULATE DEBUG - No WC integration data found in response');
             }
         
             // Reglas de visualización
@@ -862,7 +862,7 @@
                 $('#show-progress-bar').prop('checked', data.steps.progressBar.enabled !== false);
             }
 
-            console.log('EWM Modal Admin: Form populated with data');
+            // console.log('EWM Modal Admin: Form populated with data');
 
             // Aplicar estado inicial de exclusión de tipos de modales después de poblar
             this.applyInitialModalTypeState();
@@ -872,17 +872,17 @@
          * Funciones auxiliares
          */
         showLoading: function(message) {
-            console.log('EWM Modal Admin: Loading -', message);
+            // console.log('EWM Modal Admin: Loading -', message);
             // Implementar indicador de carga visual
         },
 
         hideLoading: function() {
-            console.log('EWM Modal Admin: Loading hidden');
+            // console.log('EWM Modal Admin: Loading hidden');
             // Ocultar indicador de carga
         },
 
         showSuccess: function(message) {
-            console.log('EWM Modal Admin: Success -', message);
+            // console.log('EWM Modal Admin: Success -', message);
             alert(message); // Temporal, implementar notificación mejor
         },
 
@@ -904,19 +904,19 @@
             if (confirm('Are you sure you want to clear the form?')) {
                 $('#ewm-modal-form')[0].reset();
                 $('.ewm-steps-config').empty();
-                console.log('EWM Modal Admin: Form cleared');
+                // console.log('EWM Modal Admin: Form cleared');
             }
         },
 
         addStep: function(e) {
             e.preventDefault();
-            console.log('EWM Modal Admin: Add step clicked');
+            // console.log('EWM Modal Admin: Add step clicked');
             // Implementar lógica para agregar paso
         },
 
         removeStep: function(e) {
             e.preventDefault();
-            console.log('EWM Modal Admin: Remove step clicked');
+            // console.log('EWM Modal Admin: Remove step clicked');
             // Implementar lógica para eliminar paso
         },
 
@@ -924,7 +924,7 @@
          * Inicializar lógica de exclusión mutua entre tipos de modales
          */
         initModalTypeExclusion: function() {
-            console.log('EWM Modal Admin: Initializing modal type exclusion logic');
+            // console.log('EWM Modal Admin: Initializing modal type exclusion logic');
 
             const $useGlobalConfig = $('#use-global-config');
             const $wcIntegration = $('#wc-integration-enabled');
@@ -935,7 +935,7 @@
             // Función para manejar cambios en "Usar configuración global"
             $useGlobalConfig.on('change', function() {
                 const isChecked = $(this).is(':checked');
-                console.log('Use global config changed:', isChecked);
+                // console.log('Use global config changed:', isChecked);
 
                 if (isChecked) {
                     // Si se activa configuración global, deshabilitar WooCommerce con tooltip
@@ -948,7 +948,7 @@
                         $formGroup.append('<div class="ewm-disabled-tooltip" data-tooltip="Para habilitar WooCommerce, primero desactiva \'Configuración Global\'. Ambas opciones no pueden estar activas simultáneamente."></div>');
                     }
 
-                    console.log('Disabled WooCommerce integration with tooltip');
+                    // console.log('Disabled WooCommerce integration with tooltip');
                 } else {
                     // Si se desactiva configuración global, habilitar WooCommerce
                     $wcIntegration.prop('disabled', false);
@@ -956,14 +956,14 @@
                     $formGroup.removeClass('disabled');
                     $formGroup.find('.ewm-disabled-tooltip').remove();
 
-                    console.log('Enabled WooCommerce integration');
+                    // console.log('Enabled WooCommerce integration');
                 }
             });
 
             // Función para manejar cambios en "Integración WooCommerce"
             $wcIntegration.on('change', function() {
                 const isChecked = $(this).is(':checked');
-                console.log('WC integration changed:', isChecked);
+                // console.log('WC integration changed:', isChecked);
 
                 if (isChecked) {
                     // Si se activa WooCommerce, deshabilitar configuración global con tooltip
@@ -988,7 +988,7 @@
                     $modalMode.val('anuncio');
                     $modalMode.find('option[value="formulario"]').prop('disabled', true);
 
-                    console.log('Disabled global config with tooltip, hidden progress bar and WC controls for WooCommerce, forced announcement mode');
+                    // console.log('Disabled global config with tooltip, hidden progress bar and WC controls for WooCommerce, forced announcement mode');
                 } else {
                     // Si se desactiva WooCommerce, habilitar configuración global
                     $useGlobalConfig.prop('disabled', false);
@@ -1005,7 +1005,7 @@
                     const $modalMode = $('#modal-mode');
                     $modalMode.find('option[value="formulario"]').prop('disabled', false);
 
-                    console.log('Enabled global config, shown all controls, enabled form mode');
+                    // console.log('Enabled global config, shown all controls, enabled form mode');
                 }
             });
 
@@ -1028,9 +1028,9 @@
             const $omitWcCategories = $('#omit-wc-categories');
             const $modalMode = $('#modal-mode');
 
-            console.log('Applying initial modal type state');
-            console.log('Use global config:', $useGlobalConfig.is(':checked'));
-            console.log('WC integration:', $wcIntegration.is(':checked'));
+            // console.log('Applying initial modal type state');
+            // console.log('Use global config:', $useGlobalConfig.is(':checked'));
+            // console.log('WC integration:', $wcIntegration.is(':checked'));
 
             if ($useGlobalConfig.is(':checked')) {
                 // Si configuración global está activa, deshabilitar WooCommerce con tooltip
@@ -1043,7 +1043,7 @@
                     $formGroup.append('<div class="ewm-disabled-tooltip" data-tooltip="Para habilitar WooCommerce, primero desactiva \'Configuración Global\'. Ambas opciones no pueden estar activas simultáneamente."></div>');
                 }
 
-                console.log('Initial: Disabled WooCommerce integration with tooltip');
+                // console.log('Initial: Disabled WooCommerce integration with tooltip');
             } else if ($wcIntegration.is(':checked')) {
                 // Si WooCommerce está activo, deshabilitar configuración global con tooltip
                 $useGlobalConfig.prop('disabled', true);
@@ -1064,7 +1064,7 @@
                 $modalMode.val('anuncio');
                 $modalMode.find('option[value="formulario"]').prop('disabled', true);
 
-                console.log('Initial: Disabled global config with tooltip, hidden non-WC controls, forced announcement mode');
+                // console.log('Initial: Disabled global config with tooltip, hidden non-WC controls, forced announcement mode');
             } else {
                 // Si ninguno está activo, asegurar que formulario esté habilitado
                 $modalMode.find('option[value="formulario"]').prop('disabled', false);
@@ -1077,7 +1077,7 @@
         initWCIntegration: function() {
             // Solo ejecutar si no hay modal ID (modal nuevo)
             if (this.currentModalId) {
-                console.log('EWM Modal Admin: Skipping WC init for existing modal (handled by prepareWCModalUI)');
+                // console.log('EWM Modal Admin: Skipping WC init for existing modal (handled by prepareWCModalUI)');
                 return;
             }
 
@@ -1115,7 +1115,7 @@
             const $nonWcTabs = $('.non-wc-tab');
 
             if (enabled) {
-                console.log('EWM Modal Admin: Enabling WooCommerce integration...');
+                // console.log('EWM Modal Admin: Enabling WooCommerce integration...');
 
                 // Mostrar pestaña y configuraciones de WooCommerce
                 $wcTab.show();
@@ -1141,7 +1141,7 @@
                                 window.EWMWCBuilderIntegration.loadCoupons(resolve);
                             });
                         }
-                        console.log('EWM Modal Admin: WooCommerce coupons loaded successfully');
+                        // console.log('EWM Modal Admin: WooCommerce coupons loaded successfully');
                     } catch (error) {
                         console.error('EWM Modal Admin: Error loading WooCommerce coupons:', error);
                     }
@@ -1181,7 +1181,7 @@
 
         showShortcode: function(modalId) {
             const shortcode = '[ew_modal id="' + modalId + '"]';
-            console.log('EWM Modal Admin: Generated shortcode:', shortcode);
+            // console.log('EWM Modal Admin: Generated shortcode:', shortcode);
             // Mostrar shortcode en la interfaz
         },
 
@@ -1230,7 +1230,7 @@
                 // Mostrar panel informativo
                 $announcementInfo.slideDown(300);
 
-                console.log('EWM Modal Admin: Hidden form-specific elements for announcement mode');
+                // console.log('EWM Modal Admin: Hidden form-specific elements for announcement mode');
             } else {
                 // Mostrar elementos para modo formulario
                 $addStepBtn.show(); // Botón "Add Step"
@@ -1241,7 +1241,7 @@
                 // Ocultar panel informativo
                 $announcementInfo.slideUp(300);
 
-                console.log('EWM Modal Admin: Shown form-specific elements for form mode');
+                // console.log('EWM Modal Admin: Shown form-specific elements for form mode');
             }
         }
     };

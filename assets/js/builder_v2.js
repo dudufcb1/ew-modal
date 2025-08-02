@@ -5,7 +5,7 @@
 (function($) {
     'use strict';
 
-    console.log('🔍 EWM Builder v2: Script loaded and executing!');
+    // console.log('🔍 EWM Builder v2: Script loaded and executing!');
 
     const EWMBuilderV2 = {
         // Variables globales
@@ -17,11 +17,11 @@
          * Inicializar el builder
          */
         init: function() {
-            console.log('EWM Builder v2: Initializing...');
+            // console.log('EWM Builder v2: Initializing...');
 
             // Verificar que estamos en la página correcta
             if (!$('.ewm-modal-builder').length) {
-                console.log('EWM Builder v2: Not on builder page, skipping initialization');
+                // console.log('EWM Builder v2: Not on builder page, skipping initialization');
                 return;
             }
 
@@ -36,7 +36,7 @@
             this.initStepBuilder();
             this.initDragAndDrop();
 
-            console.log('EWM Builder v2: Initialized successfully');
+            // console.log('EWM Builder v2: Initialized successfully');
         },
 
         /**
@@ -51,7 +51,7 @@
 
             // Agregar campo
             $(document).on('click', '.ewm-add-field', function(e) {
-                console.log('🔍 EWM Builder v2: .ewm-add-field clicked!', e.target);
+                // console.log('🔍 EWM Builder v2: .ewm-add-field clicked!', e.target);
                 EWMBuilderV2.addField(e);
             });
 
@@ -94,7 +94,7 @@
                         handle: '.ewm-field-handle',
                         placeholder: 'ewm-field-placeholder',
                         update: function() {
-                            console.log('EWM Builder v2: Fields reordered');
+                            // console.log('EWM Builder v2: Fields reordered');
                         }
                     });
                 });
@@ -125,7 +125,7 @@
                 });
             }
 
-            console.log('EWM Builder v2: Step added', stepNumber);
+            // console.log('EWM Builder v2: Step added', stepNumber);
         },
 
         /**
@@ -142,7 +142,7 @@
             if (confirm('Are you sure you want to delete this step?')) {
                 $(e.target).closest('.ewm-step-config').remove();
                 this.updateStepNumbers();
-                console.log('EWM Builder v2: Step removed');
+                // console.log('EWM Builder v2: Step removed');
             }
         },
 
@@ -150,21 +150,21 @@
          * Agregar campo a un paso
          */
         addField: function(e) {
-            console.log('🔍 EWM Builder v2: addField called', e);
+            // console.log('🔍 EWM Builder v2: addField called', e);
             e.preventDefault();
 
             const stepContainer = $(e.target).closest('.ewm-step-config');
             const fieldsContainer = stepContainer.find('.ewm-fields-container');
             const fieldNumber = fieldsContainer.find('.ewm-field-config').length + 1;
 
-            console.log('🔍 EWM Builder v2: stepContainer found:', stepContainer.length);
+            // console.log('🔍 EWM Builder v2: stepContainer found:', stepContainer.length);
             console.log('🔍 EWM Builder v2: fieldsContainer found:', fieldsContainer.length);
             console.log('🔍 EWM Builder v2: fieldNumber:', fieldNumber);
 
             const fieldHtml = this.generateFieldHtml(fieldNumber);
             fieldsContainer.append(fieldHtml);
 
-            console.log('EWM Builder v2: Field added to step');
+            // console.log('EWM Builder v2: Field added to step');
         },
 
         /**
@@ -175,7 +175,7 @@
 
             if (confirm('Are you sure you want to delete this field?')) {
                 $(e.target).closest('.ewm-field-config').remove();
-                console.log('EWM Builder v2: Field removed');
+                // console.log('EWM Builder v2: Field removed');
             }
         },
 
@@ -203,7 +203,7 @@
                 });
             }
 
-            console.log('EWM Builder v2: Step duplicated');
+            // console.log('EWM Builder v2: Step duplicated');
         },
 
         /**
@@ -221,7 +221,7 @@
                 optionsContainer.hide();
             }
 
-            console.log('EWM Builder v2: Field type changed to', fieldType);
+            // console.log('EWM Builder v2: Field type changed to', fieldType);
         },
 
         /**
@@ -229,7 +229,7 @@
          */
         onStepsReordered: function() {
             this.updateStepNumbers();
-            console.log('EWM Builder v2: Steps reordered');
+            // console.log('EWM Builder v2: Steps reordered');
         },
 
         /**
@@ -251,7 +251,7 @@
                 $stepConfig.addClass('active');
             }
 
-            console.log('EWM Builder v2: Step content toggled');
+            // console.log('EWM Builder v2: Step content toggled');
         },
 
         /**
@@ -263,10 +263,10 @@
                 // Escuchar cuando se cargan los datos del modal
                 $(document).on('ewm-modal-data-loaded', this.onModalDataLoaded.bind(this));
 
-                console.log('🔍 EWM Builder v2: Waiting for modal data to load...');
+                // console.log('🔍 EWM Builder v2: Waiting for modal data to load...');
             } else {
                 // Si no hay modal ID, crear step por defecto
-                console.log('🔍 EWM Builder v2: No modal ID, creating default step');
+                // console.log('🔍 EWM Builder v2: No modal ID, creating default step');
                 this.addStep();
             }
         },
@@ -275,7 +275,7 @@
          * Manejar cuando se cargan los datos del modal
          */
         onModalDataLoaded: function(event, modalData) {
-            console.log('🔍 EWM Builder v2: Modal data loaded event received:', modalData);
+            // console.log('🔍 EWM Builder v2: Modal data loaded event received:', modalData);
 
             if (modalData && modalData.steps && modalData.steps.steps && modalData.steps.steps.length > 0) {
                 // Limpiar steps existentes
@@ -289,10 +289,10 @@
                 // Abrir el primer step por defecto
                 $('.ewm-step-config').first().addClass('active');
 
-                console.log('EWM Builder v2: Loaded', modalData.steps.steps.length, 'existing steps');
+                // console.log('EWM Builder v2: Loaded', modalData.steps.steps.length, 'existing steps');
             } else {
                 // Si no hay steps existentes, crear uno por defecto
-                console.log('🔍 EWM Builder v2: No existing steps in data, creating default step');
+                // console.log('🔍 EWM Builder v2: No existing steps in data, creating default step');
                 this.addStep();
             }
         },
@@ -344,7 +344,7 @@
 
             this.stepCounter = Math.max(this.stepCounter, stepNumber + 1);
 
-            console.log('EWM Builder v2: Created step from data:', stepNumber);
+            // console.log('EWM Builder v2: Created step from data:', stepNumber);
         },
 
         /**

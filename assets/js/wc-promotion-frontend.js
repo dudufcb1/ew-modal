@@ -18,7 +18,7 @@
          * Inicializar funcionalidad
          */
         init() {
-            console.log('EWM WC Promotion: Initializing...');
+            // console.log('EWM WC Promotion: Initializing...');
             
             // Detectar si estamos en una página de producto
             this.detectProductPage();
@@ -26,7 +26,7 @@
             // Bind eventos para botones de cupones
             this.bindCouponEvents();
             
-            console.log('EWM WC Promotion: Initialized');
+            // console.log('EWM WC Promotion: Initialized');
         }
 
         /**
@@ -37,7 +37,7 @@
             const productId = this.getProductId();
             
             if (productId) {
-                console.log('EWM WC Promotion: Product page detected, ID:', productId);
+                // console.log('EWM WC Promotion: Product page detected, ID:', productId);
                 this.startProductTimer(productId);
             }
         }
@@ -80,7 +80,7 @@
                 return;
             }
 
-            console.log('EWM WC Promotion: Starting timer for product', productId);
+            // console.log('EWM WC Promotion: Starting timer for product', productId);
 
             // Consultar modales disponibles para este producto
             this.checkProductModals(productId).then(modals => {
@@ -102,10 +102,10 @@
             const threshold = modalConfig.timer_config?.threshold_seconds || 180;
             const modalId = modalConfig.modal_id;
 
-            console.log(`EWM WC Promotion: Setting up timer for modal ${modalId}, threshold: ${threshold}s`);
+            // console.log(`EWM WC Promotion: Setting up timer for modal ${modalId}, threshold: ${threshold}s`);
 
             const timerId = setTimeout(() => {
-                console.log(`EWM WC Promotion: Timer triggered for modal ${modalId}`);
+                // console.log(`EWM WC Promotion: Timer triggered for modal ${modalId}`);
                 this.showPromotionModal(modalId, modalConfig);
             }, threshold * 1000);
 
@@ -128,7 +128,7 @@
 
                 if (response.ok) {
                     const data = await response.json();
-                    console.log('EWM WC Promotion: Product modals response:', data);
+                    // console.log('EWM WC Promotion: Product modals response:', data);
                     return data.modals || [];
                 } else {
                     console.warn('EWM WC Promotion: Failed to fetch product modals, status:', response.status);
@@ -144,17 +144,17 @@
          * Mostrar modal de promoción (con verificación de cupones aplicados)
          */
         async showPromotionModal(modalId, config) {
-            console.log(`EWM WC Promotion: Attempting to show modal ${modalId}`);
+            // console.log(`EWM WC Promotion: Attempting to show modal ${modalId}`);
 
             // NUEVA VERIFICACIÓN: Consultar si el modal debe mostrarse
             const productId = this.getProductId();
             if (productId) {
                 const shouldShow = await this.checkModalVisibility(modalId, productId);
                 if (!shouldShow.should_show) {
-                    console.log(`EWM WC Promotion: Modal ${modalId} blocked:`, shouldShow.reason);
+                    // console.log(`EWM WC Promotion: Modal ${modalId} blocked:`, shouldShow.reason);
                     return;
                 }
-                console.log(`EWM WC Promotion: Modal ${modalId} approved for display`);
+                // console.log(`EWM WC Promotion: Modal ${modalId} approved for display`);
             }
 
             // Buscar el modal en el DOM
@@ -170,7 +170,7 @@
                     modalElement.style.display = 'flex';
                     modalElement.classList.add('ewm-modal-visible');
                 }
-                console.log(`EWM WC Promotion: Modal ${modalId} displayed successfully`);
+                // console.log(`EWM WC Promotion: Modal ${modalId} displayed successfully`);
             } else {
                 console.warn('EWM WC Promotion: Modal element not found:', modalId);
             }
@@ -204,7 +204,7 @@
          */
         async checkModalVisibility(modalId, productId) {
             try {
-                console.log(`EWM WC Promotion: Checking visibility for modal ${modalId}, product ${productId}`);
+                // console.log(`EWM WC Promotion: Checking visibility for modal ${modalId}, product ${productId}`);
 
                 const response = await fetch(`${ewmModal.restUrl}test-modal-visibility/${modalId}/${productId}`, {
                     method: 'GET',
@@ -215,7 +215,7 @@
 
                 if (response.ok) {
                     const data = await response.json();
-                    console.log('EWM WC Promotion: Visibility check response:', data);
+                    // console.log('EWM WC Promotion: Visibility check response:', data);
 
                     return {
                         should_show: data.result === 'will show',
@@ -247,7 +247,7 @@
         async applyCoupon(couponCode, buttonElement) {
             if (!couponCode) return;
 
-            console.log('EWM WC Promotion: Applying coupon:', couponCode);
+            // console.log('EWM WC Promotion: Applying coupon:', couponCode);
 
             // Mostrar estado de carga
             const originalText = buttonElement.textContent;

@@ -34,7 +34,7 @@
                     }
                 }
             } catch (e) {
-                console.log('EWM Modal Frontend: Error autofill user profile', e);
+                // Error autofill user profile - silently continue
             }
         }
         constructor(config) {
@@ -45,7 +45,6 @@
             this.modal = null;
             this.isVisible = false;
             this.shownInThisPageLoad = false; // Flag para evitar re-mostrar en la misma carga de página
-            console.log(`[EWM LOG] [PAGE LOAD] Inicializado flag shownInThisPageLoad = false para modal ${this.config.modal_id}`);
             this.triggers = config.triggers || {};
             // Guardar timestamp de entrada
             this.ewmEntryTimestamp = Date.now();
@@ -56,13 +55,9 @@
          * Inicializar el modal
          */
         init() {
-            console.log('EWM Modal Frontend: Initializing modal', this.config.modal_id);
-            
             this.createModal();
             this.bindEvents();
             this.initTriggers();
-            
-            console.log('EWM Modal Frontend: Modal initialized successfully');
         }
 
         /**
@@ -73,11 +68,8 @@
             this.modal = document.getElementById(`ewm-modal-${this.config.modal_id}`);
 
             if (!this.modal) {
-                console.error(`EWM Modal Frontend: Modal with ID ewm-modal-${this.config.modal_id} not found in DOM`);
                 return;
             }
-
-            console.log('EWM Modal Frontend: Modal found in DOM');
         }
 
 
@@ -248,7 +240,7 @@
                 }
             });
             
-            console.log('EWM Modal Frontend: Events bound');
+            // console.log('EWM Modal Frontend: Events bound');
         }
 
         /**
@@ -262,7 +254,7 @@
             const form = this.modal.querySelector('.ewm-multi-step-form');
 
             if (!form) {
-                console.log('EWM Modal Frontend: No form found in modal');
+                // console.log('EWM Modal Frontend: No form found in modal');
                 return;
             }
 
@@ -280,7 +272,7 @@
                 this.handleFormSubmit(e);
             });
 
-            console.log(`EWM Modal Frontend: Form submit events bound (${submitButtons.length} buttons)`);
+            // console.log(`EWM Modal Frontend: Form submit events bound (${submitButtons.length} buttons)`);
         }
 
         /**
@@ -289,9 +281,9 @@
         async handleFormSubmit(e) {
             e.preventDefault();
 
-            console.log('EWM Modal Frontend: Form submit initiated');
-            console.log('EWM Modal Frontend: Modal ID:', this.config.modal_id);
-            console.log('EWM Modal Frontend: Window ewmModal config:', window.ewmModal);
+            // console.log('EWM Modal Frontend: Form submit initiated');
+            // console.log('EWM Modal Frontend: Modal ID:', this.config.modal_id);
+            // console.log('EWM Modal Frontend: Window ewmModal config:', window.ewmModal);
 
             const submitButton = e.target.closest('.ewm-btn-submit') || e.target;
             const form = this.modal.querySelector('.ewm-multi-step-form');
@@ -314,7 +306,7 @@
                 });
 
                 if (hasInvalidFields) {
-                    console.log('EWM Modal Frontend: Current step validation failed (HTML5)');
+                    // console.log('EWM Modal Frontend: Current step validation failed (HTML5)');
 
                     // Rehabilitar botón si estaba deshabilitado
                     if (submitButton) {
@@ -334,7 +326,7 @@
                 if (currentStep) {
                     const validationResult = window.EWMFormValidator.validateStep(currentStep);
                     if (!validationResult.isValid) {
-                        console.log('EWM Modal Frontend: Form validation failed (JavaScript)');
+                        // console.log('EWM Modal Frontend: Form validation failed (JavaScript)');
 
                         // Mostrar errores específicos
                         this.showErrorMessage('Por favor, corrige los errores en el formulario antes de continuar.');
@@ -355,11 +347,11 @@
                     const allSteps = form.querySelectorAll('.ewm-form-step');
                     const totalSteps = allSteps.length;
 
-                    console.log(`EWM Modal Frontend: Current step: ${currentStepNumber}, Total steps: ${totalSteps}`);
+                    // console.log(`EWM Modal Frontend: Current step: ${currentStepNumber}, Total steps: ${totalSteps}`);
 
                     // Si NO estamos en el último paso, avanzar en lugar de enviar
                     if (currentStepNumber < totalSteps) {
-                        console.log('EWM Modal Frontend: Not on last step, advancing to next step instead of submitting');
+                        // console.log('EWM Modal Frontend: Not on last step, advancing to next step instead of submitting');
 
                         // Rehabilitar botón
                         if (submitButton) {
@@ -374,7 +366,7 @@
                         return; // No enviar el formulario
                     }
 
-                    console.log('EWM Modal Frontend: On last step, proceeding with form submission');
+                    // console.log('EWM Modal Frontend: On last step, proceeding with form submission');
                 }
             }
 
@@ -387,7 +379,7 @@
             try {
                 // Recopilar datos del formulario
                 const formData = this.collectFormData();
-                console.log('EWM Modal Frontend: Form data collected:', formData);
+                // console.log('EWM Modal Frontend: Form data collected:', formData);
 
                 // Validar datos básicos
                 if (!formData || Object.keys(formData).length === 0) {
@@ -395,9 +387,9 @@
                 }
 
                 // Enviar al backend
-                console.log('EWM Modal Frontend: Attempting to submit form data...');
+                // console.log('EWM Modal Frontend: Attempting to submit form data...');
                 const response = await this.submitFormData(formData);
-                console.log('EWM Modal Frontend: Form submitted successfully:', response);
+                // console.log('EWM Modal Frontend: Form submitted successfully:', response);
 
                 // NUEVO: Marcar como enviado exitosamente (bloquear por 2 días)
                 this.markAsSuccessfullySubmitted();
@@ -411,12 +403,12 @@
                 }, 3000);
 
             } catch (error) {
-                console.error('EWM Modal Frontend: Form submission error:', error);
-                console.error('EWM Modal Frontend: Error details:', {
-                    message: error.message,
-                    stack: error.stack,
-                    name: error.name
-                });
+                // console.error('EWM Modal Frontend: Form submission error:', error);
+                // console.error('EWM Modal Frontend: Error details:', {
+                //     message: error.message,
+                //     stack: error.stack,
+                //     name: error.name
+                // });
                 this.showErrorMessage(error.message || 'Error submitting form');
                 
                 // Rehabilitar botón
@@ -433,7 +425,7 @@
         collectFormData() {
             const form = this.modal.querySelector('.ewm-multi-step-form');
             if (!form) {
-                console.error('EWM Modal Frontend: Form not found');
+                // console.error('EWM Modal Frontend: Form not found');
                 return {};
             }
 
@@ -496,8 +488,8 @@
                 }
             });
 
-            console.log('EWM Modal Frontend: Collected step data:', stepData);
-            console.log('EWM Modal Frontend: Collected form data:', formData);
+            // console.log('EWM Modal Frontend: Collected step data:', stepData);
+            // console.log('EWM Modal Frontend: Collected form data:', formData);
 
             return {
                 form_data: formData,
@@ -513,17 +505,17 @@
             const restUrl = (window.ewmModal && window.ewmModal.restUrl) ? 
                 window.ewmModal.restUrl : '/wp-json/ewm/v1/';
 
-            console.log('EWM Modal Frontend: REST URL:', restUrl);
-            console.log('EWM Modal Frontend: Full submit URL:', restUrl + 'submit-form');
+            // console.log('EWM Modal Frontend: REST URL:', restUrl);
+            // console.log('EWM Modal Frontend: Full submit URL:', restUrl + 'submit-form');
 
             // Para modales públicos, NUNCA usar nonce (evita rest_cookie_invalid_nonce)
             const headers = {
                 'Content-Type': 'application/json'
             };
 
-            console.log('EWM Modal Frontend: No nonce sent (public endpoint)');
-            console.log('EWM Modal Frontend: Request headers:', headers);
-            console.log('EWM Modal Frontend: Request data:', data);
+            // console.log('EWM Modal Frontend: No nonce sent (public endpoint)');
+            // console.log('EWM Modal Frontend: Request headers:', headers);
+            // console.log('EWM Modal Frontend: Request data:', data);
 
             const requestOptions = {
                 method: 'POST',
@@ -532,28 +524,28 @@
                 body: JSON.stringify(data)
             };
 
-            console.log('EWM Modal Frontend: Full request options:', requestOptions);
+            // console.log('EWM Modal Frontend: Full request options:', requestOptions);
 
             try {
-                console.log('EWM Modal Frontend: Making fetch request...');
+                // console.log('EWM Modal Frontend: Making fetch request...');
                 const response = await fetch(restUrl + 'submit-form', requestOptions);
                 
-                console.log('EWM Modal Frontend: Response received:', {
-                    status: response.status,
-                    statusText: response.statusText,
-                    ok: response.ok,
-                    headers: Array.from(response.headers.entries())
-                });
+                // console.log('EWM Modal Frontend: Response received:', {
+                //     status: response.status,
+                //     statusText: response.statusText,
+                //     ok: response.ok,
+                //     headers: Array.from(response.headers.entries())
+                // });
 
                 if (!response.ok) {
                     let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
                     
                     try {
                         const responseText = await response.text();
-                        console.log('EWM Modal Frontend: Error response text:', responseText);
+                        // console.log('EWM Modal Frontend: Error response text:', responseText);
                         
                         const errorData = JSON.parse(responseText);
-                        console.log('EWM Modal Frontend: Parsed error data:', errorData);
+                        // console.log('EWM Modal Frontend: Parsed error data:', errorData);
                         
                         if (errorData && errorData.message) {
                             errorMessage = errorData.message;
@@ -561,24 +553,24 @@
                             errorMessage = `Error ${errorData.code}: ${errorData.message || 'Error en la solicitud'}`;
                         }
                     } catch (parseError) {
-                        console.log('EWM Modal Frontend: Could not parse error response:', parseError);
-                        console.log('EWM Modal Frontend: Raw error response:', responseText || 'No response text');
+                        // console.log('EWM Modal Frontend: Could not parse error response:', parseError);
+                        // console.log('EWM Modal Frontend: Raw error response:', responseText || 'No response text');
                     }
                     
                     throw new Error(errorMessage);
                 }
 
                 const responseText = await response.text();
-                console.log('EWM Modal Frontend: Success response text:', responseText);
+                // console.log('EWM Modal Frontend: Success response text:', responseText);
                 
                 const result = JSON.parse(responseText);
-                console.log('EWM Modal Frontend: Parsed success result:', result);
+                // console.log('EWM Modal Frontend: Parsed success result:', result);
                 
                 return result;
 
             } catch (fetchError) {
-                console.error('EWM Modal Frontend: Fetch error:', fetchError);
-                console.error('EWM Modal Frontend: Fetch error type:', fetchError.constructor.name);
+                // console.error('EWM Modal Frontend: Fetch error:', fetchError);
+                // console.error('EWM Modal Frontend: Fetch error type:', fetchError.constructor.name);
                 throw fetchError;
             }
         }
@@ -587,47 +579,47 @@
          * Avanzar al siguiente paso
          */
         nextStep() {
-            console.log('EWM Modal Frontend: nextStep() function called');
+            // console.log('EWM Modal Frontend: nextStep() function called');
 
             const form = this.modal.querySelector('.ewm-multi-step-form');
-            console.log('EWM Modal Frontend: Form found:', form);
+            // console.log('EWM Modal Frontend: Form found:', form);
 
             if (!form) {
-                console.error('EWM Modal Frontend: No form found, cannot advance');
+                // console.error('EWM Modal Frontend: No form found, cannot advance');
                 return;
             }
 
             const currentStep = form.querySelector('.ewm-form-step.active');
-            console.log('EWM Modal Frontend: Current active step:', currentStep);
+            // console.log('EWM Modal Frontend: Current active step:', currentStep);
 
             if (!currentStep) {
-                console.error('EWM Modal Frontend: No active step found, cannot advance');
+                // console.error('EWM Modal Frontend: No active step found, cannot advance');
                 return;
             }
 
             // Validar el paso actual antes de avanzar
             if (window.EWMFormValidator) {
-                console.log('EWM Modal Frontend: Running validation...');
+                // console.log('EWM Modal Frontend: Running validation...');
                 const validationResult = window.EWMFormValidator.validateStep(currentStep);
-                console.log('EWM Modal Frontend: Validation result:', validationResult);
+                // console.log('EWM Modal Frontend: Validation result:', validationResult);
 
                 if (!validationResult.isValid) {
-                    console.log('EWM Modal Frontend: Cannot advance - validation failed');
+                    // console.log('EWM Modal Frontend: Cannot advance - validation failed');
                     return;
                 }
             } else {
-                console.warn('EWM Modal Frontend: EWMFormValidator not available, skipping validation');
+                // console.warn('EWM Modal Frontend: EWMFormValidator not available, skipping validation');
             }
 
             const currentStepNumber = parseInt(currentStep.dataset.step);
             const nextStepNumber = currentStepNumber + 1;
-            console.log(`EWM Modal Frontend: Current step: ${currentStepNumber}, Next step: ${nextStepNumber}`);
+            // console.log(`EWM Modal Frontend: Current step: ${currentStepNumber}, Next step: ${nextStepNumber}`);
 
             const nextStep = form.querySelector(`.ewm-form-step[data-step="${nextStepNumber}"]`);
-            console.log('EWM Modal Frontend: Next step element:', nextStep);
+            // console.log('EWM Modal Frontend: Next step element:', nextStep);
 
             if (nextStep) {
-                console.log('EWM Modal Frontend: Advancing to next step...');
+                // console.log('EWM Modal Frontend: Advancing to next step...');
 
                 // Ocultar paso actual
                 currentStep.classList.remove('active');
@@ -637,9 +629,9 @@
                 nextStep.classList.add('active');
                 nextStep.style.display = 'block';
 
-                console.log(`EWM Modal Frontend: Advanced to step ${nextStepNumber}`);
+                // console.log(`EWM Modal Frontend: Advanced to step ${nextStepNumber}`);
             } else {
-                console.log('EWM Modal Frontend: No next step found, submitting form');
+                // console.log('EWM Modal Frontend: No next step found, submitting form');
                 // Si no hay siguiente paso, enviar el formulario directamente (evitar bucle)
                 this.submitFormDirectly();
             }
@@ -649,12 +641,12 @@
          * Enviar formulario directamente sin verificación de pasos (evita bucles)
          */
         async submitFormDirectly() {
-            console.log('EWM Modal Frontend: Direct form submission initiated');
+            // console.log('EWM Modal Frontend: Direct form submission initiated');
 
             try {
                 // Recopilar datos del formulario
                 const formData = this.collectFormData();
-                console.log('EWM Modal Frontend: Form data collected:', formData);
+                // console.log('EWM Modal Frontend: Form data collected:', formData);
 
                 // Validar datos básicos
                 if (!formData || Object.keys(formData).length === 0) {
@@ -662,9 +654,9 @@
                 }
 
                 // Enviar al backend
-                console.log('EWM Modal Frontend: Attempting to submit form data...');
+                // console.log('EWM Modal Frontend: Attempting to submit form data...');
                 const response = await this.submitFormData(formData);
-                console.log('EWM Modal Frontend: Form submitted successfully:', response);
+                // console.log('EWM Modal Frontend: Form submitted successfully:', response);
 
                 // Marcar como enviado exitosamente
                 this.markAsSuccessfullySubmitted();
@@ -678,7 +670,7 @@
                 }, 3000);
 
             } catch (error) {
-                console.error('EWM Modal Frontend: Form submission error:', error);
+                // console.error('EWM Modal Frontend: Form submission error:', error);
                 this.showErrorMessage(error.message || 'Error submitting form');
             }
         }
@@ -697,7 +689,7 @@
             const prevStepNumber = currentStepNumber - 1;
 
             if (prevStepNumber < 1) {
-                console.log('EWM Modal Frontend: Already at first step');
+                // console.log('EWM Modal Frontend: Already at first step');
                 return;
             }
 
@@ -712,7 +704,7 @@
                 prevStep.classList.add('active');
                 prevStep.style.display = 'block';
 
-                console.log(`EWM Modal Frontend: Returned to step ${prevStepNumber}`);
+                // console.log(`EWM Modal Frontend: Returned to step ${prevStepNumber}`);
             }
         }
 
@@ -778,7 +770,7 @@
                 form.appendChild(successStep);
             }
 
-            console.log('EWM Modal Frontend: Success step shown');
+            // console.log('EWM Modal Frontend: Success step shown');
         }
 
         /**
@@ -827,7 +819,7 @@
                 }
             }, 5000);
 
-            console.log('EWM Modal Frontend: Error message shown:', message);
+            // console.log('EWM Modal Frontend: Error message shown:', message);
         }
 
         /**
@@ -843,12 +835,12 @@
             if (this.triggers.time_delay?.enabled) {
                 const delay = this.triggers.time_delay.delay || 5000;
                 setTimeout(() => {
-                    console.log(`[EWM LOG] [PAGE LOAD] Evaluando trigger time_delay para modal ${this.config.modal_id}. shownInThisPageLoad=${this.shownInThisPageLoad}`);
+                    // console.log(`[EWM LOG] [PAGE LOAD] Evaluando trigger time_delay para modal ${this.config.modal_id}. shownInThisPageLoad=${this.shownInThisPageLoad}`);
                     if (!this.shownInThisPageLoad) { // Solo mostrar si no se ha mostrado
-                        console.log(`[EWM LOG] [PAGE LOAD] Trigger time_delay cumple condiciones, llamando show() para modal ${this.config.modal_id}`);
+                        // console.log(`[EWM LOG] [PAGE LOAD] Trigger time_delay cumple condiciones, llamando show() para modal ${this.config.modal_id}`);
                         this.show();
                     } else {
-                        console.log(`[EWM LOG] [PAGE LOAD] Trigger time_delay bloqueado por flag shownInThisPageLoad=true para modal ${this.config.modal_id}`);
+                        // console.log(`[EWM LOG] [PAGE LOAD] Trigger time_delay bloqueado por flag shownInThisPageLoad=true para modal ${this.config.modal_id}`);
                     }
                 }, delay);
             }
@@ -863,7 +855,7 @@
                 this.initManualTrigger();
             }
 
-            console.log('EWM Modal Frontend: Triggers initialized');
+            // console.log('EWM Modal Frontend: Triggers initialized');
         }
 
         /**
@@ -880,7 +872,7 @@
                     if (elapsed >= minSeconds) {
                         this.show();
                     } else {
-                        console.log(`EWM Modal Frontend: Exit intent bloqueado, solo ${elapsed.toFixed(1)}s en página (mínimo ${minSeconds}s)`);
+                        // console.log(`EWM Modal Frontend: Exit intent bloqueado, solo ${elapsed.toFixed(1)}s en página (mínimo ${minSeconds}s)`);
                     }
                 }
             });
@@ -933,7 +925,7 @@
         registerView() {
             // Solo registrar si hay configuración AJAX disponible
             if (typeof ewmModal === 'undefined' || !ewmModal.ajaxUrl) {
-                console.log('EWM Modal Frontend: AJAX not available for view registration');
+                // console.log('EWM Modal Frontend: AJAX not available for view registration');
                 return;
             }
 
@@ -950,13 +942,13 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    console.log('EWM Modal Frontend: View registered successfully', data.data);
+                    // console.log('EWM Modal Frontend: View registered successfully', data.data);
                 } else {
-                    console.log('EWM Modal Frontend: Failed to register view', data.data);
+                    // console.log('EWM Modal Frontend: Failed to register view', data.data);
                 }
             })
             .catch(error => {
-                console.log('EWM Modal Frontend: Error registering view', error);
+                // console.log('EWM Modal Frontend: Error registering view', error);
             });
         }
 
@@ -969,7 +961,7 @@
                 const submittedData = localStorage.getItem(key);
 
                 if (!submittedData) {
-                    console.log('EWM Modal Frontend: No submission data found in localStorage');
+                    // console.log('EWM Modal Frontend: No submission data found in localStorage');
                     return false;
                 }
 
@@ -978,16 +970,16 @@
                 const now = Date.now();
                 const elapsed = now - timestamp;
 
-                console.log('EWM Modal Frontend: Submission check:', {
-                    modalId: modalId,
-                    submittedAt: new Date(timestamp).toISOString(),
-                    elapsedHours: (elapsed / (1000 * 60 * 60)).toFixed(1),
-                    isBlocked: elapsed < twoDaysInMs
-                });
+                // console.log('EWM Modal Frontend: Submission check:', {
+                //     modalId: modalId,
+                //     submittedAt: new Date(timestamp).toISOString(),
+                //     elapsedHours: (elapsed / (1000 * 60 * 60)).toFixed(1),
+                //     isBlocked: elapsed < twoDaysInMs
+                // });
 
                 return elapsed < twoDaysInMs;
             } catch (error) {
-                console.error('EWM Modal Frontend: Error checking submission block:', error);
+                // console.error('EWM Modal Frontend: Error checking submission block:', error);
                 return false; // En caso de error, no bloquear
             }
         }
@@ -1005,9 +997,9 @@
                 };
 
                 localStorage.setItem(key, JSON.stringify(data));
-                console.log('EWM Modal Frontend: Modal marked as successfully submitted:', data);
+                // console.log('EWM Modal Frontend: Modal marked as successfully submitted:', data);
             } catch (error) {
-                console.error('EWM Modal Frontend: Error marking submission:', error);
+                // console.error('EWM Modal Frontend: Error marking submission:', error);
             }
         }
 
@@ -1018,21 +1010,21 @@
             const frequencyConfig = this.triggers.frequency || {};
             const frequencyType = frequencyConfig.type || 'always';
 
-            console.log('EWM Modal Frontend: Checking frequency limit:', {
-                type: frequencyType,
-                limit: frequencyConfig.limit,
-                modalId: this.config.modal_id
-            });
+            // console.log('EWM Modal Frontend: Checking frequency limit:', {
+            //     type: frequencyType,
+            //     limit: frequencyConfig.limit,
+            //     modalId: this.config.modal_id
+            // });
 
             // Si es tipo 'always', permitir siempre
             if (frequencyType === 'always') {
-                console.log('EWM Modal Frontend: Frequency type is always, showing modal');
+                // console.log('EWM Modal Frontend: Frequency type is always, showing modal');
                 return true;
             }
 
             // Para otros tipos, verificar con el servidor
             if (typeof ewmModal === 'undefined' || !ewmModal.ajaxUrl) {
-                console.log('EWM Modal Frontend: AJAX not available, defaulting to show');
+                // console.log('EWM Modal Frontend: AJAX not available, defaulting to show');
                 return true;
             }
 
@@ -1051,14 +1043,14 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    console.log('EWM Modal Frontend: Frequency check result:', data.data);
+                    // console.log('EWM Modal Frontend: Frequency check result:', data.data);
                     return data.data.can_show || false;
                 } else {
-                    console.log('EWM Modal Frontend: Frequency check failed:', data.data);
+                    // console.log('EWM Modal Frontend: Frequency check failed:', data.data);
                     return false;
                 }
             } catch (error) {
-                console.log('EWM Modal Frontend: Error checking frequency:', error);
+                // console.log('EWM Modal Frontend: Error checking frequency:', error);
                 return false; // En caso de error, no mostrar por seguridad
             }
         }
@@ -1067,29 +1059,29 @@
          * Verificar visibilidad WooCommerce (solo para modales con integración WC)
          */
         async checkWooCommerceVisibility() {
-            console.log(`[EWM LOG] [WC] checkWooCommerceVisibility iniciado para modal ${this.config.modal_id}`);
-            console.log(`[EWM LOG] [WC] Config completa:`, this.config);
+            // console.log(`[EWM LOG] [WC] checkWooCommerceVisibility iniciado para modal ${this.config.modal_id}`);
+            // console.log(`[EWM LOG] [WC] Config completa:`, this.config);
 
             // Solo verificar si el modal tiene configuración WooCommerce
             const hasWCConfig = this.config.wc_integration && this.config.wc_integration.enabled;
-            console.log(`[EWM LOG] [WC] ¿Tiene config WC?`, hasWCConfig);
-            console.log(`[EWM LOG] [WC] Config WC:`, this.config.wc_integration);
+            // console.log(`[EWM LOG] [WC] ¿Tiene config WC?`, hasWCConfig);
+            // console.log(`[EWM LOG] [WC] Config WC:`, this.config.wc_integration);
 
             if (!hasWCConfig) {
-                console.log(`[EWM LOG] [WC] No es modal WooCommerce, permitiendo mostrar`);
+                // console.log(`[EWM LOG] [WC] No es modal WooCommerce, permitiendo mostrar`);
                 return { should_show: true, reason: 'not a WooCommerce modal' };
             }
 
             // Intentar obtener product_id de la página actual
             const productId = this.getProductIdFromPage();
-            console.log(`[EWM LOG] [WC] Product ID detectado:`, productId);
+            // console.log(`[EWM LOG] [WC] Product ID detectado:`, productId);
             if (!productId) {
-                console.log(`[EWM LOG] [WC] No es página de producto, permitiendo mostrar`);
+                // console.log(`[EWM LOG] [WC] No es página de producto, permitiendo mostrar`);
                 return { should_show: true, reason: 'not a product page' };
             }
 
             try {
-                console.log(`[EWM LOG] [WC] Checking WooCommerce visibility for modal ${this.config.modal_id}, product ${productId}`);
+                // console.log(`[EWM LOG] [WC] Checking WooCommerce visibility for modal ${this.config.modal_id}, product ${productId}`);
 
                 const response = await fetch(`${ewmModal.restUrl}test-modal-visibility/${this.config.modal_id}/${productId}`, {
                     method: 'GET',
@@ -1100,7 +1092,7 @@
 
                 if (response.ok) {
                     const data = await response.json();
-                    console.log(`[EWM LOG] [WC] Visibility check response:`, data);
+                    // console.log(`[EWM LOG] [WC] Visibility check response:`, data);
 
                     return {
                         should_show: data.result === 'will show',
@@ -1109,11 +1101,11 @@
                         product_id: data.product_id
                     };
                 } else {
-                    console.warn(`[EWM LOG] [WC] Visibility check failed, status:`, response.status);
+                    // console.warn(`[EWM LOG] [WC] Visibility check failed, status:`, response.status);
                     return { should_show: true, reason: 'visibility check failed, allowing display' };
                 }
             } catch (error) {
-                console.error(`[EWM LOG] [WC] Error checking WooCommerce visibility:`, error);
+                // console.error(`[EWM LOG] [WC] Error checking WooCommerce visibility:`, error);
                 return { should_show: true, reason: 'visibility check error, allowing display' };
             }
         }
@@ -1147,42 +1139,42 @@
          * Mostrar modal (con validación de frecuencia y envío exitoso)
          */
         async show() {
-            console.log('EWM Modal Frontend: show() called');
-            console.log('EWM Modal Frontend: this.modal exists:', !!this.modal);
-            console.log('EWM Modal Frontend: this.isVisible:', this.isVisible);
+            // console.log('EWM Modal Frontend: show() called');
+            // console.log('EWM Modal Frontend: this.modal exists:', !!this.modal);
+            // console.log('EWM Modal Frontend: this.isVisible:', this.isVisible);
 
             if (!this.modal || this.isVisible) {
-                console.log(`[EWM LOG] [PAGE LOAD] Show abortado. Modal no encontrado (${!this.modal}) o ya visible (${this.isVisible}) para modal ${this.config.modal_id}`);
+                // console.log(`[EWM LOG] [PAGE LOAD] Show abortado. Modal no encontrado (${!this.modal}) o ya visible (${this.isVisible}) para modal ${this.config.modal_id}`);
                 return;
             }
 
             // NUEVO: Verificar si está bloqueado por envío exitoso
             if (this.isBlockedBySuccessfulSubmission()) {
-                console.log(`[EWM LOG] [PAGE LOAD] Modal bloqueado por envío exitoso reciente para modal ${this.config.modal_id}`);
+                // console.log(`[EWM LOG] [PAGE LOAD] Modal bloqueado por envío exitoso reciente para modal ${this.config.modal_id}`);
                 return;
             }
 
             // Validar frecuencia antes de mostrar
             const canShow = await this.checkFrequencyLimit();
             if (!canShow) {
-                console.log(`[EWM LOG] [PAGE LOAD] Modal bloqueado por frecuencia para modal ${this.config.modal_id}`);
+                // console.log(`[EWM LOG] [PAGE LOAD] Modal bloqueado por frecuencia para modal ${this.config.modal_id}`);
                 return;
             }
 
             // NUEVA VERIFICACIÓN: Para modales WooCommerce, verificar cupones aplicados
-            console.log(`[EWM LOG] [WC] Iniciando verificación WooCommerce para modal ${this.config.modal_id}`);
+            // console.log(`[EWM LOG] [WC] Iniciando verificación WooCommerce para modal ${this.config.modal_id}`);
             const wcVisibilityCheck = await this.checkWooCommerceVisibility();
-            console.log(`[EWM LOG] [WC] Resultado verificación WooCommerce:`, wcVisibilityCheck);
+            // console.log(`[EWM LOG] [WC] Resultado verificación WooCommerce:`, wcVisibilityCheck);
             if (!wcVisibilityCheck.should_show) {
-                console.log(`[EWM LOG] [WC] Modal bloqueado por WooCommerce: ${wcVisibilityCheck.reason} para modal ${this.config.modal_id}`);
+                // console.log(`[EWM LOG] [WC] Modal bloqueado por WooCommerce: ${wcVisibilityCheck.reason} para modal ${this.config.modal_id}`);
                 return;
             }
-            console.log(`[EWM LOG] [WC] Modal aprobado por verificación WooCommerce para modal ${this.config.modal_id}`);
+            // console.log(`[EWM LOG] [WC] Modal aprobado por verificación WooCommerce para modal ${this.config.modal_id}`);
 
             this.modal.style.display = 'flex';
             this.isVisible = true;
             this.shownInThisPageLoad = true; // Marcar como mostrado en esta carga de página
-            console.log(`[EWM LOG] [PAGE LOAD] Modal mostrado, flag shownInThisPageLoad=true para modal ${this.config.modal_id}`);
+            // console.log(`[EWM LOG] [PAGE LOAD] Modal mostrado, flag shownInThisPageLoad=true para modal ${this.config.modal_id}`);
             document.body.style.overflow = 'hidden'; // Evitar scroll de la página de fondo
 
             // Poblar campos automáticamente con datos del usuario
@@ -1199,7 +1191,7 @@
             // Vincular botones de navegación inmediatamente (el modal ya está en el DOM)
             this.bindNavigationButtons();
 
-            console.log(`[EWM LOG] [PAGE LOAD] Modal shown (animación activada) para modal ${this.config.modal_id}`);
+            // console.log(`[EWM LOG] [PAGE LOAD] Modal shown (animación activada) para modal ${this.config.modal_id}`);
         }
 
         /**
@@ -1210,29 +1202,29 @@
             const nextBtn = this.modal.querySelector('.ewm-btn-next');
             const prevBtn = this.modal.querySelector('.ewm-btn-prev');
 
-            console.log('EWM Modal Frontend: Next button found:', nextBtn);
-            console.log('EWM Modal Frontend: Prev button found:', prevBtn);
+            // console.log('EWM Modal Frontend: Next button found:', nextBtn);
+            // console.log('EWM Modal Frontend: Prev button found:', prevBtn);
 
             if (nextBtn) {
                 nextBtn.addEventListener('click', (e) => {
-                    console.log('EWM Modal Frontend: Next button clicked!');
+                    // console.log('EWM Modal Frontend: Next button clicked!');
                     e.preventDefault();
                     e.stopPropagation();
                     this.nextStep();
                 });
-                console.log('EWM Modal Frontend: Next button event listener added');
+                // console.log('EWM Modal Frontend: Next button event listener added');
             } else {
-                console.warn('EWM Modal Frontend: Next button not found in modal');
+                // console.warn('EWM Modal Frontend: Next button not found in modal');
             }
 
             if (prevBtn) {
                 prevBtn.addEventListener('click', (e) => {
-                    console.log('EWM Modal Frontend: Prev button clicked!');
+                    // console.log('EWM Modal Frontend: Prev button clicked!');
                     e.preventDefault();
                     e.stopPropagation();
                     this.prevStep();
                 });
-                console.log('EWM Modal Frontend: Prev button event listener added');
+                // console.log('EWM Modal Frontend: Prev button event listener added');
             }
         }
 
@@ -1250,7 +1242,7 @@
                 document.body.style.overflow = ''; // Restaurar scroll de la página de fondo
             }, 300);
 
-            console.log('EWM Modal Frontend: Modal hidden');
+            // console.log('EWM Modal Frontend: Modal hidden');
         }
     }
 
@@ -1259,16 +1251,16 @@
 
     // Auto-inicializar modales si hay configuración
     document.addEventListener('DOMContentLoaded', function() {
-        console.log('EWM Modal Frontend: DOM loaded, checking for modal configs...');
+        // console.log('EWM Modal Frontend: DOM loaded, checking for modal configs...');
 
         if (typeof window.ewm_modal_configs !== 'undefined' && window.ewm_modal_configs.length > 0) {
-            console.log(`EWM Modal Frontend: Found ${window.ewm_modal_configs.length} modal configs`);
+            // console.log(`EWM Modal Frontend: Found ${window.ewm_modal_configs.length} modal configs`);
             window.ewm_modal_configs.forEach(config => {
-                console.log('EWM Modal Frontend: Initializing modal', config.modal_id);
+                // console.log('EWM Modal Frontend: Initializing modal', config.modal_id);
                 new EWMModalFrontend(config);
             });
         } else {
-            console.log('EWM Modal Frontend: No modal configs found');
+            // console.log('EWM Modal Frontend: No modal configs found');
         }
     });
 

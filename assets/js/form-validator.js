@@ -39,7 +39,7 @@
          */
         validateField(field, rules = {}) {
             // DEBUG 1.3: Inspeccionar el elemento HTML del campo
-            console.log('DEBUG: Validating field element:', field);
+            // console.log('DEBUG: Validating field element:', field);
 
             const value = this.getFieldValue(field);
             const errors = [];
@@ -172,7 +172,7 @@
             }
 
             // DEBUG 1.2: Registrar el resultado de la validación para el paso actual
-            console.log('DEBUG: Step validation result', { isValid: isStepValid, errors: errors });
+            // console.log('DEBUG: Step validation result', { isValid: isStepValid, errors: errors });
 
             return {
                 isValid: isStepValid,
@@ -251,7 +251,7 @@
             }
 
             // DEBUG 1.1: Registrar las reglas de validación generadas para cada campo
-            console.log('DEBUG: Rules for field', field.name || field.id, rules);
+            // console.log('DEBUG: Rules for field', field.name || field.id, rules);
 
             return rules;
         }

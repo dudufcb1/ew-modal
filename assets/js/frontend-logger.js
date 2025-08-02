@@ -60,7 +60,7 @@
          */
         backupOriginalConsole() {
             this.originalConsole = {
-                log: console.log.bind(console),
+                // log: console.log.bind(console),
                 info: console.info.bind(console),
                 warn: console.warn.bind(console),
                 error: console.error.bind(console),
@@ -74,10 +74,10 @@
         wrapConsoleMethods() {
             const self = this;
             
-            console.log = function(...args) {
-                self.originalConsole.log(...args);
-                self.log('info', self.formatConsoleArgs(args), { source: 'console.log' });
-            };
+            // console.log = function(...args) {
+            //     self.originalConsole.log(...args);
+            //     self.log('info', self.formatConsoleArgs(args), { source: 'console.log' });
+            // };
             
             console.info = function(...args) {
                 self.originalConsole.info(...args);
@@ -334,7 +334,7 @@
          */
         restore() {
             if (this.originalConsole.log) {
-                console.log = this.originalConsole.log;
+                // console.log = this.originalConsole.log;
                 console.info = this.originalConsole.info;
                 console.warn = this.originalConsole.warn;
                 console.error = this.originalConsole.error;

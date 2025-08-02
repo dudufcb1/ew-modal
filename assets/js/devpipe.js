@@ -23,7 +23,7 @@
 
     // Verificar si debe activarse
     if (!shouldActivate()) {
-        console.log('[DevPipe] Not activated - production environment detected');
+        // console.log('[DevPipe] Not activated - production environment detected');
         return;
     }
 
@@ -38,7 +38,7 @@
         }
 
         init() {
-            console.log('[DevPipe] Inicializando cliente de observabilidad...');
+            // console.log('[DevPipe] Inicializando cliente de observabilidad...');
             
             this.backupOriginalMethods();
             this.interceptConsole();
@@ -46,7 +46,7 @@
             this.interceptUnhandledRejections();
             this.startBatchProcessor();
             
-            console.log('[DevPipe] Cliente inicializado correctamente');
+            // console.log('[DevPipe] Cliente inicializado correctamente');
         }
 
         backupOriginalMethods() {
@@ -245,13 +245,13 @@
         // Método para desactivar temporalmente
         pause() {
             this.isActive = false;
-            this.originalConsole.log('[DevPipe] Cliente pausado');
+            // this.originalConsole.log('[DevPipe] Cliente pausado');
         }
 
         // Método para reactivar
         resume() {
             this.isActive = true;
-            this.originalConsole.log('[DevPipe] Cliente reanudado');
+            // this.originalConsole.log('[DevPipe] Cliente reanudado');
         }
 
         // Método para restaurar console original
@@ -259,7 +259,7 @@
             Object.keys(this.originalConsole).forEach(method => {
                 console[method] = this.originalConsole[method];
             });
-            this.originalConsole.log('[DevPipe] Console original restaurado');
+            // this.originalConsole.log('[DevPipe] Console original restaurado');
         }
     }
 
@@ -325,6 +325,6 @@
     };
 
     // Log de inicialización
-    console.log('[DevPipe] Cliente cargado y listo para capturar logs');
+    // console.log('[DevPipe] Cliente cargado y listo para capturar logs');
 
 })();
