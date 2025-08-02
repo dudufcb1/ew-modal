@@ -10,7 +10,7 @@
  * Author URI:        https://especialistaenwp.com
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain:       ew-modal-cta
+ * Text Domain:       ewm-modal-cta
  * Domain Path:       /languages
  *
  * @package           EWM_Modal_CTA
