@@ -943,8 +943,9 @@ class EWM_Render_Core {
 			array(
 				'ajaxUrl'        => admin_url( 'admin-ajax.php' ),
 				'restUrl'        => rest_url( 'ewm/v1/' ),
-				// Para endpoints públicos REST, usar wp_rest nonce solo si el usuario está logueado
-				'nonce'          => is_user_logged_in() ? wp_create_nonce( 'wp_rest' ) : '',
+				// Usar ewm_modal_nonce para AJAX y wp_rest para REST API
+				'nonce'          => wp_create_nonce( 'ewm_modal_nonce' ),
+				'restNonce'      => is_user_logged_in() ? wp_create_nonce( 'wp_rest' ) : '',
 				'debug'          => defined( 'WP_DEBUG' ) && WP_DEBUG,
 				'frequencyDebug' => ( get_option( 'ewm_debug_frequency_enabled', '0' ) === '1' ),
 				'strings'        => array(

@@ -236,17 +236,7 @@
                 }
             });
             
-            // Navegación entre pasos
-            const nextBtn = this.modal.querySelector('.ewm-next-step');
-            const prevBtn = this.modal.querySelector('.ewm-prev-step');
-            
-            if (nextBtn) {
-                nextBtn.addEventListener('click', () => this.nextStep());
-            }
-            
-            if (prevBtn) {
-                prevBtn.addEventListener('click', () => this.prevStep());
-            }
+            // NOTA: La navegación entre pasos se vincula en show() cuando el modal está visible
             
             // NUEVO: Manejo de envío de formulario
             this.bindFormSubmit();
@@ -548,6 +538,101 @@
                 console.error('EWM Modal Frontend: Fetch error:', fetchError);
                 console.error('EWM Modal Frontend: Fetch error type:', fetchError.constructor.name);
                 throw fetchError;
+            }
+        }
+
+        /**
+         * Avanzar al siguiente paso
+         */
+        nextStep() {
+            console.log('EWM Modal Frontend: nextStep() function called');
+
+            const form = this.modal.querySelector('.ewm-multi-step-form');
+            console.log('EWM Modal Frontend: Form found:', form);
+
+            if (!form) {
+                console.error('EWM Modal Frontend: No form found, cannot advance');
+                return;
+            }
+
+            const currentStep = form.querySelector('.ewm-form-step.active');
+            console.log('EWM Modal Frontend: Current active step:', currentStep);
+
+            if (!currentStep) {
+                console.error('EWM Modal Frontend: No active step found, cannot advance');
+                return;
+            }
+
+            // Validar el paso actual antes de avanzar
+            if (window.EWMFormValidator) {
+                console.log('EWM Modal Frontend: Running validation...');
+                const validationResult = window.EWMFormValidator.validateStep(currentStep);
+                console.log('EWM Modal Frontend: Validation result:', validationResult);
+
+                if (!validationResult.isValid) {
+                    console.log('EWM Modal Frontend: Cannot advance - validation failed');
+                    return;
+                }
+            } else {
+                console.warn('EWM Modal Frontend: EWMFormValidator not available, skipping validation');
+            }
+
+            const currentStepNumber = parseInt(currentStep.dataset.step);
+            const nextStepNumber = currentStepNumber + 1;
+            console.log(`EWM Modal Frontend: Current step: ${currentStepNumber}, Next step: ${nextStepNumber}`);
+
+            const nextStep = form.querySelector(`.ewm-form-step[data-step="${nextStepNumber}"]`);
+            console.log('EWM Modal Frontend: Next step element:', nextStep);
+
+            if (nextStep) {
+                console.log('EWM Modal Frontend: Advancing to next step...');
+
+                // Ocultar paso actual
+                currentStep.classList.remove('active');
+                currentStep.style.display = 'none';
+
+                // Mostrar siguiente paso
+                nextStep.classList.add('active');
+                nextStep.style.display = 'block';
+
+                console.log(`EWM Modal Frontend: Advanced to step ${nextStepNumber}`);
+            } else {
+                console.log('EWM Modal Frontend: No next step found, submitting form');
+                // Si no hay siguiente paso, enviar el formulario
+                this.submitForm();
+            }
+        }
+
+        /**
+         * Retroceder al paso anterior
+         */
+        prevStep() {
+            const form = this.modal.querySelector('.ewm-multi-step-form');
+            if (!form) return;
+
+            const currentStep = form.querySelector('.ewm-form-step.active');
+            if (!currentStep) return;
+
+            const currentStepNumber = parseInt(currentStep.dataset.step);
+            const prevStepNumber = currentStepNumber - 1;
+
+            if (prevStepNumber < 1) {
+                console.log('EWM Modal Frontend: Already at first step');
+                return;
+            }
+
+            const prevStep = form.querySelector(`.ewm-form-step[data-step="${prevStepNumber}"]`);
+
+            if (prevStep) {
+                // Ocultar paso actual
+                currentStep.classList.remove('active');
+                currentStep.style.display = 'none';
+
+                // Mostrar paso anterior
+                prevStep.classList.add('active');
+                prevStep.style.display = 'block';
+
+                console.log(`EWM Modal Frontend: Returned to step ${prevStepNumber}`);
             }
         }
 
@@ -1031,7 +1116,44 @@
                 this.modal.classList.add('ewm-modal-visible');
             }, 10);
 
+            // Vincular botones de navegación inmediatamente (el modal ya está en el DOM)
+            this.bindNavigationButtons();
+
             console.log(`[EWM LOG] [PAGE LOAD] Modal shown (animación activada) para modal ${this.config.modal_id}`);
+        }
+
+        /**
+         * Vincular botones de navegación (se ejecuta cuando el modal está visible)
+         */
+        bindNavigationButtons() {
+            // Navegación entre pasos
+            const nextBtn = this.modal.querySelector('.ewm-btn-next');
+            const prevBtn = this.modal.querySelector('.ewm-btn-prev');
+
+            console.log('EWM Modal Frontend: Next button found:', nextBtn);
+            console.log('EWM Modal Frontend: Prev button found:', prevBtn);
+
+            if (nextBtn) {
+                nextBtn.addEventListener('click', (e) => {
+                    console.log('EWM Modal Frontend: Next button clicked!');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.nextStep();
+                });
+                console.log('EWM Modal Frontend: Next button event listener added');
+            } else {
+                console.warn('EWM Modal Frontend: Next button not found in modal');
+            }
+
+            if (prevBtn) {
+                prevBtn.addEventListener('click', (e) => {
+                    console.log('EWM Modal Frontend: Prev button clicked!');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.prevStep();
+                });
+                console.log('EWM Modal Frontend: Prev button event listener added');
+            }
         }
 
         /**

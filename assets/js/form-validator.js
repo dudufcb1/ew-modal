@@ -38,6 +38,9 @@
          * Validar un campo individual
          */
         validateField(field, rules = {}) {
+            // DEBUG 1.3: Inspeccionar el elemento HTML del campo
+            console.log('DEBUG: Validating field element:', field);
+
             const value = this.getFieldValue(field);
             const errors = [];
 
@@ -168,6 +171,9 @@
                 this.clearNotifications();
             }
 
+            // DEBUG 1.2: Registrar el resultado de la validación para el paso actual
+            console.log('DEBUG: Step validation result', { isValid: isStepValid, errors: errors });
+
             return {
                 isValid: isStepValid,
                 errors: errors
@@ -243,6 +249,9 @@
                     console.warn('EWM Validator: Invalid rules JSON', field.dataset.ewmRules);
                 }
             }
+
+            // DEBUG 1.1: Registrar las reglas de validación generadas para cada campo
+            console.log('DEBUG: Rules for field', field.name || field.id, rules);
 
             return rules;
         }
@@ -459,31 +468,28 @@
             const fields = form.querySelectorAll('input, select, textarea');
 
             fields.forEach(field => {
-                // Validar al perder el foco (inmediato)
-                field.addEventListener('blur', () => {
-                    this.validateFieldRealTime(field, form);
-                });
+                // DEBUG 2.1: Desactivar validación en tiempo real para mejorar UX
+                // Solo mantener la limpieza visual de errores al escribir
 
-                // Crear función debounced para validación en input (250ms para mejor UX)
-                const debouncedValidation = this.debounce(() => {
-                    this.validateFieldRealTime(field, form);
-                }, 250);
-
-                // Validar al escribir con debounce optimizado
+                // Validar al escribir con debounce optimizado - SOLO LIMPIAR ERRORES
                 field.addEventListener('input', () => {
                     // Limpiar error visual inmediatamente al escribir
                     if (field.classList.contains('ewm-error')) {
                         field.classList.remove('ewm-error');
                     }
-
-                    // Ejecutar validación con debounce
-                    debouncedValidation();
+                    // COMENTADO: No ejecutar validación en tiempo real
+                    // debouncedValidation();
                 });
 
-                // Validar inmediatamente al presionar Enter o cambiar valor (para selects)
-                field.addEventListener('change', () => {
-                    this.validateFieldRealTime(field, form);
-                });
+                // COMENTADO: Validación en tiempo real desactivada
+                // field.addEventListener('blur', () => {
+                //     this.validateFieldRealTime(field, form);
+                // });
+
+                // COMENTADO: Validación en tiempo real desactivada
+                // field.addEventListener('change', () => {
+                //     this.validateFieldRealTime(field, form);
+                // });
             });
         }
 
